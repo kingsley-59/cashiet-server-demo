@@ -49,6 +49,14 @@ const AddressSchema = mongoose.Schema(
 			type: Number
 		},
 
+		email: {
+			type: String,
+			match: [
+				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+				'Enter a valid email address'
+			]
+		},
+		
 		alternativeEmail: {
 			type: String,
 			match: [
@@ -57,7 +65,7 @@ const AddressSchema = mongoose.Schema(
 			]
 		},
 
-		userId: {
+		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: [true, 'You must provide a valid userId']

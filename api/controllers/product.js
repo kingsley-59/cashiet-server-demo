@@ -89,6 +89,39 @@ const addProduct = async (req, res, next) => {
 	}
 };
 
+const getProduct = (req, res, next) => {
+	const id = req.params.productId;
+
+	Product.findOne({ _id: id })
+		.exec()
+		.then(product => {
+			if (product) {
+				res.status(200).json(product);
+			} else {
+				res.status(404).json({ message: 'Product not found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+};
+
+const getProductsByCategory = (req, res, next) => {
+	Product.find({ category: req.params.categoryId })
+		.populate('category')
+		.exec()
+		.then(products => {
+			if (products.length > 0) {
+				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+			} else {
+				res.status(404).json({ message: 'No products found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+};
+
 const editProduct = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.productId;
@@ -147,6 +180,8 @@ const deleteProduct = (req, res, next) => {
 
 module.exports = {
 	getAllProducts,
+	getProduct,
+	getProductsByCategory,
 	addProduct,
 	editProduct,
 	deleteProduct

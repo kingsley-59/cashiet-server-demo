@@ -54,44 +54,36 @@ const addCategory = (req, res, next) => {
 };
 
 const getAllCategories = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
-
-	if (authenticatedUser.role === 'admin') {
-		Category.find()
-			.exec()
-			.then(categories => {
-				if (categories.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all categories', total: categories.length, categories });
-				} else {
-					res.status(404).json({ message: 'No categories found' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	Category.find()
+		.exec()
+		.then(categories => {
+			if (categories.length > 0) {
+				res.status(200).json({ message: 'Successfully fetched all categories', total: categories.length, categories });
+			} else {
+				res.status(404).json({ message: 'No categories found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
 };
 
 const getCategory = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+	const id = req.params.categoryId;
+	const slug = req.params.slug;
 
-	if (authenticatedUser.role === 'admin') {
-		const id = req.params.categoryId;
-		const slug = req.params.slug;
-
-		Category.findOne({ $or: [{ _id: id }, { slug }] })
-			.exec()
-			.then(category => {
-				if (category) {
-					res.status(200).json(category);
-				} else {
-					res.status(404).json({ message: 'Category not found' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	Category.findOne({ $or: [{ _id: id }, { slug }] })
+		.exec()
+		.then(category => {
+			if (category) {
+				res.status(200).json(category);
+			} else {
+				res.status(404).json({ message: 'Category not found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
 };
 
 const editCategory = (req, res, next) => {

@@ -8,11 +8,11 @@ const { getAllCategories, getCategory, editCategory, deleteCategory, addCategory
 router.post('/', verifyAuth, addCategory);
 
 // get all categories
-router.get('/', verifyAuth, getAllCategories);
+router.get('/', getAllCategories);
 
 // get specific category details
-router.get('/:categoryId', verifyAuth, getCategory);
-router.get('/:slug', verifyAuth, getCategory);
+router.get('/:categoryId', getCategory);
+router.get('/:slug', getCategory);
 
 // edit category details
 router.put('/:categoryId', verifyAuth, editCategory);

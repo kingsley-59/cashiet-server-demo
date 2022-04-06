@@ -12,6 +12,7 @@ const contactRoute = require('./api/routes/contact');
 const userRoute = require('./api/routes/user');
 const categoryRoute = require('./api/routes/category');
 const productRoute = require('./api/routes/product');
+const addressRoute = require('./api/routes/address');
 
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 
@@ -30,6 +31,7 @@ app.use('/api/v1/contact', contactRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/products', productRoute);
+app.use('/api/v1/address', addressRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({
