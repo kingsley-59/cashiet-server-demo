@@ -41,7 +41,7 @@ const ProfileSchema = mongoose.Schema(
 			required: [true, 'You must provide your date of birth']
 		},
 
-		userId: {
+		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: [true, 'You must provide a valid userId']

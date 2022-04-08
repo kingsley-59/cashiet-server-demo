@@ -1,7 +1,5 @@
-const { json } = require('express/lib/response');
 const mongoose = require('mongoose');
 const address = require('../models/address');
-const User = require('../models/user');
 
 const postAddress = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
@@ -24,18 +22,11 @@ const postAddress = (req, res, next) => {
 
 		return newAddress
 			.save()
-			.then(address => {
-				User.updateOne({ _id: authenticatedUser._id }, { $set: { address: newAddress._id } })
-					.exec()
-					.then(user => {
-						return res.status(201).json({
-							message: 'Address saved successfully'
-						});
-					})
-					.catch(error => {
-						res.status(500).json({ message: 'Unable to update product details', error });
-					});
-			})
+			.then(() =>
+				res.status(201).json({
+					message: 'Address saved successfully'
+				})
+			)
 			.catch(error => {
 				return res.status(500).json({ error });
 			});
@@ -95,18 +86,21 @@ const updateAddress = (req, res, next) => {
 };
 
 const deleteAddress = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
 	const id = req.params.addressId;
 
 	Address.findById({ _id: id })
 		.exec()
 		.then(addr => {
 			if (addr) {
-				addr.remove((error, success) => {
-					if (error) {
-						return res.status(500).json({ error });
-					}
-					res.status(200).json({ message: 'Address successfully deleted' });
-				});
+				if (authenticatedUser.role === 'admin' || addr.user === authenticatedUser._id) {
+					addr.remove((error, success) => {
+						if (error) {
+							return res.status(500).json({ error });
+						}
+						res.status(200).json({ message: 'Address successfully deleted' });
+					});
+				} else res.status(401).json({ message: 'Unauthorized access' });
 			} else {
 				res.status(500).json({ message: 'Address does not exist' });
 			}
@@ -118,7 +112,7 @@ const deleteAddress = (req, res, next) => {
 
 module.exports = {
 	postAddress,
-    updateAddress,
+	updateAddress,
 	getAllAddresses,
 	deleteAddress
 };

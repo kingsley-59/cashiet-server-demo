@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const IDSchema = mongoose.Schema(
+const IDCardSchema = mongoose.Schema(
 	{
 		_id: mongoose.Schema.Types.ObjectId,
 
@@ -21,22 +21,22 @@ const IDSchema = mongoose.Schema(
 			required: [true, 'You must provide the card expiry date'],
 		},
 
-		front: {
-			type: String,
-			required: [true, 'You must capture the front view of your id card'],
-		},
+		// front: {
+		// 	type: String,
+		// 	required: [true, 'You must capture the front view of your id card'],
+		// },
 
-		back: {
-			type: String,
-			required: [true, 'You must capture the rear view of your id card'],
-		},
+		// back: {
+		// 	type: String,
+		// 	required: [true, 'You must capture the rear view of your id card'],
+		// },
 
 		verificationStatus: {
 			type: Boolean,
             default: false,
 		},
         
-		userId: {
+		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: [true, 'You must provide a valid userId']
@@ -45,4 +45,4 @@ const IDSchema = mongoose.Schema(
 	{ timestamps: true }
 );
 
-module.exports = mongoose.model('ID', IDSchema);
+module.exports = mongoose.model('IDCard', IDCardSchema);

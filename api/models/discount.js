@@ -14,9 +14,9 @@ const DiscountSchema = mongoose.Schema(
 			required: [true, 'Specify details about the discount']
 		},
 
-		descriptionPercent: {
+		discountPercent: {
 			type: Number,
-			min: [5, 'Discount should not be less than 5%'],
+			min: [1, 'Discount should not be less than 1%'],
 			max: [99, 'Discount should not be more than 99%']
 		},
 

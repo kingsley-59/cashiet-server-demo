@@ -37,11 +37,6 @@ const UserSchema = mongoose.Schema(
 			minLength: [8, 'Password must contain at least 8 characters']
 		},
 
-		address: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Address'
-		},
-
 		isVerified: { type: Boolean, default: false },
 
 		passwordResetToken: String,

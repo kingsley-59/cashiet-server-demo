@@ -6,7 +6,14 @@ const ProductSchema = mongoose.Schema(
 
 		name: {
 			type: String,
+			unique: [true, 'Product name has to be unique'],
 			required: [true, 'Specify product name']
+		},
+
+		slug: {
+			type: String,
+			unique: true,
+			required: true
 		},
 
 		price: {
@@ -40,28 +47,26 @@ const ProductSchema = mongoose.Schema(
 			ref: 'SubCategoryTwo'
 		},
 
-		sold: {
-			type: Number,
-			default: 0
-		},
-
 		image: {
-			data: Buffer,
+			url: {
+				type: String,
+				required: true
+			},
 			contentType: String
 		},
 
-		// availablePaymentOptions: [
-		// 	{
-		// 		type: mongoose.Schema.Types.ObjectId,
-		// 		ref: 'PaymentOptions',
-		// 		required: [true, 'Upload the available payment options']
-		// 	}
-		// ],
+		availablePaymentOptions: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'PaymentOptions',
+				required: [true, 'Upload the available payment options']
+			}
+		],
 
-		// discount: {
-		// 	type: mongoose.Schema.Types.ObjectId,
-		// 	ref: 'Discount'
-		// },
+		discount: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Discount'
+		},
 
 		createdBy: {
 			type: mongoose.Schema.Types.ObjectId,

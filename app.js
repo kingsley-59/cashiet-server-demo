@@ -3,8 +3,8 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const path = require('path');
 
-// const multer = require("multer");
 require('dotenv').config();
 
 const subscriberRoute = require('./api/routes/subscriber');
@@ -13,6 +13,11 @@ const userRoute = require('./api/routes/user');
 const categoryRoute = require('./api/routes/category');
 const productRoute = require('./api/routes/product');
 const addressRoute = require('./api/routes/address');
+const profileRoute = require('./api/routes/profile');
+const idCardRoute = require('./api/routes/id-card');
+const discountRoute = require('./api/routes/discount');
+const inventoryRoute = require('./api/routes/product-inventory');
+const productGalleryRoute = require('./api/routes/product-gallery');
 
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 
@@ -26,12 +31,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
 
+app.use(express.static(path.resolve('./public')));
+
 app.use('/api/v1/subscribers', subscriberRoute);
 app.use('/api/v1/contact', contactRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/products', productRoute);
 app.use('/api/v1/address', addressRoute);
+app.use('/api/v1/profile', profileRoute);
+app.use('/api/v1/id-card', idCardRoute);
+app.use('/api/v1/discount', discountRoute);
+app.use('/api/v1/inventory', inventoryRoute);
+app.use('/api/v1/product-gallery', productGalleryRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({

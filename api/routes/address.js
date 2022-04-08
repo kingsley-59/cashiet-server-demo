@@ -11,7 +11,7 @@ router.get('/', getAllAddresses);
 router.post('/', verifyAuth, postAddress);
 
 // update address
-router.put('/', verifyAuth, updateAddress);
+router.put('/:addressId', verifyAuth, updateAddress);
 
 // delete user details
 router.delete('/:addressId', verifyAuth, deleteAddress);

@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
-const fs = require('fs');
 const Product = require('../models/product');
 const slugify = require('slugify');
-const { errorHandler } = require('../helpers/dbErrorHandler');
-const { fileToBase64 } = require('../middleware/fileToBase64');
-const getStream = require('get-stream');
-
 const getAllProducts = (req, res, next) => {
 	Product.find()
 		.exec()
@@ -32,22 +27,15 @@ const addProduct = async (req, res, next) => {
 					return res.status(409).json({ message: 'Product already created by you' });
 				} else {
 					try {
-						var img = fs.readFileSync(req.file.path);
-						var encode_img = img.toString('base64');
-
-						var final_img = {
-							contentType: req.file.mimetype,
-							data: Buffer.from(encode_img, 'base64')
-						};
-
 						const newProduct = new Product({
 							_id: new mongoose.Types.ObjectId(),
 							name: req.body.name,
+							slug: slugify(req.body.name),
 							price: req.body.price,
 							keywords: req.body.keywords,
 							image: {
-								data: final_img.data,
-								contentType: final_img.contentType
+								url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
+								contentType: req.file.mimetype
 							},
 							description: req.body.description,
 							category: req.body.category,
