@@ -11,7 +11,36 @@ const OrderPaymentSchema = mongoose.Schema(
 
 		paymentOption: {
 			type: mongoose.Schema.Types.ObjectId,
+			ref: 'PaymentOption'
+		},
+
+		status: {
+			type: Boolean,
+			enum: ['awaitingPayment', 'processing', 'paymentComplete'],
+			default: ['awaitingPayment']
+		},
+
+		order: {
+			type: mongoose.Schema.Types.ObjectId,
 			ref: 'Order'
+		},
+
+		recurringPayment: {
+			paymentDuration: {
+				type: String
+			},
+
+			initialDeposit: {
+				type: Number
+			},
+
+			recurringAmount: {
+				type: Number
+			},
+
+			recurringDate: {
+				type: Date
+			}
 		}
 	},
 	{ timestamps: true }
