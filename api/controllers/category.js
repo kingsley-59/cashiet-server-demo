@@ -133,7 +133,7 @@ const deleteCategory = (req, res, next) => {
 			.exec()
 			.then(user => {
 				if (user) {
-					Category.remove((error, success) => {
+					Category.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });
 						}
@@ -149,10 +149,26 @@ const deleteCategory = (req, res, next) => {
 	} else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
+const deleteAllCategories = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+
+	if (authenticatedUser.role === 'admin') {
+		Category.deleteMany((error, success) => {
+			if (error) {
+				return res.status(500).json({ error });
+			}
+			res.status(200).json({ message: 'All categories successfully deleted' });
+		});
+	} else {
+		return res.status(401).json({ message: 'Unauthorized access' });
+	}
+};
+
 module.exports = {
 	addCategory,
 	getAllCategories,
 	getCategory,
 	editCategory,
-	deleteCategory
+	deleteCategory,
+	deleteAllCategories
 };

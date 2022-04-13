@@ -12,7 +12,7 @@ const AdminTypeSchema = mongoose.Schema(
 		permission: {
 			type: String,
 			enum: ['superadmin'],
-			required: true
+            required: true
 		}
 	},
 	{ timestamps: true }

@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllProductGallery, addProductGallery, getProductCategoryById, deleteProductGallery } = require('../controllers/product-gallery');
+const {  addProductGallery, getProductCategoryById, deleteProductGallery, getAllProductGallery } = require('../controllers/product-gallery');
 const router = express.Router();
 const { upload } = require('../middleware/multer');
 

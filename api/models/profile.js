@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('../models/user');
 
 const ProfileSchema = mongoose.Schema(
 	{
@@ -28,7 +29,8 @@ const ProfileSchema = mongoose.Schema(
 		},
 
 		profilePicture: {
-			type: String
+			type: String,
+			required: [true, 'You must provide your profile picture']
 		},
 
 		nationality: {

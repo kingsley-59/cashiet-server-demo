@@ -1,3 +1,4 @@
+const express = require('express');
 const mongoose = require('mongoose');
 const Profile = require('../models/Profile');
 
@@ -37,7 +38,7 @@ const getAllUsersProfile = (req, res, next) => {
 
 	if (authenticatedUser.role === 'admin') {
 		Profile.find()
-			.populate(user)
+			// .populate(user)
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
@@ -55,8 +56,8 @@ const getAllUsersProfile = (req, res, next) => {
 const getCurrentUserProfile = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	Profile.findById(authenticatedUser._id)
-		.populate(user)
+	Profile.findOne({ user: authenticatedUser._id })
+		.populate('user')
 		.exec()
 		.then(userProfile => {
 			res.status(200).json({ userProfile, message: 'Successfully fetched user profile' });
@@ -97,7 +98,7 @@ const editUserProfile = (req, res, next) => {
 		}
 	}
 
-	Profile.updateOne({ _id: authenticatedUser._id }, { $set: { ...req.body } })
+	Profile.updateOne({ user: authenticatedUser._id }, { $set: { ...req.body } })
 		.exec()
 		.then(user => {
 			res.status(200).json({ message: 'Successfully updated user profile' });
@@ -110,9 +111,9 @@ const editUserProfile = (req, res, next) => {
 const updateProfileImage = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	Profile.updateOne({ _id: authenticatedUser._id }, { $set: { profilePicture: `${process.env.BASE_URL}/uploads/` + req.file.filename } })
+	Profile.updateOne({ user: authenticatedUser._id }, { $set: { profilePicture: `${process.env.BASE_URL}/uploads/` + req.file.filename } })
 		.exec()
-		.then(userProfile => {
+		.then(() => {
 			res.status(200).json({ message: 'Successfully updated profile picture' });
 		})
 		.catch(error => {
@@ -124,13 +125,13 @@ const deleteUserProfile = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'admin') {
-		const id = req.params.profileId;
+		const id = req.params.id;
 
-		Profile.findById({ _id: id })
+		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
 			.exec()
 			.then(user => {
 				if (user) {
-					user.remove((error, success) => {
+					user.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });
 						}

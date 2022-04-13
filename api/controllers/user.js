@@ -10,68 +10,58 @@ const userSignup = (req, res, next) => {
 	User.find({ email: req.body.email })
 		.exec()
 		.then(newUser => {
+			console.log(newUser);
 			if (newUser.length >= 1) {
 				return res.status(409).json({ message: 'User with that email already exist' });
 			} else {
-				User.find({ userName: req.body.userName })
-					.exec()
-					.then(user => {
-						if (user.length >= 1) {
-							return res.status(409).json({ message: 'User with that username already exist' });
-						} else {
-							bcrypt.hash(req.body.password, 10, (error, hash) => {
-								if (error) {
-									return res.status(500).json({ error });
-								} else {
-									try {
-										const user = new User({
-											_id: new mongoose.Types.ObjectId(),
-											email: req.body.email.toLowerCase(),
-											password: hash,
-											role: req.body.role || 'user'
-										});
-
-										return user
-											.save()
-											.then(newUser => {
-												const token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
-
-												return token
-													.save()
-													.then(() => {
-														sendEmail(
-															req.body.email,
-															'Account Verification Link',
-															`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
-														);
-
-														return res.status(201).json({
-															message: 'Account created successfully'
-															// token,
-															// newUser,
-														});
-													})
-													.catch(error => {
-														return res.status(500).json({
-															message: 'Unable to save token. Kindly verify your email address ' + req.body.email,
-															error
-															// newUser,
-														});
-													});
-											})
-											.catch(error => {
-												return res.status(500).json({ error });
-											});
-									} catch (error) {
-										return res.status(500).json({ error, message: 'Check your details and try again' });
-									}
-								}
+				bcrypt.hash(req.body.password, 10, (error, hash) => {
+					if (error) {
+						return res.status(500).json({ error });
+					} else {
+						try {
+							const user = new User({
+								_id: new mongoose.Types.ObjectId(),
+								email: req.body.email.toLowerCase(),
+								password: hash,
+								role: req.body.role || 'user'
 							});
+
+							return user
+								.save()
+								.then(newUser => {
+									const token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
+
+									return token
+										.save()
+										.then(() => {
+											sendEmail(
+												req.body.email,
+												'Account Verification Link',
+												`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
+											);
+
+											return res.status(201).json({
+												message: 'Account created successfully',
+												token
+												// newUser,
+											});
+										})
+										.catch(error => {
+											return res.status(500).json({
+												message: 'Unable to save token. Kindly verify your email address ' + req.body.email,
+												error
+												// newUser,
+											});
+										});
+								})
+								.catch(error => {
+									return res.status(500).json({ error });
+								});
+						} catch (error) {
+							return res.status(500).json({ error, message: 'Check your details and try again' });
 						}
-					})
-					.catch(error => {
-						res.status(500).json({ error });
-					});
+					}
+				});
 			}
 		})
 		.catch(error => {

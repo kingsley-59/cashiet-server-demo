@@ -18,6 +18,7 @@ const idCardRoute = require('./api/routes/id-card');
 const discountRoute = require('./api/routes/discount');
 const inventoryRoute = require('./api/routes/product-inventory');
 const productGalleryRoute = require('./api/routes/product-gallery');
+const orderItemsRoute = require('./api/routes/order-items');
 
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 
@@ -44,6 +45,7 @@ app.use('/api/v1/id-card', idCardRoute);
 app.use('/api/v1/discount', discountRoute);
 app.use('/api/v1/inventory', inventoryRoute);
 app.use('/api/v1/product-gallery', productGalleryRoute);
+app.use('/api/v1/order-items', orderItemsRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({

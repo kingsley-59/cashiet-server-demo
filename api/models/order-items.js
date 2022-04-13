@@ -19,7 +19,12 @@ const OrderItemsSchema = mongoose.Schema(
 
 		discount: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Discount'
+			ref: 'Discount',
+			default: 0
+		},
+
+		amount: {
+			type: Number
 		},
 
 		order: {

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Product = require('../models/product');
 const slugify = require('slugify');
+const ProductGallery = require('../models/product-gallery');
+
 const getAllProducts = (req, res, next) => {
 	Product.find()
 		.exec()
@@ -84,7 +86,11 @@ const getProduct = (req, res, next) => {
 		.exec()
 		.then(product => {
 			if (product) {
-				res.status(200).json(product);
+				ProductGallery.findOne({ product: product._id })
+					.then(gallery => {
+						gallery ? res.status(200).json({ product, gallery }) : res.status(200).json(product);
+					})
+					.catch(error => res.status(500).json({ error, message: 'Unable to get the product category' }));
 			} else {
 				res.status(404).json({ message: 'Product not found' });
 			}

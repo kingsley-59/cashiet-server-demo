@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Product = require('../models/product');
-const slugify = require('slugify');
 const ProductGallery = require('../models/product-gallery');
 
 const getAllProductGallery = (req, res, next) => {
@@ -19,32 +18,22 @@ const getAllProductGallery = (req, res, next) => {
 };
 
 const addProductGallery = async (req, res, next) => {
-	if (req.files) {
-		console.log(req.files);
-	}
 	const authenticatedUser = req.decoded.user;
-	const productId = req.params.productId;
+	const productId = req.body.productId;
 
 	if (authenticatedUser.role === 'admin') {
 		Product.findOne({ _id: productId })
 			.exec()
-			.then(product => {
+			.then(async product => {
 				if (product) {
 					try {
-						let filesArray = [];
-						req.files.forEach(image => {
-							const file = {
-								fileName: image.orinalname,
-								filePath: image.path,
-								fileType: image.mimetype
-							};
-							filesArray.push(file);
-						});
-
 						const productCategory = new ProductGallery({
 							_id: new mongoose.Types.ObjectId(),
-							product: req.body.product,
-							images: filesArray
+							product: req.body.productId,
+							images: req.files.map(item => ({
+								...item,
+								url: `${process.env.BASE_URL}/uploads/` + item.filename
+							}))
 						});
 
 						return productCategory
@@ -97,9 +86,9 @@ const deleteProductGallery = (req, res, next) => {
 	if (authenticatedUser.role === 'admin') {
 		ProductGallery.findById({ _id: id })
 			.exec()
-			.then(user => {
-				if (user) {
-					Product.deleteOne((error, success) => {
+			.then(productGallery => {
+				if (productGallery) {
+					ProductGallery.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });
 						}

@@ -5,7 +5,8 @@ const OrderSchema = mongoose.Schema(
 		_id: mongoose.Schema.Types.ObjectId,
 
 		totalAmount: {
-			type: Number
+			type: Number,
+			default: 0
 		},
 
 		orderDate: {
@@ -14,9 +15,9 @@ const OrderSchema = mongoose.Schema(
 		},
 
 		status: {
-			type: Boolean,
-			enum: ['awaitingPayment', 'processing', 'paymentComplete'],
-			default: ['awaitingPayment']
+			type: String,
+			enum: ['Not processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], // enum means string objects
+			default: 'Not processed'
 		},
 
 		user: {

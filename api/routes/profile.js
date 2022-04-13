@@ -16,11 +16,11 @@ const { upload } = require('../middleware/multer');
 // get all users profile
 router.get('/', verifyAuth, getAllUsersProfile);
 
-// add mew user profile
+// add new user profile
 router.post('/', verifyAuth, upload.single('profileImage'), addProfileDetails);
 
 // get current user profile
-router.get('/user-profile', verifyAuth, getCurrentUserProfile);
+router.get('/user', verifyAuth, getCurrentUserProfile);
 
 // get specific user details - id can either be userId or profileId
 router.get('/:id', verifyAuth, getUserProfileDetails);
@@ -29,9 +29,9 @@ router.get('/:id', verifyAuth, getUserProfileDetails);
 router.put('/', verifyAuth, editUserProfile);
 
 // edit profile image
-router.put('/profile-picture', verifyAuth, updateProfileImage);
+router.put('/profile-picture', verifyAuth, upload.single('profileImage'), updateProfileImage);
 
-// delete user details
-router.delete('/:userId', verifyAuth, deleteUserProfile);
+// delete user details (id can be userId or profileId)
+router.delete('/:id', verifyAuth, deleteUserProfile);
 
 module.exports = router;

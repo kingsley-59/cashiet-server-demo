@@ -4,10 +4,10 @@ const UserSchema = mongoose.Schema(
 	{
 		_id: mongoose.Schema.Types.ObjectId,
 
-		userName: {
-			type: String,
-			minLength: [5, 'Full name must have at least 5 characters']
-		},
+		// userName: {
+		// 	type: String,
+		// 	minLength: [5, 'Full name must have at least 5 characters']
+		// },
 
 		email: {
 			type: String,
