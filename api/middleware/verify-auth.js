@@ -8,8 +8,8 @@ module.exports = (req, res, next) => {
 	if (authHeader) {
 		const token = req.headers['authorization'].split(' ')[1]; // Bearer <token>
 		const options = {
-			expiresIn: '3d'
-			// issues: "https://cyclebreeze.herokuapp.com",
+			expiresIn: '3d',
+			issues: 'https://cashiet.com'
 		};
 
 		try {
@@ -23,8 +23,8 @@ module.exports = (req, res, next) => {
 			next();
 		} catch (error) {
 			// throw an error if anything goes wrong with the verification
-			res.json(401).json({ message: 'Authenticated failed' });
 			throw new Error(error);
+			res.json(401).json({ message: 'Authenticated failed' });
 		}
 	} else {
 		result = {

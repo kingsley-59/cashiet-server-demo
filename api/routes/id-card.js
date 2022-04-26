@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const verifyAuth = require('../middleware/verify-auth');
-const { getAllCards, addCard, verifyCard, disableCard, getSpecificCard, updateCard, deleteCard } = require('../controllers/id-card');
+const { getAllCards, addCard, verifyCard, disableCard, getSpecificCard, updateCard, deleteCard, getUserCard } = require('../controllers/id-card');
 
 // get all users id cards
 router.get('/', verifyAuth, getAllCards);
@@ -15,6 +15,9 @@ router.put('/verify/:cardId', verifyAuth, verifyCard);
 
 // disable card
 router.put('/disable/:cardId', verifyAuth, disableCard);
+
+// get user card
+router.get('/user', verifyAuth, getUserCard);
 
 // get specific card
 router.get('/:cardId', verifyAuth, getSpecificCard);

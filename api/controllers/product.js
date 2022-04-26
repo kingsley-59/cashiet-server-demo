@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Product = require('../models/product');
 const slugify = require('slugify');
 const ProductGallery = require('../models/product-gallery');
+const { uploadFile } = require('../middleware/s3');
 
 const getAllProducts = (req, res, next) => {
 	Product.find()
@@ -24,16 +25,29 @@ const addProduct = async (req, res, next) => {
 	if (authenticatedUser.role === 'admin') {
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
-			.then(product => {
+			.then(async product => {
 				if (product.length >= 1) {
 					return res.status(409).json({ message: 'Product already created by you' });
 				} else {
+					console.log(req.body);
+					console.log(req.file);
+
+					console.log('<<<<< Watching');
+					const uploadImage = async () => {
+						const response = await uploadFile(req.file);
+						console.log('38', response);
+						return response;
+					};
+
+					const imageResult = await uploadImage();
+					console.log(imageResult);
+
 					try {
 						const newProduct = new Product({
 							_id: new mongoose.Types.ObjectId(),
 							name: req.body.name,
 							slug: slugify(req.body.name),
-							price: req.body.price,
+							price: +req.body.price,
 							keywords: req.body.keywords,
 							image: {
 								url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
@@ -49,19 +63,22 @@ const addProduct = async (req, res, next) => {
 						return newProduct
 							.save()
 							.then(product => {
-								return product
-									.save()
-									.then(() => {
-										return res.status(201).json({
-											message: 'Product created successfully'
-										});
-									})
-									.catch(error => {
-										return res.status(500).json({
-											message: 'Unable to create product',
-											error
-										});
-									});
+								return res.status(201).json({
+									message: 'Product created successfully'
+								});
+								// return product
+								// 	.save()
+								// 	.then(() => {
+								// 		return res.status(201).json({
+								// 			message: 'Product created successfully'
+								// 		});
+								// 	})
+								// 	.catch(error => {
+								// 		return res.status(500).json({
+								// 			message: 'Unable to create product',
+								// 			error
+								// 		});
+								// 	});
 							})
 							.catch(error => {
 								return res.status(500).json({ error });

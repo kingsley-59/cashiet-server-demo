@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('../models/user');
 
 const IDCardSchema = mongoose.Schema(
 	{
@@ -7,18 +8,17 @@ const IDCardSchema = mongoose.Schema(
 		type: {
 			type: String,
 			required: [true, 'You must specify your id-card type'],
-			enum: ['passport', 'nin', "driverLicense"]
+			enum: ['passport', 'nin', 'driverLicense']
 		},
 
 		cardNumber: {
 			type: String,
-            required: [true, "You must provide your card number"],
+			required: [true, 'You must provide your card number'],
 			minLength: [7, 'Enter address in full']
 		},
 
 		expiryDate: {
-			type: Date,
-			required: [true, 'You must provide the card expiry date'],
+			type: Date
 		},
 
 		// front: {
@@ -33,9 +33,9 @@ const IDCardSchema = mongoose.Schema(
 
 		verificationStatus: {
 			type: Boolean,
-            default: false,
+			default: false
 		},
-        
+
 		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
