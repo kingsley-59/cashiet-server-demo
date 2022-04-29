@@ -30,7 +30,6 @@ const userSignup = (req, res, next) => {
 								.save()
 								.then(newUser => {
 									const token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
-
 									return token
 										.save()
 										.then(() => {
