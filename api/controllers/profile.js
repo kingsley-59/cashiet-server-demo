@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Profile = require('../models/Profile');
+const Profile = require('../models/profile');
 
 const addProfileDetails = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
