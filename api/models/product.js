@@ -31,6 +31,21 @@ const ProductSchema = mongoose.Schema(
 			required: [true, 'Enter image description']
 		},
 
+		dimension: {
+			width: {
+				type: Number,
+				required: true
+			},
+			height: {
+				type: Number,
+				required: true
+			},
+			length: {
+				type: Number,
+				required: true
+			}
+		},
+		
 		category: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'Category',

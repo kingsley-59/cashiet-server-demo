@@ -7,8 +7,8 @@ const postAddress = (req, res, next) => {
 	try {
 		const newAddress = new address({
 			_id: new mongoose.Types.ObjectId(),
-			addressLine1: req.body.addressLine1,
-			addressLine2: req.body.addressLine2,
+			line1: req.body.line1,
+			line2: req.body.line2,
 			city: req.body.city,
 			state: req.body.state,
 			zip: req.body.zip,

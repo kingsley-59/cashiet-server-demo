@@ -18,13 +18,21 @@ const InvoiceSchema = mongoose.Schema(
 		},
 
 		status: {
-			type: String
+			type: String,
+			enum: ['paid', 'unpaid'],
+			default: 'unpaid'
 		},
 
-		orderPayment: {
+		order: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'OrderPayment'
-		}
+			ref: 'Order',
+			required: true
+		},
+
+		// orderPayment: {
+		// 	type: mongoose.Schema.Types.ObjectId,
+		// 	ref: 'OrderPayment'
+		// }
 	},
 	{ timestamps: true }
 );

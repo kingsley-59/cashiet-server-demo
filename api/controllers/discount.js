@@ -31,42 +31,42 @@ const addNewDiscount = (req, res, next) => {
 };
 
 const getAllDiscounts = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+	// const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
-		Discount.find()
-			.exec()
-			.then(result => {
-				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all discounts', total: result.length, discounts: result });
-				} else {
-					res.status(404).json({ message: 'No discount found' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	// if (authenticatedUser.role === 'admin') {
+	Discount.find()
+		.exec()
+		.then(result => {
+			if (result.length > 0) {
+				res.status(200).json({ message: 'Successfully fetched all discounts', total: result.length, discounts: result });
+			} else {
+				res.status(404).json({ message: 'No discount found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+	// } else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
 const getSpecificDiscount = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+	// const authenticatedUser = req.decoded.user;
 	const id = req.params.discountId;
 
-	if (authenticatedUser.role === 'admin') {
-		Discount.findOne({ _id: id })
-			.exec()
-			.then(discount => {
-				if (discount) {
-					res.status(200).json({ discount, message: 'Successfully fetched discount' });
-				} else {
-					res.status(404).json({ message: 'No valid entry found' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	// if (authenticatedUser.role === 'admin') {
+	Discount.findOne({ _id: id })
+		.exec()
+		.then(discount => {
+			if (discount) {
+				res.status(200).json({ discount, message: 'Successfully fetched discount' });
+			} else {
+				res.status(404).json({ message: 'No valid entry found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+	// } else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
 const updateDiscount = (req, res, next) => {

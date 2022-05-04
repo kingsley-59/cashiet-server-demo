@@ -4,15 +4,15 @@ const AddressSchema = mongoose.Schema(
 	{
 		_id: mongoose.Schema.Types.ObjectId,
 
-		addressLine1: {
+		line1: {
 			type: String,
 			required: [true, 'You must provide your primary address'],
 			minLength: [7, 'Enter address in full']
 		},
 
-		addressLine2: {
+		line2: {
 			type: String,
-			minLength: [7, 'Enter address in full']
+			minLength: [1, 'Enter your house number or flat number']
 		},
 
 		city: {

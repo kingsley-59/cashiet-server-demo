@@ -29,18 +29,13 @@ const addProduct = async (req, res, next) => {
 				if (product.length >= 1) {
 					return res.status(409).json({ message: 'Product already created by you' });
 				} else {
-					console.log(req.body);
-					console.log(req.file);
-
-					console.log('<<<<< Watching');
 					const uploadImage = async () => {
 						const response = await uploadFile(req.file);
-						console.log('38', response);
+
 						return response;
 					};
 
 					const imageResult = await uploadImage();
-					console.log(imageResult);
 
 					try {
 						const newProduct = new Product({
@@ -50,8 +45,14 @@ const addProduct = async (req, res, next) => {
 							price: +req.body.price,
 							keywords: req.body.keywords,
 							image: {
-								url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
+								// url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
+								url: imageResult.Location,
 								contentType: req.file.mimetype
+							},
+							dimension: {
+								length: +req.body.productLength,
+								width: +req.body.productWidth,
+								height: +req.body.productHeight
 							},
 							description: req.body.description,
 							category: req.body.category,
@@ -59,26 +60,12 @@ const addProduct = async (req, res, next) => {
 							subCategoryTwo: req.body.subCategoryTwo,
 							createdBy: authenticatedUser._id
 						});
-
 						return newProduct
 							.save()
 							.then(product => {
 								return res.status(201).json({
 									message: 'Product created successfully'
 								});
-								// return product
-								// 	.save()
-								// 	.then(() => {
-								// 		return res.status(201).json({
-								// 			message: 'Product created successfully'
-								// 		});
-								// 	})
-								// 	.catch(error => {
-								// 		return res.status(500).json({
-								// 			message: 'Unable to create product',
-								// 			error
-								// 		});
-								// 	});
 							})
 							.catch(error => {
 								return res.status(500).json({ error });
