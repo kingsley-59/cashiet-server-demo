@@ -14,7 +14,6 @@ const getAllProducts = (req, res, next) => {
 					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
 				}
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
-				// res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
 			} else {
 				res.status(404).json({ message: 'No products found' });
 			}
