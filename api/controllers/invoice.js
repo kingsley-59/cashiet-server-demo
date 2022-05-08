@@ -1,32 +1,15 @@
-const mongoose = require('mongoose');
-const Order = require('../models/order');
 const Invoice = require('../models/invoice');
 
 const getAllInvoices = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	Invoice.find({ user: authenticatedUser._id })
-		.exec()
-		.then(orders => {
-			if (orders.lenth > 0) {
-				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length });
-			} else return res.status(200).json({ message: 'No order found' });
-		})
-		.catch(error => {
-			return res.status(500).json({ error, message: 'Unable to create order' });
-		});
-};
-
-const getAllOrders = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
-
 	if (authenticatedUser.role === 'admin') {
 		try {
-			Order.find()
+			Invoice.find()
 				.exec()
-				.then(orders => {
-					if (orders.length > 0) {
-						return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length });
+				.then(invoices => {
+					if (invoices.length > 0) {
+						return res.status(200).json({ message: 'Successfully fetched all invoices', invoices, total: invoices.length });
 					} else return res.status(200).json({ message: 'No order found' });
 				})
 				.catch(error => {
@@ -38,16 +21,31 @@ const getAllOrders = (req, res, next) => {
 	} else return res.status(401).json({ message: 'Unauthorized access' });
 };
 
-const getSpecificOrder = (req, res, next) => {
+const getAllUserInvoices = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+
+	Invoice.find({ user: authenticatedUser._id })
+		.populate('order')
+		.then(allInvoice => {
+			if (allInvoice.length > 0) {
+				return res.status(200).json({ message: 'Successfully fetched all invoices', invoices: allInvoice, total: allInvoice.length });
+			} else {
+				return res.status(404).json({ message: 'No invoice found' });
+			}
+		})
+		.catch(error => res.status(500).json({ error }));
+};
+
+const getSpecificInvoice = (req, res, next) => {
 	const orderId = req.params.orderId;
 
-	Order.findOne({ _id: orderId, user: authenticatedUser._id })
-		.then(order => {
-			if (order) {
-				return res.status(200).json({ message: 'Order fetched successfully', order });
+	Invoice.findOne({ order: orderId })
+		.populate('order')
+		.then(invoice => {
+			if (invoice) {
+				return res.status(200).json({ message: 'Invoice fetched successfully', invoice });
 			} else {
-				return res.status(200).json({ message: 'Order not found' });
+				return res.status(200).json({ message: 'Invoice not found' });
 			}
 		})
 		.catch(error => {
@@ -55,54 +53,34 @@ const getSpecificOrder = (req, res, next) => {
 		});
 };
 
-const cancelOrder = (req, res, next) => {
+const deleteInvoice = (req, res, next) => {
+	const id = req.params.invoiceId;
 	const authenticatedUser = req.decoded.user;
-
-	Order.findOne({ user: authenticatedUser._id, paymentStatus: 'unpaid' }, (error, order) => {
-		if (!order) return res.status(400).json({ message: 'We were unable to find an order with this id.' });
-
-		// Cancel order
-		order.status = 'cancelled';
-		order.save(function (error) {
-			if (error) {
-				return res.status(500).json({ message: error.message, error });
-			}
-			res.status(200).json({ message: 'Order successfully cancelled' });
-		});
-	});
-};
-
-const deleteUserOrder = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
-	const userId = req.params.userId;
-	const orderId = req.params.orderId;
 
 	if (authenticatedUser.role === 'admin') {
-		Order.find({ user: userId, order: orderId, paymentStatus: 'unpaid' })
+		Invoice.findById({ _id: id })
 			.exec()
-			.then(order => {
-				if (order) {
-					order.deleteOne((error, success) => {
+			.then(invoice => {
+				if (invoice) {
+					invoice.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });
 						}
-						res.status(200).json({ message: 'Order successfully deleted' });
+						res.status(200).json({ message: 'Invoice successfully deleted' });
 					});
 				} else {
-					res.status(500).json({ message: 'Order does not exist' });
+					res.status(500).json({ message: 'Invoice does not exist' });
 				}
 			})
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
 module.exports = {
-	createOrder,
-	getAllUserOrders,
-	getAllOrders,
-	getSpecificOrder,
-	cancelOrder,
-	deleteUserOrder
+	getAllInvoices,
+	getAllUserInvoices,
+	getSpecificInvoice,
+	deleteInvoice
 };

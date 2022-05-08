@@ -61,7 +61,6 @@ const createOrder = (req, res, next) => {
 								return newInvoice
 									.save()
 									.then(invoice => {
-										console.log(createdOrder, invoice);
 										return res
 											.status(201)
 											.json({ message: 'Order and invoice created successfully', invoice: invoice, order: createdOrder });
@@ -88,12 +87,12 @@ const getAllUserOrders = (req, res, next) => {
 	Order.find({ user: authenticatedUser._id })
 		.exec()
 		.then(orders => {
-			if (orders.lenth > 0) {
+			if (orders.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length });
 			} else return res.status(200).json({ message: 'No order found' });
 		})
 		.catch(error => {
-			return res.status(500).json({ error, message: 'Unable to create order' });
+			return res.status(500).json({ error, message: 'Unable to fetch order' });
 		});
 };
 
@@ -110,7 +109,7 @@ const getAllOrders = (req, res, next) => {
 					} else return res.status(200).json({ message: 'No order found' });
 				})
 				.catch(error => {
-					return res.status(500).json({ error, message: 'Unable to create order' });
+					return res.status(500).json({ error, message: 'Unable to fetch order' });
 				});
 		} catch (error) {
 			res.status(500).json({ error });
@@ -131,25 +130,46 @@ const getSpecificOrder = (req, res, next) => {
 			}
 		})
 		.catch(error => {
-			return res.status(500).json({ error, message: 'Unable to create order' });
+			return res.status(500).json({ error, message: 'Unable to fetch order' });
+		});
+};
+
+const getCurrentOrder = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+
+	Order.findOne({ user: authenticatedUser._id, status: 'pending' })
+		.then(order => {
+			if (order) {
+				return res.status(200).json({ message: 'Order fetched successfully', order });
+			} else {
+				return res.status(200).json({ message: 'No pending order found' });
+			}
+		})
+		.catch(error => {
+			return res.status(500).json({ error, message: 'Unable to get order' });
 		});
 };
 
 const cancelOrder = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	Order.findOne({ user: authenticatedUser._id, paymentStatus: 'unpaid' }, (error, order) => {
-		if (!order) return res.status(400).json({ message: 'We were unable to find an order with this id.' });
+	try {
+		Order.findOne({ user: authenticatedUser._id, paymentStatus: 'unpaid' }, (error, order) => {
+			if (!order) return res.status(400).json({ message: 'We were unable to find an order with this id.' });
+			if (order.status === 'cancelled') return res.status(400).json({ message: 'Order already cancelled' });
 
-		// Cancel order
-		order.status = 'cancelled';
-		order.save(function (error) {
-			if (error) {
-				return res.status(500).json({ message: error.message, error });
-			}
-			res.status(200).json({ message: 'Order successfully cancelled' });
+			// Cancel order
+			order.status = 'cancelled';
+			order.save(function (error) {
+				if (error) {
+					return res.status(500).json({ message: error.message, error });
+				}
+				res.status(200).json({ message: 'Order successfully cancelled' });
+			});
 		});
-	});
+	} catch (error) {
+		return res.status(500).json({ error });
+	}
 };
 
 const deleteUserOrder = (req, res, next) => {
@@ -183,6 +203,7 @@ module.exports = {
 	getAllUserOrders,
 	getAllOrders,
 	getSpecificOrder,
+	getCurrentOrder,
 	cancelOrder,
 	deleteUserOrder
 };

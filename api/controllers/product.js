@@ -9,7 +9,12 @@ const getAllProducts = (req, res, next) => {
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
+				if (req.query.name) {
+					const allProducts = products.filter(item => item.name.toLowerCase().includes(req.query.name?.toLowerCase()));
+					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
+				}
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+				// res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
 			} else {
 				res.status(404).json({ message: 'No products found' });
 			}
@@ -176,11 +181,31 @@ const deleteProduct = (req, res, next) => {
 	} else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
+const searchProduct = (req, res, next) => {
+	Product.find()
+		.exec()
+		.then(products => {
+			if (products.length > 0) {
+				if (req.params.search) {
+					const allProducts = products.filter(item => item.name.toLowerCase().includes(req.params.search));
+					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
+				}
+				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+			} else {
+				res.status(404).json({ message: 'No products found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+};
+
 module.exports = {
 	getAllProducts,
 	getProduct,
 	getProductsByCategory,
 	addProduct,
 	editProduct,
-	deleteProduct
+	deleteProduct,
+	searchProduct
 };

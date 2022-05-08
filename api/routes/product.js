@@ -1,5 +1,13 @@
 const express = require('express');
-const { addProduct, getAllProducts, deleteProduct, editProduct, getProduct, getProductsByCategory } = require('../controllers/product');
+const {
+	addProduct,
+	getAllProducts,
+	deleteProduct,
+	editProduct,
+	getProduct,
+	getProductsByCategory,
+	searchProduct
+} = require('../controllers/product');
 const router = express.Router();
 const { upload } = require('../middleware/multer');
 
@@ -22,5 +30,8 @@ router.put('/:productId', verifyAuth, editProduct);
 
 // delete user details
 router.delete('/:productId', verifyAuth, deleteProduct);
+
+// search user details
+router.get('/search', searchProduct);
 
 module.exports = router;

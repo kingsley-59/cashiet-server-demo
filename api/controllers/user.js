@@ -195,7 +195,7 @@ const deleteUser = (req, res, next) => {
 			.exec()
 			.then(user => {
 				if (user) {
-					user.remove((error, success) => {
+					user.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });
 						}
