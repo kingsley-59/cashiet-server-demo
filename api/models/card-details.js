@@ -81,28 +81,28 @@ const CardDetailsSchema = mongoose.Schema(
 		},
 
 		account_name: {
-			type: String
+			type: String | null
 		},
 
 		customer: {
 			id: {
-				type: String
+				type: String | null
 			},
 
 			customer_code: {
-				type: String
+				type: String | null
 			},
 
 			first_name: {
-				type: String
+				type: String | null
 			},
 
 			last_name: {
-				type: String
+				type: String | null
 			},
 
 			email: {
-				type: String
+				type: String | null
 			}
 		}
 	},

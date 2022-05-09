@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('../models/user');
 
 const IDCardSchema = mongoose.Schema(
 	{
@@ -8,13 +7,17 @@ const IDCardSchema = mongoose.Schema(
 		type: {
 			type: String,
 			required: [true, 'You must specify your id-card type'],
-			enum: ['passport', 'nin', 'driverLicense']
+			enum: ['bvn', 'nin', 'driverLicense']
 		},
 
 		cardNumber: {
 			type: String,
 			required: [true, 'You must provide your card number'],
 			minLength: [7, 'Enter address in full']
+		},
+
+		issueDate: {
+			type: Date
 		},
 
 		expiryDate: {

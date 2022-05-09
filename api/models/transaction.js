@@ -19,11 +19,12 @@ const TransactionSchema = mongoose.Schema(
 			ref: 'User'
 		},
 
+		reference: {
+			type: String,
+			required: true
+		},
+
 		transactionDetails: {
-			// id: {
-			// 	type: String,
-			// 	required: true
-			// },
 			domain: {
 				type: String,
 				required: true

@@ -15,7 +15,7 @@ router.get('/', verifyAuth, getAllTransactions);
 
 router.get('/:transactionId', verifyAuth, getSingleTransaction);
 
-router.get('/me', verifyAuth, getAllUserTransactions);
+router.get('/user/me', verifyAuth, getAllUserTransactions);
 
 router.delete('/:transactionId', verifyAuth, deleteTransaction);
 

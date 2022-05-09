@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('../models/user');
 
 const ProfileSchema = mongoose.Schema(
 	{
@@ -41,6 +40,16 @@ const ProfileSchema = mongoose.Schema(
 		dob: {
 			type: Date,
 			required: [true, 'You must provide your date of birth']
+		},
+
+		phoneNumber: {
+			type: Number,
+			required: [true, 'You must provide a valid phone number']
+		},
+
+		address: {
+			type: String,
+			required: [true, 'You must provide a valid address']
 		},
 
 		user: {

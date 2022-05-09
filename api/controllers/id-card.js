@@ -1,8 +1,12 @@
 const mongoose = require('mongoose');
 const IDCard = require('../models/id-card');
+const axios = require('axios');
+const Profile = require('../models/profile');
+const IdCard = require('../models/id-card');
 
 const addCard = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+	const token = process.env.APPRUVE_TEST_TOKEN;
 
 	IDCard.find({ type: req.body.type, cardNumber: req.body.cardNumber })
 		.exec()
@@ -16,16 +20,90 @@ const addCard = (req, res, next) => {
 						type: req.body.type,
 						cardNumber: req.body.cardNumber,
 						expiryDate: req.body.expiryDate,
+						issueDate: req.body.issueDate,
 						user: authenticatedUser._id
 					});
 
 					return card
 						.save()
-						.then(() =>
-							res.status(201).json({
-								message: 'Id card added successfully'
-							})
-						)
+						.then(newCard => {
+							Profile.findOne({ user: authenticatedUser._id })
+								.then(async userProfile => {
+									if (userProfile) {
+										let verifyApi;
+										if (req.body.type === 'driverLicense') {
+											verifyApi = await axios.post(
+												'https://api.appruve.co/v1/verifications/ng/driver_license',
+												{
+													id: req.body.cardNumber,
+													first_name: userProfile.firstName,
+													last_name: userProfile.lastName,
+													middle_name: userProfile.middleName,
+													date_of_birth: userProfile.dob,
+													phone_number: userProfile.phoneNumber,
+													gender: userProfile.gender,
+													address: userProfile.address,
+													expiryDate: req.body.expiryDate
+												},
+												{
+													headers: {
+														Authorization: `Bearer ${token}`
+													}
+												}
+											);
+										} else if (req.body.type === 'nin') {
+											verifyApi = await axios.post(
+												'https://api.appruve.co/v1/verifications/ng/national_id',
+												{
+													id: req.body.cardNumber,
+													first_name: userProfile.firstName,
+													last_name: userProfile.lastName,
+													middle_name: userProfile.middleName,
+													date_of_birth: userProfile.dob,
+													phone_number: userProfile.phoneNumber,
+													gender: userProfile.gender
+												},
+												{
+													headers: {
+														Authorization: `Bearer ${token}`
+													}
+												}
+											);
+										} else if (req.body.type === 'bvn') {
+											verifyApi = await axios.post(
+												'https://api.appruve.co/v1/verifications/ng/bvn',
+												{
+													id: req.body.cardNumber,
+													first_name: userProfile.firstName,
+													last_name: userProfile.lastName,
+													middle_name: userProfile.middleName,
+													date_of_birth: userProfile.dob,
+													phone_number: userProfile.phoneNumber
+												},
+												{
+													headers: {
+														Authorization: `Bearer ${token}`
+													}
+												}
+											);
+										} else return res.status(400).json({ message: 'Invalid ID' });
+
+										if (verifyApi.status === 200) {
+											IDCard.updateOne({ _id: newCard._id }, { $set: { verificationStatus: true } })
+												.exec()
+												.then(() => {
+													res.status(200).json({ message: 'Successfully verified card details' });
+												})
+												.catch(error => {
+													res.status(500).json({ message: 'Unable to verify card details', error });
+												});
+										} else res.status(500).json({ message: 'Unable to verify card' });
+									} else {
+										res.status(200).json({ message: 'Cannot verify ID Card. Please, update your profile' });
+									}
+								})
+								.catch(error => res.status(500).json({ error }));
+						})
 						.catch(error => {
 							return res.status(500).json({ error });
 						});
@@ -190,7 +268,7 @@ const deleteCard = (req, res, next) => {
 		.exec()
 		.then(card => {
 			if (card) {
-				if (authenticatedUser.role === 'admin' || authenticatedUser._id === card.user) {
+				if (authenticatedUser.role === 'admin' || authenticatedUser._id.toString(		) === card.user.toString(		)) {
 					card.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });

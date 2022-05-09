@@ -105,7 +105,7 @@ const OrderSchema = mongoose.Schema(
 
 		shippingFee: {
 			type: Number,
-			default: 10
+			default: 0
 		},
 
 		deliveryDate: {
@@ -127,11 +127,16 @@ const OrderSchema = mongoose.Schema(
 
 		paymentStatus: {
 			type: String,
-			enum: ['unpaid', 'paid'],
+			enum: ['unpaid', 'part_payment', 'paid'],
 			default: 'unpaid'
 		},
 
 		totalAmount: {
+			type: Number,
+			default: 0
+		},
+
+		remainingAmount: {
 			type: Number,
 			default: 0
 		},

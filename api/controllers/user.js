@@ -261,6 +261,53 @@ const resendEmailToken = (req, res) => {
 	});
 };
 
+const createAdmin = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+
+	if (authenticatedUser.role === 'admin' || authenticatedUser.role === 'superadmin') {
+		User.find({ email: req.body.email })
+			.exec()
+			.then(newUser => {
+				if (newUser.length >= 1) {
+					return res.status(409).json({ message: 'User with that email already exist' });
+				} else {
+					bcrypt.hash(req.body.password, 10, (error, hash) => {
+						if (error) {
+							return res.status(500).json({ error });
+						} else {
+							try {
+								const user = new User({
+									_id: new mongoose.Types.ObjectId(),
+									email: req.body.email.toLowerCase(),
+									password: hash,
+									role: 'admin',
+									isVerified: true
+								});
+
+								return user
+									.save()
+									.then(newUser => {
+										return res.status(201).json({
+											message: 'Account created successfully',
+											newUser
+										});
+									})
+									.catch(error => {
+										return res.status(500).json({ error });
+									});
+							} catch (error) {
+								return res.status(500).json({ error, message: 'Check your details and try again' });
+							}
+						}
+					});
+				}
+			})
+			.catch(error => {
+				res.status(500).json({ error });
+			});
+	} else res.status(401).json({ message: 'Unauthorized access' });
+};
+
 module.exports = {
 	userSignup,
 	getAllUsers,
@@ -270,5 +317,6 @@ module.exports = {
 	editUser,
 	deleteUser,
 	confirmEmail,
-	resendEmailToken
+	resendEmailToken,
+	createAdmin
 };

@@ -42,6 +42,7 @@ const createOrder = (req, res, next) => {
 							deliveryDate: req.body.deliveryDate,
 							paymentOption: req.body.paymentOption,
 							totalAmount: totalAmount,
+							remainingAmount: totalAmount,
 							user: authenticatedUser._id
 						});
 
