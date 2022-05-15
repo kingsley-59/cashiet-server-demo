@@ -1,10 +1,12 @@
 const express = require('express');
-const router = express.Router();
-// const verifyAuth = require("../middleware/verify-auth");
-const { getAllSubscribers, subscribeToNewsletter } = require('../controllers/subscriber');
+const router = express.Router();;
+const { getAllSubscribers, subscribeToNewsletter, deleteSubscriber } = require('../controllers/subscriber');
+const verifyAuth = require('../middleware/verify-auth');
 
-router.get('/', getAllSubscribers);
+router.get('/', verifyAuth, getAllSubscribers);
 
 router.post('/', subscribeToNewsletter);
+
+router.delete('/:subscriberId', verifyAuth, deleteSubscriber);
 
 module.exports = router;

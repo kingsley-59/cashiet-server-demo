@@ -2,17 +2,21 @@ const mongoose = require('mongoose');
 const Subscriber = require('../models/subscriber');
 
 const getAllSubscribers = (req, res, next) => {
-	Subscriber.find()
-		.then(result => {
-			if (result.length > 0) {
-				res.status(200).json({ message: 'Successfully fetched all subscribers', count: result.length, messages: result });
-			} else {
-				res.status(404).json({ message: 'No subscriber found', count: 0 });
-			}
-		})
-		.catch(error => {
-			res.status(500).json({ error });
-		});
+	const authenticatedUser = req.decoded.user;
+
+	if (authenticatedUser.role === 'admin') {
+		Subscriber.find()
+			.then(result => {
+				if (result.length > 0) {
+					res.status(200).json({ message: 'Successfully fetched all subscribers', count: result.length, messages: result });
+				} else {
+					res.status(404).json({ message: 'No subscriber found', count: 0 });
+				}
+			})
+			.catch(error => {
+				res.status(500).json({ error });
+			});
+	} else res.status(401).json({ message: 'Unauthorized access' });
 };
 
 const subscribeToNewsletter = (req, res, next) => {
@@ -39,7 +43,33 @@ const subscribeToNewsletter = (req, res, next) => {
 		});
 };
 
+const deleteSubscriber = (req, res, next) => {
+	const id = req.params.subscriberId;
+	const authenticatedUser = req.decoded.user;
+
+	if (authenticatedUser.role === 'admin') {
+		Subscriber.findById({ _id: id })
+			.exec()
+			.then(subscriber => {
+				if (subscriber) {
+					subscriber.deleteOne((error, success) => {
+						if (error) {
+							return res.status(500).json({ error });
+						}
+						res.status(200).json({ message: 'Subscriber successfully deleted' });
+					});
+				} else {
+					res.status(500).json({ message: 'Subscriber does not exist' });
+				}
+			})
+			.catch(error => {
+				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+			});
+	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+};
+
 module.exports = {
 	getAllSubscribers,
-	subscribeToNewsletter
+	subscribeToNewsletter,
+	deleteSubscriber
 };
