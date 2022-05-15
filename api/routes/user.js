@@ -22,7 +22,7 @@ router.get('/', verifyAuth, getAllUsers);
 router.post('/signup', userSignup);
 
 // create admin account
-router.post('/admin/signup', createAdmin);
+router.post('/admin/signup', verifyAuth, createAdmin);
 
 // login user
 router.post('/login', userLogin);
