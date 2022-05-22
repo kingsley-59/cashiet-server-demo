@@ -22,8 +22,7 @@ const userSignup = (req, res, next) => {
 							const user = new User({
 								_id: new mongoose.Types.ObjectId(),
 								email: req.body.email.toLowerCase(),
-								password: hash,
-								role: req.body.role || 'user'
+								password: hash
 							});
 
 							return user
@@ -40,8 +39,8 @@ const userSignup = (req, res, next) => {
 											);
 
 											return res.status(201).json({
-												message: 'Account created successfully',
-												token
+												message: 'Account created successfully'
+												// token
 												// newUser,
 											});
 										})

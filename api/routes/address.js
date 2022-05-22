@@ -13,7 +13,7 @@ router.post('/', verifyAuth, postAddress);
 // update address
 router.put('/:addressId', verifyAuth, updateAddress);
 
-// delete user details
+// delete user address
 router.delete('/:addressId', verifyAuth, deleteAddress);
 
 module.exports = router;

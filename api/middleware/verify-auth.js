@@ -23,8 +23,8 @@ module.exports = (req, res, next) => {
 			next();
 		} catch (error) {
 			// throw an error if anything goes wrong with the verification
-			throw new Error(error);
-			res.json(401).json({ message: 'Authenticated failed' });
+			// throw new Error(error);
+			return res.json(401).json({ message: 'Authenticated failed', error });
 		}
 	} else {
 		result = {
