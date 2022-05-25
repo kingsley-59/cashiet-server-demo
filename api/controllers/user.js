@@ -307,6 +307,7 @@ const createAdmin = (req, res, next) => {
 	} else res.status(401).json({ message: 'Unauthorized access' });
 };
 
+
 module.exports = {
 	userSignup,
 	getAllUsers,
