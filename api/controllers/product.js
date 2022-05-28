@@ -26,7 +26,7 @@ const getAllProducts = (req, res, next) => {
 const addProduct = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
 			.then(async product => {
@@ -128,7 +128,7 @@ const editProduct = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.productId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -159,7 +159,7 @@ const deleteProduct = (req, res, next) => {
 	const id = req.params.productId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.findById({ _id: id })
 			.exec()
 			.then(user => {

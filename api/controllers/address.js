@@ -38,7 +38,7 @@ const postAddress = (req, res, next) => {
 const getAllAddresses = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Address.find()
 			.exec()
 			.then(result => {
@@ -93,7 +93,7 @@ const deleteAddress = (req, res, next) => {
 		.exec()
 		.then(addr => {
 			if (addr) {
-				if (authenticatedUser.role === 'admin' || addr.user === authenticatedUser._id) {
+				if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin' || addr.user === authenticatedUser._id) {
 					addr.remove((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });

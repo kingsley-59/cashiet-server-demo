@@ -21,7 +21,7 @@ const addProductGallery = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const productId = req.body.productId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.findOne({ _id: productId })
 			.exec()
 			.then(async product => {
@@ -83,7 +83,7 @@ const deleteProductGallery = (req, res, next) => {
 	const id = req.params.productId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		ProductGallery.findById({ _id: id })
 			.exec()
 			.then(productGallery => {

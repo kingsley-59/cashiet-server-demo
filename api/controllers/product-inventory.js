@@ -5,7 +5,7 @@ const ProductInventory = require('../models/product-inventory');
 const addInventory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		try {
 			const newProduct = new Discount({
 				_id: new mongoose.Types.ObjectId(),
@@ -32,7 +32,7 @@ const addInventory = (req, res, next) => {
 const getInventories = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		ProductInventory.find()
 			.populate('product')
 			.exec()
@@ -53,7 +53,7 @@ const getSpecificInventory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.inventoryId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		ProductInventory.findOne({ _id: id })
 			.exec()
 			.then(inventory => {
@@ -73,7 +73,7 @@ const updateInventory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.inventoryId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		ProductInventory.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -104,7 +104,7 @@ const deleteInventory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.inventoryId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		ProductInventory.findById({ _id: id })
 			.exec()
 			.then(inventory => {

@@ -5,7 +5,7 @@ const slugify = require('slugify');
 const addCategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.find({ name: req.body.name })
 			.exec()
 			.then(category => {
@@ -90,7 +90,7 @@ const editCategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.categoryId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -128,7 +128,7 @@ const deleteCategory = (req, res, next) => {
 	const id = req.params.categoryId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.findById({ _id: id })
 			.exec()
 			.then(user => {
@@ -152,7 +152,7 @@ const deleteCategory = (req, res, next) => {
 const deleteAllCategories = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.deleteMany((error, success) => {
 			if (error) {
 				return res.status(500).json({ error });

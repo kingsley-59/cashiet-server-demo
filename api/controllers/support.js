@@ -34,7 +34,7 @@ const sendMessage = (req, res, next) => {
 const getAllMessages = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Support.find()
 			.populate('user')
 			.exec()
@@ -69,7 +69,7 @@ const deleteMessage = (req, res, next) => {
 	const id = req.params.messageId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Support.findById({ _id: id })
 			.exec()
 			.then(message => {

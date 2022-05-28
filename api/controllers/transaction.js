@@ -288,7 +288,7 @@ const getAllUserTransactions = (req, res, next) => {
 const getAllTransactions = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Transaction.find()
 			.populate('invoice user')
 			.then(allTransactions =>
@@ -302,7 +302,7 @@ const getSingleTransaction = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const transactionId = req.params.transactionId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Transaction.find({ _id: transactionId })
 			.populate('invoice order user')
 			.then(transaction => {
@@ -327,7 +327,7 @@ const deleteTransaction = (req, res, next) => {
 	const id = req.params.transactionId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Transaction.findById({ _id: id })
 			.exec()
 			.then(transaction => {

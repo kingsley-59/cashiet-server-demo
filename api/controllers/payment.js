@@ -5,7 +5,7 @@ const PaymentOptions = require('../models/payment-options');
 const createPaymentOption = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const newPaymentOption = new PaymentOptions({
 			_id: new mongoose.Types.ObjectId(),
 			type: slugify(req.body.type),
@@ -42,10 +42,10 @@ const getOnePaymentOption = (req, res, next) => {
 };
 
 const deletePaymentOption = (req, res, next) => {
-    const paymentId = req.params.paymentId;
-    const authenticatedUser = req.decoded.user;
+	const paymentId = req.params.paymentId;
+	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		PaymentOptions.find({ _id: paymentId })
 			.exec()
 			.then(paymentOption => {
@@ -64,11 +64,11 @@ const deletePaymentOption = (req, res, next) => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
 	} else return res.status(401).json({ error, message: 'Unauthorized access' });
-}
+};
 
 module.exports = {
 	createPaymentOption,
 	getAllPaymentOptions,
-    getOnePaymentOption,
-    deletePaymentOption
+	getOnePaymentOption,
+	deletePaymentOption
 };

@@ -4,7 +4,7 @@ const Discount = require('../models/discount');
 const addNewDiscount = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		try {
 			const newDiscount = new Discount({
 				_id: new mongoose.Types.ObjectId(),
@@ -33,7 +33,7 @@ const addNewDiscount = (req, res, next) => {
 const getAllDiscounts = (req, res, next) => {
 	// const authenticatedUser = req.decoded.user;
 
-	// if (authenticatedUser.role === 'admin') {
+	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 	Discount.find()
 		.exec()
 		.then(result => {
@@ -53,7 +53,7 @@ const getSpecificDiscount = (req, res, next) => {
 	// const authenticatedUser = req.decoded.user;
 	const id = req.params.discountId;
 
-	// if (authenticatedUser.role === 'admin') {
+	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 	Discount.findOne({ _id: id })
 		.exec()
 		.then(discount => {
@@ -73,7 +73,7 @@ const updateDiscount = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.discountId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Discount.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -104,7 +104,7 @@ const deleteDiscount = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.discountId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Discount.findById({ _id: id })
 			.exec()
 			.then(discount => {

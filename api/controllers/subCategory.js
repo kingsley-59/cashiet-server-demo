@@ -5,7 +5,7 @@ const slugify = require('slugify');
 const addSubcategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		SubCategory.find({ name: req.body.name })
 			.exec()
 			.then(category => {
@@ -58,7 +58,7 @@ const addSubcategory = (req, res, next) => {
 const getAllSubcategories = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		SubCategory.find()
 			.exec()
 			.then(subcategories => {
@@ -77,7 +77,7 @@ const getAllSubcategories = (req, res, next) => {
 const getCategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.categoryId;
 		const slug = req.params.slug;
 
@@ -101,7 +101,7 @@ const editSubcategory = (req, res, next) => {
 	const id = req.params.categoryId;
 	const slug = req.params.slug;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		for (const property in req.body) {
 			if (req.body[property] === null || req.body[property] === undefined) {
 				delete req.body[property];
@@ -129,7 +129,7 @@ const deleteSubcategory = (req, res, next) => {
 	const id = req.params.categoryId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.findById({ $or: [{ id }, { slug }] })
 			.exec()
 			.then(user => {

@@ -36,7 +36,7 @@ const addProfileDetails = (req, res, next) => {
 const getAllUsersProfile = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Profile.find()
 			// .populate(user)
 			.exec()
@@ -70,7 +70,7 @@ const getCurrentUserProfile = (req, res, next) => {
 const getUserProfileDetails = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.id;
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
@@ -124,7 +124,7 @@ const updateProfileImage = (req, res, next) => {
 const deleteUserProfile = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.id;
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })

@@ -120,7 +120,7 @@ const addCard = (req, res, next) => {
 const getAllCards = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		IDCard.find()
 			.populate('user')
 			.exec()
@@ -147,7 +147,7 @@ const getSpecificCard = (req, res, next) => {
 		// .populate('user')
 		.exec()
 		.then(card => {
-			if (authenticatedUser.role === 'admin' || authenticatedUser._id === card.user) {
+			if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin' || authenticatedUser._id === card.user) {
 				res.status(200).json({ card });
 			} else {
 				return res.status(401).json({ error, message: 'Unauthorized access' });
@@ -210,7 +210,7 @@ const verifyCard = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.cardId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		IDCard.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -237,7 +237,7 @@ const disableCard = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.cardId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		IDCard.findOne({ _id: id })
 			.exec()
 			.then(result => {
@@ -268,7 +268,11 @@ const deleteCard = (req, res, next) => {
 		.exec()
 		.then(card => {
 			if (card) {
-				if (authenticatedUser.role === 'admin' || authenticatedUser._id.toString(		) === card.user.toString(		)) {
+				if (
+					authenticatedUser.role === 'superadmin' ||
+					authenticatedUser.role === 'admin' ||
+					authenticatedUser._id.toString() === card.user.toString()
+				) {
 					card.deleteOne((error, success) => {
 						if (error) {
 							return res.status(500).json({ error });

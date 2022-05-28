@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-	const authHeader = req.headers.authorization;
+	const authHeader = req.headers?.authorization;
 
 	let result;
 
@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
 		};
 
 		try {
-			// verify if token hasn't expired and it's issued by agropay
+			// verify if token hasn't expired and it's issued by cashiet
 			result = jwt.verify(token, process.env.JWT_KEY, options);
 
 			// pass back the decoded token to the request object
@@ -22,9 +22,9 @@ module.exports = (req, res, next) => {
 			// pass execution to the next middleware
 			next();
 		} catch (error) {
+			console.log('Error error error error error error', error);
 			// throw an error if anything goes wrong with the verification
-			// throw new Error(error);
-			return res.json(401).json({ message: 'Authenticated failed', error });
+			throw new Error(error);
 		}
 	} else {
 		result = {

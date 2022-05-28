@@ -3,7 +3,7 @@ const Invoice = require('../models/invoice');
 const getAllInvoices = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		try {
 			Invoice.find()
 				.exec()
@@ -57,7 +57,7 @@ const deleteInvoice = (req, res, next) => {
 	const id = req.params.invoiceId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Invoice.findById({ _id: id })
 			.exec()
 			.then(invoice => {

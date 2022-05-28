@@ -100,7 +100,7 @@ const getAllUserOrders = (req, res, next) => {
 const getAllOrders = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		try {
 			Order.find()
 				.exec()
@@ -178,7 +178,7 @@ const deleteUserOrder = (req, res, next) => {
 	const userId = req.params.userId;
 	const orderId = req.params.orderId;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Order.find({ user: userId, order: orderId, paymentStatus: 'unpaid' })
 			.exec()
 			.then(order => {

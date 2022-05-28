@@ -70,7 +70,7 @@ const userSignup = (req, res, next) => {
 const getAllUsers = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
 		User.find()
 			.exec()
 			.then(result => {
@@ -141,7 +141,7 @@ const getCurrentUser = (req, res, next) => {
 const getUserDetails = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.userId;
 		User.findById(id)
 			.exec()
@@ -189,7 +189,7 @@ const deleteUser = (req, res, next) => {
 	const id = req.params.userId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		User.findById({ _id: id })
 			.exec()
 			.then(user => {
@@ -263,7 +263,7 @@ const resendEmailToken = (req, res) => {
 const createAdmin = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin' || authenticatedUser.role === 'superadmin') {
+	if (authenticatedUser.role === 'superadmin') {
 		User.find({ email: req.body.email })
 			.exec()
 			.then(newUser => {
@@ -307,6 +307,22 @@ const createAdmin = (req, res, next) => {
 	} else res.status(401).json({ message: 'Unauthorized access' });
 };
 
+const testEmail = (req, res, next) => {
+	try {
+		const messageToSend = `
+			<html>
+				<h1>Just testing this</h1>
+				<p>Trying to see if it works</p>
+			</html>
+		`;
+		sendEmail('oyelekeoluwasayo@gmail.com', 'Testing', messageToSend);
+
+		res.status(200).json({ message: 'Sent' });
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: 'Unable to send email', error });
+	}
+};
 
 module.exports = {
 	userSignup,
@@ -318,5 +334,6 @@ module.exports = {
 	deleteUser,
 	confirmEmail,
 	resendEmailToken,
-	createAdmin
+	createAdmin,
+	testEmail
 };

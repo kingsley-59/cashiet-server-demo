@@ -4,7 +4,7 @@ const Subscriber = require('../models/subscriber');
 const getAllSubscribers = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Subscriber.find()
 			.then(result => {
 				if (result.length > 0) {
@@ -47,7 +47,7 @@ const deleteSubscriber = (req, res, next) => {
 	const id = req.params.subscriberId;
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'admin') {
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Subscriber.findById({ _id: id })
 			.exec()
 			.then(subscriber => {
