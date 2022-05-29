@@ -15,9 +15,11 @@ const {
 	createAdmin,
 	testEmail
 } = require('../controllers/user');
+const { paginatedResults } = require('../middleware/pagination');
+const user = require('../models/user');
 
 // get all users
-router.get('/', verifyAuth, getAllUsers);
+router.get('/', verifyAuth, paginatedResults(user), getAllUsers);
 
 // create user account
 router.post('/signup', userSignup);

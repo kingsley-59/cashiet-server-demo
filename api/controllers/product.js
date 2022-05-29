@@ -9,6 +9,21 @@ const getAllProducts = (req, res, next) => {
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
+				return res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products: res.paginatedResults });
+			} else {
+				res.status(404).json({ message: 'No products found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+};
+
+const filterProducts = (req, res, next) => {
+	Product.find()
+		.exec()
+		.then(products => {
+			if (products.length > 0) {
 				if (req.query.name) {
 					const allProducts = products.filter(item => item.name.toLowerCase().includes(req.query.name?.toLowerCase()));
 					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
@@ -201,6 +216,7 @@ const searchProduct = (req, res, next) => {
 
 module.exports = {
 	getAllProducts,
+	filterProducts,
 	getProduct,
 	getProductsByCategory,
 	addProduct,

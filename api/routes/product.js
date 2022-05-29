@@ -6,15 +6,21 @@ const {
 	editProduct,
 	getProduct,
 	getProductsByCategory,
-	searchProduct
+	searchProduct,
+	filterProducts
 } = require('../controllers/product');
 const router = express.Router();
 const { upload } = require('../middleware/multer');
+const { paginatedResults } = require('../middleware/pagination');
 
 const verifyAuth = require('../middleware/verify-auth');
+const product = require('../models/product');
 
 // get all products
-router.get('/', getAllProducts);
+router.get('/', paginatedResults(product), getAllProducts);
+
+// filter all products
+router.get('/filter', filterProducts);
 
 // create new product
 router.post('/', verifyAuth, upload.single('image'), addProduct);

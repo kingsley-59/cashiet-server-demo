@@ -74,7 +74,12 @@ const getAllUsers = (req, res, next) => {
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all users', total: result.length, users: result });
+					res.status(200).json({
+						message: 'Successfully fetched all users',
+						total: result.length,
+						// users: result,
+						users: res.paginatedResults
+					});
 				} else {
 					res.status(404).json({ message: 'No users found' });
 				}
