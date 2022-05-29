@@ -10,7 +10,6 @@ const userSignup = (req, res, next) => {
 	User.find({ email: req.body.email })
 		.exec()
 		.then(newUser => {
-			console.log(newUser);
 			if (newUser.length >= 1) {
 				return res.status(409).json({ message: 'User with that email already exist' });
 			} else {
@@ -39,8 +38,8 @@ const userSignup = (req, res, next) => {
 											);
 
 											return res.status(201).json({
-												message: 'Account created successfully'
-												// token
+												message: 'Account created successfully',
+												token
 												// newUser,
 											});
 										})

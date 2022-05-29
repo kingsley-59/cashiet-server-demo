@@ -54,6 +54,23 @@ const getAllAddresses = (req, res, next) => {
 	} else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
+const getUserAddresses = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+
+	Address.find({ user: authenticatedUser._id })
+		.exec()
+		.then(result => {
+			if (result.length > 0) {
+				res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, contacts: result });
+			} else {
+				res.status(404).json({ message: 'No address found' });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+};
+
 const updateAddress = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.addressId;
@@ -114,5 +131,6 @@ module.exports = {
 	postAddress,
 	updateAddress,
 	getAllAddresses,
+	getUserAddresses,
 	deleteAddress
 };
