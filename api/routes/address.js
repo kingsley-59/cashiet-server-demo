@@ -5,7 +5,7 @@ const router = express.Router();
 const verifyAuth = require('../middleware/verify-auth');
 
 // get all addresses
-router.get('/', getAllAddresses);
+router.get('/', verifyAuth, getAllAddresses);
 
 // create new address
 router.post('/', verifyAuth, postAddress);

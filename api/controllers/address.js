@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
-const address = require('../models/address');
+const Address = require('../models/address');
 
 const postAddress = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	try {
-		const newAddress = new address({
+		const newAddress = new Address({
 			_id: new mongoose.Types.ObjectId(),
 			line1: req.body.line1,
 			line2: req.body.line2,

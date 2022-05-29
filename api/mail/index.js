@@ -4,7 +4,7 @@ const USERNAME = process.env.MAILGUN_USERNAME;
 const formData = require('form-data');
 const Mailgun = require('mailgun.js');
 const mailgun = new Mailgun(formData);
-const mg = mailgun.client({ username: USERNAME, key: API_KEY });
+const mg = mailgun.client({ username: USERNAME, key: API_KEY, url: 'https://api.eu.mailgun.net' });
 
 const sendEmail = (receiver, subject, messageToSend) => {
 	const messageParams = {
