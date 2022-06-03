@@ -25,6 +25,7 @@ const invoiceRoute = require('./api/routes/invoice');
 const transactionRoute = require('./api/routes/transaction');
 const supportRoute = require('./api/routes/support');
 const passwordRoute = require('./api/routes/password');
+const oauthRoute = require('./api/routes/oauth');
 
 // mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority`);
@@ -59,6 +60,7 @@ app.use('/api/v1/invoice', invoiceRoute);
 app.use('/api/v1/transactions', transactionRoute);
 app.use('/api/v1/support', supportRoute);
 app.use('/api/v1/password', passwordRoute);
+app.use('/api/v1/oauth', oauthRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({

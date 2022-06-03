@@ -30,10 +30,15 @@ const UserSchema = mongoose.Schema(
 			type: Boolean,
 			default: false
 		},
+		
+		modeOfRegistration: {
+			type: String,
+			default: 'manual'
+		},
 
 		password: {
 			type: String,
-			required: [true, 'password is required'],
+			// required: [true, 'password is required'],
 			minLength: [8, 'Password must contain at least 8 characters']
 		},
 

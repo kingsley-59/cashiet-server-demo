@@ -24,7 +24,6 @@ const saveTransaction = (req, res, next) => {
 				};
 
 				const response = await axios.get(`https://remitademo.net/payment/v1/payment/query/${req.body.transactionId}`, config);
-				//
 
 				try {
 					if (response.status === 200 && response.data?.responseCode === '00') {

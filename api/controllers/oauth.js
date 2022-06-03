@@ -1,33 +1,55 @@
 const User = require('../models/user');
-// import { OAuth2Client } from "google-auth-library";
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
-const googleAuth = (req, res, next) => {
-	// const { token } = req.body;
+const generateToken = user => {
+	const token = jwt.sign({ user }, process.env.JWT_KEY, {
+		expiresIn: '7d'
+	});
 
-	// const ticket = await googleClient.verifyIdToken({
-	//   idToken: token,
-	//   audient: `${process.env.GOOGLE_OAUTH_CLIENT_ID}`,
-	// });
+	return token;
+};
 
-	// const payload = ticket.getPayload();
+const oauthRegistration = async (req, res, next) => {
+	const { email } = req.body;
 
-	// let user = await User.findOne({ email: payload?.email });
+	User.findOne({ email })
+		.then(userData => {
+			if (userData) {
+				if (userData.modeOfRegistration === 'oauth') {
+					const token = generateToken(userData);
 
-	// if (!user) {
-	//   user = await new User({
-	//     email: payload?.email,
-	//     avatar: payload?.picture,
-	//     name: payload?.name,
-	//     isVerified: true
-	//   });
+					return res.status(200).json({
+						message: 'Authentication Successful',
+						user: userData,
+						token
+					});
+				}
 
-	//   await user.save();
-	// }
+				return res.status(400).json({ message: 'Account exists already. Log in with username and password' });
+			}
 
-	// res.json({ user, token });
-	res.status(200).send('Working');
+			const newUser = new User({
+				_id: new mongoose.Types.ObjectId(),
+				email,
+				modeOfRegistration: 'oauth',
+				isVerified: true
+			});
+
+			newUser
+				.save()
+				.then(user => {
+					const token = generateToken(newUser);
+
+					return res.status(200).json({ message: 'Account created successfully', token, user });
+				})
+				.catch(error => res.status(500).json({ message: 'Unable to save user details', error }));
+		})
+		.catch(error => {
+			return res.status(500).json({ error });
+		});
 };
 
 module.exports = {
-	googleAuth
+	oauthRegistration
 };
