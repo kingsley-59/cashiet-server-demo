@@ -46,7 +46,7 @@ const deletePaymentOption = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		PaymentOptions.find({ _id: paymentId })
+		PaymentOptions.findById({ _id: paymentId })
 			.exec()
 			.then(paymentOption => {
 				if (paymentOption) {
