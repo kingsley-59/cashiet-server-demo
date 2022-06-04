@@ -88,8 +88,7 @@ const getAllUserOrders = (req, res, next) => {
 	Order.find({ user: authenticatedUser._id })
 		.exec()
 		.then(orders => {
-			const removeCancelledOrders = orders.filter(item => item.status !== 'cancelled');
-			if (removeCancelledOrders.length > 0) {
+			if (orders.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length });
 			} else return res.status(200).json({ message: 'No order found' });
 		})
