@@ -175,11 +175,10 @@ const cancelOrder = (req, res, next) => {
 
 const deleteUserOrder = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
-	const userId = req.params.userId;
 	const orderId = req.params.orderId;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		Order.find({ user: userId, order: orderId, paymentStatus: 'unpaid' })
+		Order.findOne({ _id: orderId, paymentStatus: 'unpaid' })
 			.exec()
 			.then(order => {
 				if (order) {
@@ -190,7 +189,7 @@ const deleteUserOrder = (req, res, next) => {
 						res.status(200).json({ message: 'Order successfully deleted' });
 					});
 				} else {
-					res.status(500).json({ message: 'Order does not exist' });
+					res.status(500).json({ message: 'Order not found' });
 				}
 			})
 			.catch(error => {
