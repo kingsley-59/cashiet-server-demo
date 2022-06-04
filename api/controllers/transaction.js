@@ -90,7 +90,11 @@ const saveTransaction = (req, res, next) => {
 																						? 'paid'
 																						: 'part_payment',
 																				remainingAmount:
-																					orderDetails.remainingAmount - transaction.responseData.amount
+																					orderDetails.remainingAmount - transaction.responseData.amount,
+																				status:
+																					orderDetails.remainingAmount <= transaction.responseData.amount
+																						? 'paid'
+																						: 'pending'
 																			}
 																		}
 																	)
