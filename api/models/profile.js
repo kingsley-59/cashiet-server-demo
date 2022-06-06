@@ -24,32 +24,32 @@ const ProfileSchema = mongoose.Schema(
 		gender: {
 			type: String,
 			enum: ['male', 'female'],
-			required: [true, 'You must provide your gender details']
+			// required: [true, 'You must provide your gender details']
 		},
 
 		profilePicture: {
 			type: String,
-			required: [true, 'You must provide your profile picture']
+			// required: [true, 'You must provide your profile picture']
 		},
 
 		nationality: {
 			type: String,
-			required: [true, 'You must provide your nationality status']
+			// required: [true, 'You must provide your nationality status']
 		},
 
 		dob: {
 			type: Date,
-			required: [true, 'You must provide your date of birth']
+			// required: [true, 'You must provide your date of birth']
 		},
 
 		phoneNumber: {
 			type: Number,
-			required: [true, 'You must provide a valid phone number']
+			// required: [true, 'You must provide a valid phone number']
 		},
 
 		address: {
 			type: String,
-			required: [true, 'You must provide a valid address']
+			// required: [true, 'You must provide a valid address']
 		},
 
 		user: {

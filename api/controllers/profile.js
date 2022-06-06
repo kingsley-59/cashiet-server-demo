@@ -12,7 +12,7 @@ const addProfileDetails = (req, res, next) => {
 			middleName: req.body.middleName,
 			lastName: req.body.lastName,
 			gender: req.body.gender.toLowerCase(),
-			profilePicture: `${process.env.BASE_URL}/uploads/` + req.file.filename,
+			profilePicture: req.file ? `${process.env.BASE_URL}/uploads/` + req.file.filename : "",
 			nationality: req.body.nationality.toLowerCase(),
 			dob: req.body.dob,
 			user: authenticatedUser._id
