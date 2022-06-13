@@ -1,10 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const User = require('../models/user');
-const Token = require('../models/token');
-const { sendEmail } = require('../mail');
 const Support = require('../models/support');
 
 const sendMessage = (req, res, next) => {

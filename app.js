@@ -27,6 +27,8 @@ const supportRoute = require('./api/routes/support');
 const passwordRoute = require('./api/routes/password');
 const oauthRoute = require('./api/routes/oauth');
 const partnerRoute = require('./api/routes/partner');
+const recurringPaymentRoute = require('./api/routes/recurring-payment');
+const buyLaterRoute = require('./api/routes/buy-later');
 
 // mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority`);
@@ -54,8 +56,8 @@ app.use('/api/v1/id-card', idCardRoute);
 app.use('/api/v1/discount', discountRoute);
 app.use('/api/v1/inventory', inventoryRoute);
 app.use('/api/v1/product-gallery', productGalleryRoute);
-app.use('/api/v1/order-items', orderItemsRoute); 
-app.use('/api/v1/order', orderRoute); 
+app.use('/api/v1/order-items', orderItemsRoute);
+app.use('/api/v1/order', orderRoute);
 app.use('/api/v1/payment-option', paymentOptionRoute);
 app.use('/api/v1/invoice', invoiceRoute);
 app.use('/api/v1/transactions', transactionRoute);
@@ -63,6 +65,8 @@ app.use('/api/v1/support', supportRoute);
 app.use('/api/v1/password', passwordRoute);
 app.use('/api/v1/oauth', oauthRoute);
 app.use('/api/v1/partner', partnerRoute);
+app.use('/api/v1/rc-payment', recurringPaymentRoute);
+app.use('/api/v1/buy-later', buyLaterRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({

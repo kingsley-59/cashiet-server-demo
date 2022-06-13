@@ -145,6 +145,11 @@ const OrderSchema = mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true
+		},
+
+		saveAndBuy: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'SaveAndBuyLater'
 		}
 	},
 	{ timestamps: true }

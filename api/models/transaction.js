@@ -22,7 +22,7 @@ const TransactionSchema = mongoose.Schema(
 		status: {
 			type: String | null
 		},
-		transactionId: { type: String },
+		transactionId: { type: String | Number },
 		responseCode: { type: String | null },
 		responseMsg: { type: String | null },
 		iResponseCode: { type: Number | null },
@@ -50,67 +50,36 @@ const TransactionSchema = mongoose.Schema(
 		},
 		data: {
 			type: Object | String | null
+		},
+
+		transactionRef: {
+			type: Number
+		},
+
+		statuscode: {
+			type: String
+		},
+
+		RRR: {
+			type: String
+		},
+
+		requestId: {
+			type: String
+		},
+
+		mandateId: {
+			type: String
+		},
+
+		transactionRef: {
+			type: String
+		},
+
+		recurringPayment: {
+			type: Boolean,
+			default: false
 		}
-
-		// reference: {
-		// 	type: String,
-		// 	required: true
-		// },
-
-		// transactionDetails: {
-		// 	domain: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	status: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	reference: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	amount: {
-		// 		type: Number,
-		// 		required: true
-		// 	},
-
-		// 	message: {
-		// 		type: String,
-		// 	},
-
-		// 	gateway_response: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	paid_at: {
-		// 		type: Date,
-		// 		required: true
-		// 	},
-
-		// 	created_at: {
-		// 		type: Date,
-		// 		required: true
-		// 	},
-		// 	channel: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	currency: {
-		// 		type: String,
-		// 		required: true
-		// 	},
-
-		// 	ip_address: {
-		// 		type: String,
-		// 		required: true
-		// 	}
-		// }
 	},
 	{ timestamps: true }
 );

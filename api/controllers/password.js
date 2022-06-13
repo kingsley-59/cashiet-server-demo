@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const Token = require('../models/token');
-const { sendEmail } = require('../mail');
+const { sendEmail } = require('../mail/mailjet');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
@@ -19,7 +19,24 @@ const sendPasswordResetLink = async (req, res) => {
 		}
 
 		const link = `${process.env.BASE_URL}/password-reset?user=${user._id}&token=${token.token}`;
-		await sendEmail(user.email, 'Password reset link', link);
+
+		const messageToSend = `
+			<html>
+				<h1>Hello user,</h1>
+				<p>Please, kindly click on this <a href="${link}" to verify your account or copy and paste ${link} in a browser</p>
+				<br /><br />
+				<h3>Best regards</h3>
+				<p>Cashiet</p>
+			</html>
+		`;
+
+		await sendEmail(
+			user.email,
+			'user',
+			'Password reset link',
+			`Kindly click on this link to verify your account or copy and paste it in a browser ${link}`,
+			messageToSend
+		);
 
 		res.status(200).json({ message: 'Password reset link sent to your email account' });
 	} catch (error) {

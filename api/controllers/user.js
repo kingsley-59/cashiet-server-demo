@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user');
 const Token = require('../models/token');
-const { sendEmail } = require('../mail');
+const { sendEmail } = require('../mail/mailjet');
 
 const userSignup = (req, res, next) => {
 	User.find({ email: req.body.email })
@@ -31,9 +31,12 @@ const userSignup = (req, res, next) => {
 									return token
 										.save()
 										.then(() => {
+											const link = `${process.env.BASE_URL}/confirm-email/${token.token}`;
 											sendEmail(
 												req.body.email,
+												'user',
 												'Account Verification Link',
+												`Hello, Please verify your account by clicking the ${link}`,
 												`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
 											);
 
@@ -252,10 +255,14 @@ const resendEmailToken = (req, res) => {
 				return res.status(500).json({ message: error.message, error });
 			}
 
+			const link = `${process.env.BASE_URL}/confirm-email/${token.token}`;
+
 			// Send the email
 			sendEmail(
 				req.body.email,
+				'user',
 				'Account Verification Link',
+				`Hello, Please verify your account by clicking the ${link}`,
 				`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
 			);
 
@@ -319,7 +326,7 @@ const testEmail = (req, res, next) => {
 				<p>Trying to see if it works</p>
 			</html>
 		`;
-		sendEmail('oyelekeoluwasayo@gmail.com', 'Testing', messageToSend);
+		sendEmail('oyelekeoluwasayo@gmail.com', 'User', 'Testing', 'Just testing', messageToSend);
 
 		res.status(200).json({ message: 'Sent' });
 	} catch (error) {

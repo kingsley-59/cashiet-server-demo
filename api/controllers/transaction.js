@@ -229,6 +229,27 @@ const getSingleTransaction = (req, res, next) => {
 	}
 };
 
+const getOrderTransactions = (req, res) => {
+	const authenticatedUser = req.decoded.user;
+	const orderId = req.params.orderId;
+
+	Transaction.find({ user: authenticatedUser._id })
+		.populate('invoice')
+		.exec()
+		.then(orderTransactions => {
+			if (orderTransactions.length > 0) {
+				const transactionOrders = orderTransactions?.filter(transaction => transaction?.invoice?.order?.toString() === orderId);
+
+				res.status(200).json({
+					message: 'Transactions attached to the order fetched successfully',
+					allTransactions: transactionOrders,
+					total: transactionOrders.length
+				});
+			} else res.status(404).json({ message: 'No transaction attached to the order found' });
+		})
+		.catch(error => res.status(500).json(error));
+};
+
 const deleteTransaction = (req, res, next) => {
 	const id = req.params.transactionId;
 	const authenticatedUser = req.decoded.user;
@@ -259,5 +280,6 @@ module.exports = {
 	getAllUserTransactions,
 	getAllTransactions,
 	getSingleTransaction,
-	deleteTransaction
+	deleteTransaction,
+	getOrderTransactions
 };

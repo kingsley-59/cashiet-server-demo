@@ -37,9 +37,9 @@ const getAllUserInvoices = (req, res, next) => {
 };
 
 const getSpecificInvoice = (req, res, next) => {
-	const orderId = req.params.orderId;
+	const invoiceId = req.params.invoiceId;
 
-	Invoice.findOne({ order: orderId })
+	Invoice.findOne({ _id: invoiceId })
 		.populate('order')
 		.then(invoice => {
 			if (invoice) {
@@ -78,9 +78,29 @@ const deleteInvoice = (req, res, next) => {
 	} else res.status(401).json({ error, message: 'Unauthorized access' });
 };
 
+const getOrderInvoices = (req, res) => {
+	const authenticatedUser = req.decoded.user;
+	const orderId = req.params.orderId;
+
+	Invoice.find({ user: authenticatedUser._id, order: orderId })
+		.populate('order')
+		.exec()
+		.then(invoices => {
+			if (invoices.length > 0) {
+				res.status(200).json({
+					message: 'Invoices attached to the order fetched successfully',
+					allInvoices: invoices,
+					total: invoices?.length
+				});
+			} else res.status(404).json({ message: 'No invoice attached to the order found' });
+		})
+		.catch(error => res.status(500).json(error));
+};
+
 module.exports = {
 	getAllInvoices,
 	getAllUserInvoices,
 	getSpecificInvoice,
-	deleteInvoice
+	deleteInvoice,
+	getOrderInvoices
 };
