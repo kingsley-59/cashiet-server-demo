@@ -18,7 +18,7 @@ const sendEmail = (receiverEmail, receiverName, subject, textPart, htmlPart) => 
 				Subject: subject,
 				TextPart: textPart,
 				HTMLPart: htmlPart,
-				CustomID: 'AppGettingStartedTest'
+				// CustomID: 'AppGettingStartedTest'
 			}
 		]
 	});
