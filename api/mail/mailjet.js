@@ -6,8 +6,8 @@ const sendEmail = (receiverEmail, receiverName, subject, textPart, htmlPart) => 
 		Messages: [
 			{
 				From: {
-					Email: 'oyelekeoluwasayo@yahoo.com',
-					Name: 'Joshua'
+					Email: 'cashietltd@gmail.com',
+					Name: 'Tobiloba'
 				},
 				To: [
 					{
