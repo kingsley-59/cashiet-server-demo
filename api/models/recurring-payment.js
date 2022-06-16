@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SaveAndBuyLater = mongoose.Schema(
+const RecurringPayment = mongoose.Schema(
 	{
 		_id: mongoose.Schema.Types.ObjectId,
 
@@ -64,4 +64,4 @@ const SaveAndBuyLater = mongoose.Schema(
 	{ timestamps: true }
 );
 
-module.exports = mongoose.model('SaveAndBuyLater', SaveAndBuyLater);
+module.exports = mongoose.model('RecurringPayment', RecurringPayment);

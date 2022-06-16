@@ -2,10 +2,11 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const CryptoJS = require('crypto-js');
 const { parseResponse } = require('./parseRemitaResponse');
-const cron = require('node-cron');
 const Invoice = require('../api/models/invoice');
 const Transaction = require('../api/models/transaction');
 const order = require('../api/models/order');
+
+require('dotenv').config();
 
 const BASE_URL = process.env.REMITA_RECURRING_PAYMENT_DEMO;
 const FORM_LINK = process.env.REMITA_FORM_DEMO_API;
@@ -87,6 +88,7 @@ class RecurringPayment {
 	};
 
 	setupMandate = async (payerName, payerEmail, payerPhone, payerBankCode, payerAccountNumber, amount, startDate, endDate, res) => {
+		console.log('1');
 		const now = new Date();
 		const REQUEST_ID = now.getTime();
 		const AMOUNT = amount;
@@ -115,17 +117,13 @@ class RecurringPayment {
 			}
 		};
 
-		try {
-			const setupDirectDebit = await axios.post(`${BASE_URL}/setup`, data, config);
+		const setupDirectDebit = await axios.post(`${BASE_URL}/setup`, data, config);
 
-			if (!setupDirectDebit) {
-				return res.status(500).json({ message: 'Error occur' });
-			}
-
-			return parseResponse(setupDirectDebit.data);
-		} catch (error) {
-			return res.status(500).json({ error, message: 'Unable to setup mandate' });
+		if (!setupDirectDebit) {
+			return res.status(500).json({ message: 'Error occur' });
 		}
+
+		return parseResponse(setupDirectDebit?.data);
 	};
 
 	activateOtp = async (mandateId, requestId) => {
@@ -149,17 +147,13 @@ class RecurringPayment {
 			mandateId: mandateId
 		};
 
-		try {
-			const activateRequestOtp = await axios.post(`${BASE_URL}/requestAuthorization`, data, config);
+		const activateRequestOtp = await axios.post(`${BASE_URL}/requestAuthorization`, data, config);
 
-			if (!activateRequestOtp) {
-				return res.status(500).json({ message: 'Error occur' });
-			}
-
-			return parseResponse(activateRequestOtp?.data);
-		} catch (error) {
-			return res.status(500).json({ error });
+		if (!activateRequestOtp) {
+			return res.status(500).json({ message: 'Error occur' });
 		}
+
+		return parseResponse(activateRequestOtp?.data);
 	};
 
 	validateOtp = async (otp, cardNumber, remitaTransRef) => {
@@ -191,31 +185,27 @@ class RecurringPayment {
 			]
 		};
 
-		try {
-			const response = await axios.post(`${BASE_URL}/validateAuthorization`, data, config);
+		const response = await axios.post(`${BASE_URL}/validateAuthorization`, data, config);
 
-			if (!response) {
-				return res.status(500).json({ message: 'Error occur' });
-			}
-
-			return parseResponse(response?.data);
-		} catch (error) {
-			res.status(500).json({ error });
+		if (!response) {
+			return res.status(500).json({ message: 'Error occur' });
 		}
+
+		return parseResponse(response?.data);
 	};
 
-	scheduleDebit = async (orderId, amount, mandateId, fundingAccount, fundingBankCode) => {
+	debitUser = async (orderId, amount, mandateId, fundingAccount, fundingBankCode) => {
 		const performTransaction = async () => {
 			const findOrder = await order.findOne({ _id: orderId });
 
 			if (findOrder.remainingAmount <= 0) {
-				stopJob = true;
+				// stopJob = true;
 				// this.stopMandate(mandateId, requestId);
 				return;
 			}
 
 			const response = await this.sendDebitInstruction(amount, mandateId, fundingAccount, fundingBankCode);
-
+			console.log('Debit instruction resonse', response);
 			if (response.statuscode === '069') {
 				// save invoice
 				const newInvoice = new Invoice({
@@ -252,41 +242,42 @@ class RecurringPayment {
 				findOrder.remainingAmount = findOrder.remainingAmount - amount;
 				findOrder.paymentStatus = findOrder.remainingAmount <= amount ? 'paid' : 'part_payment';
 				findOrder.status = findOrder.remainingAmount <= amount ? 'paid' : 'pending';
+				findOrder.lastPaymentDate = new Date();
 				await findOrder.save();
 			}
 		};
 
-		let stopJob = false;
+		// let stopJob = false;
 
 		// first initialize the transaction
 		await performTransaction();
 
 		// schedule for subsequent month
-		const now = new Date();
-		let hour = now.getHours(),
-			minutes,
-			date = now.getDate();
+		// const now = new Date();
+		// let hour = now.getHours(),
+		// 	minutes,
+		// 	date = now.getDate();
 
-		if (now.getMinutes() == 0) {
-			if (hour !== 0) {
-				hour = hour - 1;
-				minutes = 59;
-			} else {
-				minutes = 0;
-			}
-		} else {
-			minutes = now.getMinutes() - 1;
-		}
+		// if (now.getMinutes() == 0) {
+		// 	if (hour !== 0) {
+		// 		hour = hour - 1;
+		// 		minutes = 59;
+		// 	} else {
+		// 		minutes = 0;
+		// 	}
+		// } else {
+		// 	minutes = now.getMinutes() - 1;
+		// }
 
-		let job = cron.schedule(`${minutes} ${hour} ${date} * *`, async () => {
-			await performTransaction();
-		});
+		// let job = cron.schedule(`${minutes} ${hour} ${date} * *`, async () => {
+		// 	await performTransaction();
+		// });
 
-		if (stopJob) {
-			job.stop();
-		}
+		// if (stopJob) {
+		// 	job.stop();
+		// }
 
-		job.start();
+		// job.start();
 	};
 
 	fillMandateForm = async (requestId, mandateId, res) => {
@@ -300,17 +291,13 @@ class RecurringPayment {
 			hash: hash?.toString()
 		};
 
-		try {
-			const response = await axios.post(`${FORM_LINK}/${MERCHANT_ID}/${hash}/${mandateId}/${requestId}/rest.reg`, data);
+		const response = await axios.get(`${FORM_LINK}/${MERCHANT_ID}/${hash}/${mandateId}/${requestId}/rest.reg`, data);
 
-			if (!response) {
-				return res.status(500).json({ message: 'Error occur' });
-			}
-
-			return parseResponse(response?.data);
-		} catch (error) {
-			return res.status(500).json({ error: error });
+		if (!response) {
+			return res.status(500).json({ message: 'Error occur' });
 		}
+
+		return parseResponse(response?.data, 6);
 	};
 }
 

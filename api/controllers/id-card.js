@@ -4,9 +4,72 @@ const axios = require('axios');
 const Profile = require('../models/profile');
 const IdCard = require('../models/id-card');
 
+const token = process.env.APPRUVE_TEST_TOKEN;
+
+const verifyCardDetails = async (res, userProfile, cardNumber, type, expiryDate) => {
+	let verifyApi;
+	if (type === 'driverLicense') {
+		verifyApi = await axios.post(
+			'https://api.appruve.co/v1/verifications/ng/driver_license',
+			{
+				id: cardNumber,
+				first_name: userProfile.firstName,
+				last_name: userProfile.lastName,
+				middle_name: userProfile.middleName,
+				date_of_birth: userProfile.dob,
+				phone_number: userProfile.phoneNumber,
+				gender: userProfile.gender === 'male' ? 'M' : 'F',
+				address: userProfile.address,
+				expiryDate: expiryDate
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}
+		);
+	} else if (type === 'nin') {
+		verifyApi = await axios.post(
+			'https://api.appruve.co/v1/verifications/ng/national_id',
+			{
+				id: cardNumber,
+				first_name: userProfile.firstName,
+				last_name: userProfile.lastName,
+				middle_name: userProfile.middleName,
+				date_of_birth: userProfile.dob,
+				phone_number: userProfile.phoneNumber,
+				gender: userProfile.gender === 'male' ? 'M' : 'F'
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}
+		);
+	} else if (type === 'bvn') {
+		verifyApi = await axios.post(
+			'https://api.appruve.co/v1/verifications/ng/bvn',
+			{
+				id: cardNumber,
+				first_name: userProfile.firstName,
+				last_name: userProfile.lastName,
+				middle_name: userProfile.middleName,
+				date_of_birth: userProfile.dob,
+				phone_number: userProfile.phoneNumber
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}
+		);
+	} else return res.status(400).json({ message: 'Invalid ID' });
+
+	return verifyApi?.data;
+};
+
 const addCard = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
-	const token = process.env.APPRUVE_TEST_TOKEN;
 
 	IDCard.find({ type: req.body.type, cardNumber: req.body.cardNumber })
 		.exec()
@@ -30,74 +93,28 @@ const addCard = (req, res, next) => {
 							Profile.findOne({ user: authenticatedUser._id })
 								.then(async userProfile => {
 									if (userProfile) {
-										let verifyApi;
-										if (req.body.type === 'driverLicense') {
-											verifyApi = await axios.post(
-												'https://api.appruve.co/v1/verifications/ng/driver_license',
-												{
-													id: req.body.cardNumber,
-													first_name: userProfile.firstName,
-													last_name: userProfile.lastName,
-													middle_name: userProfile.middleName,
-													date_of_birth: userProfile.dob,
-													phone_number: userProfile.phoneNumber,
-													gender: userProfile.gender,
-													address: userProfile.address,
-													expiryDate: req.body.expiryDate
-												},
-												{
-													headers: {
-														Authorization: `Bearer ${token}`
-													}
-												}
+										try {
+											const result = await verifyCardDetails(
+												res,
+												userProfile,
+												req.body.cardNumber,
+												req.body.type,
+												req.body.expiryDate
 											);
-										} else if (req.body.type === 'nin') {
-											verifyApi = await axios.post(
-												'https://api.appruve.co/v1/verifications/ng/national_id',
-												{
-													id: req.body.cardNumber,
-													first_name: userProfile.firstName,
-													last_name: userProfile.lastName,
-													middle_name: userProfile.middleName,
-													date_of_birth: userProfile.dob,
-													phone_number: userProfile.phoneNumber,
-													gender: userProfile.gender
-												},
-												{
-													headers: {
-														Authorization: `Bearer ${token}`
-													}
-												}
-											);
-										} else if (req.body.type === 'bvn') {
-											verifyApi = await axios.post(
-												'https://api.appruve.co/v1/verifications/ng/bvn',
-												{
-													id: req.body.cardNumber,
-													first_name: userProfile.firstName,
-													last_name: userProfile.lastName,
-													middle_name: userProfile.middleName,
-													date_of_birth: userProfile.dob,
-													phone_number: userProfile.phoneNumber
-												},
-												{
-													headers: {
-														Authorization: `Bearer ${token}`
-													}
-												}
-											);
-										} else return res.status(400).json({ message: 'Invalid ID' });
 
-										if (verifyApi.status === 200) {
-											IDCard.updateOne({ _id: newCard._id }, { $set: { verificationStatus: true } })
-												.exec()
-												.then(() => {
-													res.status(200).json({ message: 'Successfully verified card details' });
-												})
-												.catch(error => {
-													res.status(500).json({ message: 'Unable to verify card details', error });
-												});
-										} else res.status(500).json({ message: 'Unable to verify card' });
+											if (result.status === 200) {
+												IDCard.updateOne({ _id: newCard._id }, { $set: { verificationStatus: true, response: result } })
+													.exec()
+													.then(() => {
+														return res.status(200).json({ message: 'Successfully verified card details' });
+													})
+													.catch(error => {
+														return res.status(500).json({ message: 'Unable to verify card details', error });
+													});
+											} else return res.status(500).json({ message: 'Unable to verify card', response: result });
+										} catch (error) {
+											return res.status(500).json({ message: 'Card saved Unable to verify card details', error });
+										}
 									} else {
 										res.status(200).json({ message: 'Cannot verify ID Card. Please, update your profile' });
 									}
@@ -113,7 +130,7 @@ const addCard = (req, res, next) => {
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			return res.status(500).json({ error });
 		});
 };
 
@@ -179,6 +196,8 @@ const updateCard = (req, res, next) => {
 		.exec()
 		.then(result => {
 			if (result) {
+				if (result.verificationStatus) return res.status(400).json({ message: 'You cannot update a verified id' });
+
 				for (const property in req.body) {
 					if (req.body[property] === null || req.body[property] === undefined) {
 						delete req.body[property];
@@ -189,16 +208,44 @@ const updateCard = (req, res, next) => {
 					}
 				}
 
-				if (authenticatedUser._id === result.user) {
-					IDCard.updateOne({ _id: result._id }, { $set: { ...req.body } })
+				if (authenticatedUser._id?.toString() === result.user?.toString()) {
+					IDCard.updateOne({ _id: id }, { $set: { ...req.body } })
 						.exec()
-						.then(card => {
-							res.status(200).json({ message: 'Successfully updated card details' });
+						.then(async () => {
+							const findProfile = await Profile.findOne({ user: authenticatedUser._id });
+							const findCardDetails = await IDCard.findOne({ _id: id });
+
+							try {
+								const verificationResponse = verifyCardDetails(
+									res,
+									findProfile,
+									findCardDetails?.cardNumber,
+									findCardDetails?.type,
+									findCardDetails?.expiryDate
+								);
+
+								console.log(verificationResponse);
+								console.log('here');
+
+								if (verificationResponse?.status === 200) {
+									findCardDetails.verificationStatus = true;
+									findCardDetails.response = verificationResponse;
+									await findCardDetails.save();
+
+									return res
+										.status(200)
+										.json({ message: 'Card details saved and verified successfully', response: verificationResponse });
+								}
+
+								return res.status(400).json({ message: 'Card details verification failed', response: verificationResponse });
+							} catch (error) {
+								return res.status(500).json({ message: 'Unable to verify card details' });
+							}
 						})
 						.catch(error => {
-							res.status(500).json({ message: 'Unable to update card details', error });
+							return res.status(500).json({ message: 'Unable to update card details', error });
 						});
-				} else res.status(401).json({ message: 'Unauthorized access' });
+				} else return res.status(401).json({ message: 'Unauthorized access' });
 			} else return res.status(404).json({ message: 'ID card with that id does not exist' });
 		})
 		.catch(error => {
@@ -289,6 +336,28 @@ const deleteCard = (req, res, next) => {
 		});
 };
 
+const testCardVerification = async (req, res) => {
+	const votersCard = {
+		firstName: 'Henry',
+		lastName: 'Nwandicne',
+		middleName: 'Emeka',
+		dob: '1976-04-15',
+		phoneNumber: '08000110001',
+		gender: 'M',
+		address: 'Off Awolowo Way'
+	};
+
+	try {
+		let response;
+		// if (req.body.type === 'driverLicense')
+		response = await verifyCardDetails(res, votersCard, 'ABC00578AA2', 'driverLicense', '2022-04-15');
+		// console.log(response);
+		return res.json({ response });
+	} catch (error) {
+		return res.status(500).json({ message: 'Error occur', error });
+	}
+};
+
 module.exports = {
 	addCard,
 	updateCard,
@@ -297,5 +366,6 @@ module.exports = {
 	getAllCards,
 	getUserCard,
 	getSpecificCard,
-	deleteCard
+	deleteCard,
+	testCardVerification
 };

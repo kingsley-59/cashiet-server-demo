@@ -56,23 +56,23 @@ const createOrder = (req, res, next) => {
 					return newOrder
 						.save()
 						.then(async createdOrder => {
-							const now = new Date();
-							const hour = now.getHours();
-							const minutes = now.getMinutes() === 0 ? now.getMinutes() : now.getMinutes() - 1;
+							// const now = new Date();
+							// const hour = now.getHours();
+							// const minutes = now.getMinutes() === 0 ? now.getMinutes() : now.getMinutes() - 1;
 
-							await cron.schedule(`${minutes} ${hour} * * *`, async () => {
-								const findOrder = await Order.findOne({ _id: newOrder._id });
+							// await cron.schedule(`${minutes} ${hour} * * *`, async () => {
+							// 	const findOrder = await Order.findOne({ _id: newOrder._id });
 
-								if (findOrder.status === 'pending') {
-									findOrder.status = 'cancelled';
-									await findOrder.save();
-								}
+							// 	if (findOrder.status === 'pending') {
+							// 		findOrder.status = 'cancelled';
+							// 		await findOrder.save();
+							// 	}
 
-								return;
-							});
+							// 	return;
+							// });
 
 							const findPaymentOption = await paymentOptions.findOne({ _id: req.body.paymentOption });
-							console.log(findPaymentOption);
+							// console.log(findPaymentOption);
 
 							if (findPaymentOption?.type === 'save_and_buy_later') {
 								return res.status(201).json({ message: 'Order created successfully. Proceed to setup payment', order: createdOrder });
@@ -112,7 +112,7 @@ const getAllUserOrders = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	Order.find({ user: authenticatedUser._id })
-		.populate('user saveAndBuy')
+		.populate('user recurringPayment')
 		.exec()
 		.then(orders => {
 			if (orders.length > 0) {
@@ -130,7 +130,7 @@ const getAllOrders = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		try {
 			Order.find()
-				.populate('user saveAndBuy')
+				.populate('user recurringPayment')
 				.exec()
 				.then(orders => {
 					if (orders.length > 0) {
@@ -151,7 +151,7 @@ const getSpecificOrder = (req, res, next) => {
 	const orderId = req.params.orderId;
 
 	Order.findOne({ _id: orderId, user: authenticatedUser._id })
-		.populate('user saveAndBuy')
+		.populate('user recurringPayment')
 		.then(order => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
@@ -174,7 +174,7 @@ const getCurrentOrder = (req, res, next) => {
 			{ user: authenticatedUser._id, status: 'paid', paymentStatus: 'part_payment' }
 		]
 	})
-		.populate('user saveAndBuy')
+		.populate('user recurringPayment')
 		.then(order => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });

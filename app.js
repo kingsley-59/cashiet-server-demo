@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
+const runCronJob = require('./api/controllers/cronjob');
 
 require('dotenv').config();
 
@@ -74,6 +75,8 @@ app.use('/check', (req, res, next) => {
 		status: 200
 	});
 });
+
+runCronJob();
 
 app.use((req, res, next) => {
 	const error = new Error('Not Found...');

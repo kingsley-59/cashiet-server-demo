@@ -39,6 +39,10 @@ const IDCardSchema = mongoose.Schema(
 			default: false
 		},
 
+		response: {
+			type: Object
+		},
+
 		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',

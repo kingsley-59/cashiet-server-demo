@@ -147,9 +147,13 @@ const OrderSchema = mongoose.Schema(
 			required: true
 		},
 
-		saveAndBuy: {
+		recurringPayment: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'SaveAndBuyLater'
+			ref: 'RecurringPayment'
+		},
+
+		lastPaymentDate: {
+			type: Date
 		}
 	},
 	{ timestamps: true }

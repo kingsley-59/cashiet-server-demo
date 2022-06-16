@@ -1,5 +1,6 @@
-const parseResponse = data => {
-	const response = JSON.parse(data.slice(7, data.length - 1));
+const parseResponse = (data, value) => {
+	let num = !value ? 7 : value;
+	const response = JSON.parse(data.slice(num, data.length - 1));
 	return response;
 };
 

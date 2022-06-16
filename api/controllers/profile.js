@@ -12,7 +12,7 @@ const addProfileDetails = (req, res, next) => {
 			middleName: req.body.middleName,
 			lastName: req.body.lastName,
 			gender: req.body.gender.toLowerCase(),
-			profilePicture: req.file ? `${process.env.BASE_URL}/uploads/` + req.file.filename : "",
+			profilePicture: req.file ? `${process.env.BASE_URL}/uploads/` + req.file.filename : '',
 			nationality: req.body.nationality.toLowerCase(),
 			dob: req.body.dob,
 			user: authenticatedUser._id
@@ -60,7 +60,9 @@ const getCurrentUserProfile = (req, res, next) => {
 		.populate('user')
 		.exec()
 		.then(userProfile => {
-			res.status(200).json({ userProfile, message: 'Successfully fetched user profile' });
+			if (userProfile) return res.status(200).json({ userProfile, message: 'Successfully fetched user profile' });
+
+			return res.status(200).json({ message: 'User is yet to to add profile details' });
 		})
 		.catch(error => {
 			res.status(500).json({ error, message: 'No valid entry found' });
