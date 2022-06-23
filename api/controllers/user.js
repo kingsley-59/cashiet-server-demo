@@ -37,7 +37,7 @@ const userSignup = (req, res, next) => {
 												'user',
 												'Account Verification Link',
 												`Hello, Please verify your account by clicking the ${link}`,
-												`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
+												`Hello,\n\nPlease verify your account by clicking the <a href="${link}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
 											);
 
 											return res.status(201).json({

@@ -56,7 +56,7 @@ const createOrder = (req, res, next) => {
 					return newOrder
 						.save()
 						.then(async createdOrder => {
-							// const now = new Date();
+							const now = new Date();
 							// const hour = now.getHours();
 							// const minutes = now.getMinutes() === 0 ? now.getMinutes() : now.getMinutes() - 1;
 
@@ -71,31 +71,40 @@ const createOrder = (req, res, next) => {
 							// 	return;
 							// });
 
-							const findPaymentOption = await paymentOptions.findOne({ _id: req.body.paymentOption });
-							// console.log(findPaymentOption);
+							paymentOptions
+								.findOne({ _id: req.body.paymentOption })
+								.then(response => {
+									if (response?.type === 'save_and_buy_later') {
+										return res
+											.status(201)
+											.json({ message: 'Order created successfully. Proceed to setup payment', order: createdOrder });
+									} else {
+										const newInvoice = new Invoice({
+											_id: new mongoose.Types.ObjectId(),
+											amount: totalAmount,
+											dateIssued: new Date(),
+											expiryDate: now.getDate() + 5,
+											order: newOrder._id
+										});
 
-							if (findPaymentOption?.type === 'save_and_buy_later') {
-								return res.status(201).json({ message: 'Order created successfully. Proceed to setup payment', order: createdOrder });
-							}
-
-							const newInvoice = new Invoice({
-								_id: new mongoose.Types.ObjectId(),
-								amount: totalAmount,
-								dateIssued: new Date(),
-								expiryDate: now.getDate() + 5,
-								order: newOrder._id
-							});
-
-							return newInvoice
-								.save()
-								.then(invoice => {
-									return res
-										.status(201)
-										.json({ message: 'Order and invoice created successfully', invoice: invoice, order: createdOrder });
+										return newInvoice
+											.save()
+											.then(invoice => {
+												return res.status(201).json({
+													message: 'Order and invoice created successfully',
+													invoice: invoice,
+													order: createdOrder
+												});
+											})
+											.catch(error => {
+												return res.status(500).json({ error, message: 'Unable to create invoice' });
+											});
+									}
 								})
-								.catch(error => {
-									return res.status(500).json({ error, message: 'Unable to create invoice' });
-								});
+								.catch(error => res.status(500).json({ error }));
+
+							// const findPaymentOption = await paymentOptions.findOne({ _id: req.body.paymentOption });
+							// console.log(findPaymentOption);
 						})
 						.catch(error => res.status(500).json({ error }));
 				} catch (error) {
