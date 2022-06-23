@@ -154,7 +154,13 @@ const OrderSchema = mongoose.Schema(
 
 		lastPaymentDate: {
 			type: Date
-		}
+		},
+
+		failedTransactions: {
+			type: Number,
+			default: 0
+		},
+
 	},
 	{ timestamps: true }
 );

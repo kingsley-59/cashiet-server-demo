@@ -194,7 +194,7 @@ class RecurringPayment {
 		return parseResponse(response?.data);
 	};
 
-	debitUser = async (orderId, amount, mandateId, fundingAccount, fundingBankCode) => {
+	debitUser = async (orderId, amount, mandateId, fundingAccount, fundingBankCode, monthlyTransaction = true) => {
 		const performTransaction = async () => {
 			const findOrder = await order.findOne({ _id: orderId });
 
@@ -203,7 +203,7 @@ class RecurringPayment {
 			}
 
 			const response = await this.sendDebitInstruction(amount, mandateId, fundingAccount, fundingBankCode);
-			console.log('Debit instruction resonse', response);
+			// console.log('Debit instruction resonse', response);
 			if (response.statuscode === '069') {
 				// save invoice
 				const newInvoice = new Invoice({
@@ -241,6 +241,14 @@ class RecurringPayment {
 				findOrder.paymentStatus = findOrder.remainingAmount <= amount ? 'paid' : 'part_payment';
 				findOrder.status = findOrder.remainingAmount <= amount ? 'paid' : 'pending';
 				findOrder.lastPaymentDate = new Date();
+				if (!monthlyTransaction) {
+					findOrder.failedTransactions = findOrder.failedTransactions - 1;
+				}
+				await findOrder.save();
+			}
+
+			if (monthlyTransaction) {
+				findOrder.failedTransactions = findOrder.failedTransactions + 1;
 				await findOrder.save();
 			}
 		};
