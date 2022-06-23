@@ -48,6 +48,6 @@ router.put('/:userId', verifyAuth, editUser);
 // delete user details
 router.delete('/:userId', verifyAuth, deleteUser);
 
-router.post('/testemail/mailgun', testEmail);
+router.post('/testemail/me', testEmail);
 
 module.exports = router;

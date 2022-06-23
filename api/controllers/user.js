@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const User = require('../models/user');
 const Token = require('../models/token');
 const { sendEmail } = require('../mail/mailjet');
+const getUsername = require('../../utility/getName');
 
 const userSignup = (req, res, next) => {
 	User.find({ email: req.body.email })
@@ -28,16 +29,113 @@ const userSignup = (req, res, next) => {
 								.save()
 								.then(newUser => {
 									const token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
+									const username = getUsername(req.body?.email);
 									return token
 										.save()
 										.then(() => {
 											const link = `${process.env.BASE_URL}/confirm-email/${token.token}`;
+											const messageToSend = `
+											<!DOCTYPE html>
+											<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+												<head>
+													<meta charset="UTF-8" />
+													<link href="./fonts/fonts.css" rel="stylesheet" />
+													<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+													<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+													<meta name="x-apple-disable-message-reformatting" />
+													<title>Welcome to Cashiet</title>
+													<style>
+														* {
+															margin: 0;
+															padding: 0;
+															box-sizing: border-box;
+														}
+														body {
+															background-color: #ffffff;
+															font-family: "Axiforma";
+														}
+													</style>
+												</head>
+												<body style="margin: 0; padding: 0">
+													<table
+														role="presentation"
+														style="width: 100%; border-collapse: collapse; border: 0; border-spacing: 0; background: #ffffff; margin-top: 20px; margin-bottom: 20px"
+													>
+														<tr>
+															<td align="center" style="padding: 0">
+																<table
+																	role="presentation"
+																	style="min-width: 375px; border-collapse: collapse; border: 1px solid #cccccc; background-color: green; border-spacing: 0; text-align: left"
+																>
+																	<tr>
+																		<td style="background: #fff; padding-top: 20px">
+																			<img
+																				src="https://res.cloudinary.com/djwa4cx9u/image/upload/v1655999355/cashiet_z3i27q.png"
+																				alt="Cashiet Logo"
+																				style="height: auto; display: block; width: 100%; max-width: 200px; margin: 10px auto"
+																			/>
+																		</td>
+																	</tr>
+																	<tr style="float: right; min-width: 344.8px">
+																		<td style="padding: 36px 30px 42px 30px; max-width: 329px; background-color: green">
+																			<table role="presentation" style="width: 100%; color: #fff; border-collapse: collapse; border: 0; border-spacing: 0">
+																				<tr>
+																					<td style="padding: 0 0 36px 0; color: #fff">
+																						<p style="font-size: 26.3px; margin: 0 0 29px 0; max-width: 232px; font-weight: 900; line-height: 36px">
+																							Welcome to Cashiet!
+																						</p>
+																						<p style="margin: 0 0 29px 0; font-size: 14.5px; line-height: 24px">Hi ${username || 'User'},</p>
+																						<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
+																							You're in! We're excited to have you here!
+																						</p>
+																						<p style="margin: 0 0 29px 0; width: 245px; font-size: 14.5px; line-height: 25px">
+																							You just created an account on Cashiet. Kindly verify your email address.
+																						</p>
+																						<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">Alternatively, you can also copy and paste this link in a web browser <span style="color: #fff000">${link}</span></p>
+																						<a href=${link}>
+																							<button
+																								style="
+																									margin: 0 0 43px 0;
+																									font-family: 'Axiforma';
+																									width: 269px;
+																									height: 67px;
+																									border-radius: 52px;
+																									border: none;
+																									background-color: #fff;
+																									color: #fff000;
+																									font-size: 14.3px;
+																									line-height: 15px;
+																									font-weight: 600;
+																								"
+																							>
+																								Confirm email address
+																							</button>
+																						</a>
+																						<p style="margin: 0 0 0px 0; width: 260px; font-size: 8.3px; font-weight: 400; line-height: 15px; color: #fff000">
+																							You’re receiving this email because you signed up with your email address. If you have any inquiry or feedback on Cashiet,
+																							feel free to drop a line at enquiry@cashiet.com. Remember to follow us on
+																							<span style="text-decoration: underline">social media</span> for more updates!
+																						</p>
+																					</td>
+																				</tr>
+																			</table>
+																		</td>
+																	</tr>
+																	<tr></tr>
+																</table>
+															</td>
+														</tr>
+													</table>
+												</body>
+											</html>
+											
+											`;
 											sendEmail(
 												req.body.email,
 												'user',
-												'Account Verification Link',
+												'Welcome to Cashiet. Kindly verify your account',
 												`Hello, Please verify your account by clicking the ${link}`,
-												`Hello,\n\nPlease verify your account by clicking the <a href="${link}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
+												messageToSend
 											);
 
 											return res.status(201).json({
@@ -248,7 +346,7 @@ const resendEmailToken = (req, res) => {
 
 		// Create a verification token, save it, and send email
 		var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
-
+		const username = getUsername(req.body?.email);
 		// Save the token
 		token.save(function (error) {
 			if (error) {
@@ -257,13 +355,104 @@ const resendEmailToken = (req, res) => {
 
 			const link = `${process.env.BASE_URL}/confirm-email/${token.token}`;
 
+			const messageToSend = `
+			<!DOCTYPE html>
+			<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+				<head>
+					<meta charset="UTF-8" />
+					<link href="./fonts/fonts.css" rel="stylesheet" />
+					<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+					<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+					<meta name="x-apple-disable-message-reformatting" />
+					<title>Document</title>
+					<style>
+						* {
+							margin: 0;
+							padding: 0;
+							box-sizing: border-box;
+						}
+						body {
+							background-color: #FFFFFF;
+							font-family: "Axiforma";
+						}
+					</style>
+				</head>
+				<body style="margin: 0; padding: 0">
+					<table
+						role="presentation"
+						style="width: 100%; border-collapse: collapse; border: 0; border-spacing: 0; background: #FFFFFF; margin-top: 20px; margin-bottom: 20px"
+					>
+						<tr>
+							<td align="center" style="padding: 0">
+								<table
+									role="presentation"
+									style="min-width: 375px; border-collapse: collapse; border: 1px solid #CCCCCC; background-color: green; border-spacing: 0; text-align: left"
+								>
+									<tr>
+										<td style="background: #fff; padding-top: 20px">
+											<img
+												src="https://res.cloudinary.com/djwa4cx9u/image/upload/v1655999355/cashiet_z3i27q.png"
+												alt="Cashiet Logo"
+												style="height: auto; display: block; width: 100%; max-width: 200px; margin: 10px auto"
+											/>
+										</td>
+									</tr>
+									<tr style="float: right; min-width: 344.8px">
+										<td style="padding: 36px 30px 42px 30px; max-width: 329px; background-color: green">
+											<table role="presentation" style="width: 100%; color: #fff; border-collapse: collapse; border: 0; border-spacing: 0">
+												<tr>
+													<td style="padding: 0 0 36px 0; color: #fff">
+														<p style="font-size: 26.3px; margin: 0 0 29px 0; max-width: 232px; font-weight: 900; line-height: 36px">Verify Email Address</p>
+														<p style="margin: 0 0 29px 0; font-size: 14.5px; line-height: 24px">Hi ${username || 'User'},</p>
+														<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
+															Kindly use the link provided below to verify your email address.
+														</p>
+														<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">You can also copy and paste this link <span style="color: #fff000">${link}</span> into your browser</p>
+														<a href=${link}>
+															<button
+																style="
+																	margin: 0 0 43px 0;
+																	font-family: 'Axiforma';
+																	width: 269px;
+																	height: 67px;
+																	border-radius: 52px;
+																	border: none;
+																	background-color: #fff;
+																	color: #fff000;
+																	font-size: 14.3px;
+																	line-height: 15px;
+																	font-weight: 600;
+																"
+															>
+																Verify Email Address
+															</button>
+														</a>
+														<p style="margin: 0 0 0px 0; width: 260px; font-size: 8.3px; font-weight: 400; line-height: 15px; color: #FFF000">
+															You’re receiving this email because you signed up with your email address. If you have any inquiry or feedback on Cashiet,
+															feel free to drop a line at enquiry@cashiet.com. Remember to follow us on
+															<span style="text-decoration: underline">social media</span> for more updates!
+														</p>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+									<tr></tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</body>
+			</html>
+			`;
+
 			// Send the email
 			sendEmail(
 				req.body.email,
 				'user',
 				'Account Verification Link',
 				`Hello, Please verify your account by clicking the ${link}`,
-				`Hello,\n\nPlease verify your account by clicking the <a href="${process.env.BASE_URL}/confirm-email/${token.token}">link</a> or copy this link into your browser:\n${process.env.BASE_URL}/confirm-email/${token.token}\n`
+				messageToSend
 			);
 
 			res.status(200).json({ message: 'A verification email has been sent to ' + user.email + '.' });
@@ -321,12 +510,98 @@ const createAdmin = (req, res, next) => {
 const testEmail = (req, res, next) => {
 	try {
 		const messageToSend = `
-			<html>
-				<h1>Just testing this</h1>
-				<p>Trying to see if it works</p>
-			</html>
+		<!DOCTYPE html>
+		<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+			<head>
+				<meta charset="UTF-8" />
+				<link href="./fonts/fonts.css" rel="stylesheet" />
+				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<meta name="x-apple-disable-message-reformatting" />
+				<title>Document</title>
+				<style>
+					* {
+						margin: 0;
+						padding: 0;
+						box-sizing: border-box;
+					}
+		
+					body {
+						background-color: #ffffff;
+						font-family: "Axiforma";
+					}
+				</style>
+			</head>
+			<body style="margin: 0; padding: 0">
+				<table
+					role="presentation"
+					style="width: 100%; border-collapse: collapse; border: 0; border-spacing: 0; background: #ffffff; margin-top: 20px; margin-bottom: 20px"
+				>
+					<tr>
+						<td align="center" style="padding: 0">
+							<table
+								role="presentation"
+								style="min-width: 375px; border-collapse: collapse; border: 1px solid #cccccc; background-color: green; border-spacing: 0; text-align: left"
+							>
+								<tr>
+									<td style="background: #fff; padding-top: 20px">
+										<img
+											src="https://res.cloudinary.com/djwa4cx9u/image/upload/v1655999355/cashiet_z3i27q.png"
+											alt="Cashiet Logo"
+											style="height: auto; display: block; width: 100%; max-width: 200px; margin: 10px auto"
+										/>
+									</td>
+								</tr>
+								<tr style="float: right; min-width: 344.8px">
+									<td style="padding: 36px 30px 42px 30px; max-width: 329px; background-color: green">
+										<table role="presentation" style="width: 100%; color: #fff; border-collapse: collapse; border: 0; border-spacing: 0">
+											<tr>
+												<td style="padding: 0 0 36px 0; color: #fff">
+													<p style="font-size: 26.3px; margin: 0 0 29px 0; max-width: 232px; font-weight: 900; line-height: 36px">Verify Email Address</p>
+													<p style="margin: 0 0 29px 0; font-size: 14.5px; line-height: 24px">Hi Joshua,</p>
+													<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
+														Hello, Kindly use the link provided below to verify your email address.
+													</p>
+													<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">You can also copy and paste this link into your browser</p>
+													<a href="https://www.cashiet.com">
+														<button
+															style="
+																margin: 0 0 43px 0;
+																font-family: 'Axiforma';
+																width: 269px;
+																height: 67px;
+																border-radius: 52px;
+																border: none;
+																background-color: #fff;
+																color: #fff000;
+																font-size: 14.3px;
+																line-height: 15px;
+																font-weight: 600;
+															"
+														>
+															Verify Email Address
+														</button>
+													</a>
+													<p style="margin: 0 0 0px 0; width: 260px; font-size: 8.3px; font-weight: 400; line-height: 15px; color: #fff000">
+														You’re receiving this email because you signed up with your email address. If you have any inquiry or feedback on Cashiet,
+														feel free to drop a line at enquiry@cashiet.com. Remember to follow us on
+														<span style="text-decoration: underline">Twitter</span> for more updates!
+													</p>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr></tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</body>
+		</html>
+		
 		`;
-		sendEmail('oyelekeoluwasayo@gmail.com', 'User', 'Testing', 'Just testing', messageToSend);
+		sendEmail('oyelekeoluwasayo@gmail.com', 'Joshua', 'Testing', 'Just testing', messageToSend);
 
 		res.status(200).json({ message: 'Sent' });
 	} catch (error) {

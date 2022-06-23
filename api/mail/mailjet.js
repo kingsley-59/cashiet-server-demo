@@ -28,7 +28,8 @@ const sendEmail = (receiverEmail, receiverName, subject, textPart, htmlPart) => 
 			console.log('message sent');
 		})
 		.catch(err => {
-			console.log(err.statusCode);
+			console.log('not sent');
+			console.log(err);
 		});
 };
 

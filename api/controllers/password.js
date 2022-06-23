@@ -3,6 +3,7 @@ const Token = require('../models/token');
 const { sendEmail } = require('../mail/mailjet');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const getUsername = require('../../utility/getName');
 
 const sendPasswordResetLink = async (req, res) => {
 	try {
@@ -19,22 +20,107 @@ const sendPasswordResetLink = async (req, res) => {
 		}
 
 		const link = `${process.env.BASE_URL}/password-reset?user=${user._id}&token=${token.token}`;
+		const username = getUsername(req.body?.email);
 
 		const messageToSend = `
-			<html>
-				<h1>Hello user,</h1>
-				<p>Please, kindly click on this <a href="${link}" to verify your account or copy and paste ${link} in a browser</p>
-				<br /><br />
-				<h3>Best regards</h3>
-				<p>Cashiet</p>
-			</html>
+		<!DOCTYPE html>
+		<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+			<head>
+				<meta charset="UTF-8" />
+				<link href="./fonts/fonts.css" rel="stylesheet" />
+				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<meta name="x-apple-disable-message-reformatting" />
+				<title>Reset Password</title>
+				<style>
+					* {
+						margin: 0;
+						padding: 0;
+						box-sizing: border-box;
+					}
+					body {
+						background-color: #ffffff;
+						font-family: "Axiforma";
+					}
+				</style>
+			</head>
+			<body style="margin: 0; padding: 0">
+				<table
+					role="presentation"
+					style="width: 100%; border-collapse: collapse; border: 0; border-spacing: 0; background: #ffffff; margin-top: 20px; margin-bottom: 20px"
+				>
+					<tr>
+						<td align="center" style="padding: 0">
+							<table
+								role="presentation"
+								style="min-width: 375px; border-collapse: collapse; border: 1px solid #cccccc; background-color: green; border-spacing: 0; text-align: left"
+							>
+								<tr>
+									<td style="background: #fff; padding-top: 20px">
+										<img
+											src="https://res.cloudinary.com/djwa4cx9u/image/upload/v1655999355/cashiet_z3i27q.png"
+											alt="Cashiet Logo"
+											style="height: auto; display: block; width: 100%; max-width: 200px; margin: 10px auto"
+										/>
+									</td>
+								</tr>
+								<tr style="float: right; min-width: 344.8px">
+									<td style="padding: 36px 30px 42px 30px; max-width: 329px; background-color: green">
+										<table role="presentation" style="width: 100%; color: #fff; border-collapse: collapse; border: 0; border-spacing: 0">
+											<tr>
+												<td style="padding: 0 0 36px 0; color: #fff">
+													<p style="font-size: 26.3px; margin: 0 0 29px 0; max-width: 232px; font-weight: 900; line-height: 36px">Reset Password</p>
+													<p style="margin: 0 0 29px 0; font-size: 14.5px; line-height: 24px">Hi ${username},</p>
+													<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
+														You have requested to reset your password. Kindly use the link provided below to do so.
+													</p>
+													<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
+														You can also copy and paste this link <span style="color: #fff000">${link}</span> into your browser
+													</p>
+													<a href=${link}>
+														<button
+															style="
+																margin: 0 0 43px 0;
+																font-family: 'Axiforma';
+																width: 269px;
+																height: 67px;
+																border-radius: 52px;
+																border: none;
+																background-color: #fff;
+																color: green;
+																font-size: 14.3px;
+																line-height: 15px;
+																font-weight: 600;
+															"
+														>
+															Reset Password
+														</button>
+													</a>
+													<p style="margin: 0 0 0px 0; width: 260px; font-size: 8.3px; font-weight: 400; line-height: 15px; color: #fff000">
+														You’re receiving this email because you signed up with your email address. If you have any inquiry or feedback on Cashiet,
+														feel free to drop a line at enquiry@cashiet.com. Remember to follow us on
+														<span style="text-decoration: underline">social media</span> for more updates!
+													</p>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr></tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</body>
+		</html>
+		
 		`;
 
 		await sendEmail(
 			user.email,
 			'user',
 			'Password reset link',
-			`Kindly click on this link to verify your account or copy and paste it in a browser ${link}`,
+			`Kindly click on this link to verify your account or copy and paste it in a browser <span style="color: #fff000">${link}</span>`,
 			messageToSend
 		);
 
