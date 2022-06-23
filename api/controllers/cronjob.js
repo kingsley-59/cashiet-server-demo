@@ -16,7 +16,6 @@ const runCronJob = async () => {
 				await remitaHelperFunction.debitUser(
 					order._id,
 					order.recurringPayment.splitAmount,
-					// 100,
 					order.recurringPayment.mandateId,
 					order.recurringPayment.payerAccountNumber,
 					order.recurringPayment.payerBankCode

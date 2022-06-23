@@ -199,8 +199,6 @@ class RecurringPayment {
 			const findOrder = await order.findOne({ _id: orderId });
 
 			if (findOrder.remainingAmount <= 0) {
-				// stopJob = true;
-				// this.stopMandate(mandateId, requestId);
 				return;
 			}
 

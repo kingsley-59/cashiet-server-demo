@@ -6,8 +6,8 @@ const sendEmail = (receiverEmail, receiverName, subject, textPart, htmlPart) => 
 		Messages: [
 			{
 				From: {
-					Email: 'cashietltd@gmail.com',
-					Name: 'Tobiloba'
+					Email: 'enquiry@cashiet.com',
+					Name: 'Cashiet'
 				},
 				To: [
 					{
@@ -17,7 +17,7 @@ const sendEmail = (receiverEmail, receiverName, subject, textPart, htmlPart) => 
 				],
 				Subject: subject,
 				TextPart: textPart,
-				HTMLPart: htmlPart,
+				HTMLPart: htmlPart
 				// CustomID: 'AppGettingStartedTest'
 			}
 		]
