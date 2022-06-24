@@ -182,7 +182,11 @@ const getUserCard = (req, res, next) => {
 		// .select('type cardNumber expiryDate')
 		// .populate('user')
 		.exec()
-		.then(card => (card ? res.status(200).json({ card, total: card.length }) : res.status(200).json({ message: 'No card is found' })))
+		.then(card =>
+			card
+				? res.status(200).json({ card, total: card.length })
+				: res.status(200).json({ message: 'No card is found', card, total: card?.length })
+		)
 		.catch(error => {
 			res.status(500).json({ error });
 		});
