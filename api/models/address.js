@@ -7,7 +7,7 @@ const AddressSchema = mongoose.Schema(
 		line1: {
 			type: String,
 			required: [true, 'You must provide your primary address'],
-			minLength: [7, 'Enter address in full']
+			// minLength: [7, 'Enter address in full']
 		},
 
 		line2: {
@@ -42,7 +42,7 @@ const AddressSchema = mongoose.Schema(
 		phoneNumber: {
 			type: Number,
 			required: [true, 'You must provide your valid phone number'],
-			minLength: [11, 'Phone Number Name must have at least 2 characters']
+			minLength: [10, 'Phone Number Name must have at least 10 characters']
 		},
 
 		alternativePhoneNumber: {
