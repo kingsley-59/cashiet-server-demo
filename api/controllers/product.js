@@ -106,6 +106,7 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
+		.populate('category')
 		.exec()
 		.then(product => {
 			if (product) {

@@ -17,7 +17,7 @@ const verifyAuth = require('../middleware/verify-auth');
 const product = require('../models/product');
 
 // get all products
-router.get('/', paginatedResults(product), getAllProducts);
+router.get('/', paginatedResults(product, 'category'), getAllProducts);
 
 // filter all products
 router.get('/filter', filterProducts);

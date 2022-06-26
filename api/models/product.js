@@ -45,7 +45,7 @@ const ProductSchema = mongoose.Schema(
 				required: true
 			}
 		},
-		
+
 		category: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'Category',
@@ -75,6 +75,24 @@ const ProductSchema = mongoose.Schema(
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'PaymentOptions',
 				required: [true, 'Upload the available payment options']
+			}
+		],
+
+		ratings: [
+			{
+				title: {
+					type: String
+				},
+
+				comment: {
+					type: String,
+					required: true
+				},
+				
+				user: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'User'
+				}
 			}
 		],
 
