@@ -8,13 +8,13 @@ const addProfileDetails = (req, res, next) => {
 	try {
 		const userProfile = new Profile({
 			_id: new mongoose.Types.ObjectId(),
-			firstName: req.body.firstName,
-			middleName: req.body.middleName,
-			lastName: req.body.lastName,
-			gender: req.body.gender.toLowerCase(),
-			profilePicture: req.file ? `${process.env.BASE_URL}/uploads/` + req.file.filename : '',
-			nationality: req.body.nationality.toLowerCase(),
-			dob: req.body.dob,
+			firstName: req.body?.firstName,
+			middleName: req.body?.middleName,
+			lastName: req.body?.lastName,
+			gender: req.body?.gender?.toLowerCase(),
+			profilePicture: req.file ? `${process.env.BASE_URL}/uploads/` + req.file?.filename : '',
+			nationality: req.body?.nationality?.toLowerCase(),
+			dob: req.body?.dob,
 			user: authenticatedUser._id
 		});
 

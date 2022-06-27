@@ -44,7 +44,7 @@ const ProfileSchema = mongoose.Schema(
 
 		phoneNumber: {
 			type: Number,
-			// required: [true, 'You must provide a valid phone number']
+			required: [true, 'You must provide a valid phone number']
 		},
 
 		address: {

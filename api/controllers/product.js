@@ -56,29 +56,32 @@ const addProduct = async (req, res, next) => {
 
 					const imageResult = await uploadImage();
 
+					console.log('here')
+
 					try {
 						const newProduct = new Product({
 							_id: new mongoose.Types.ObjectId(),
-							name: req.body.name,
-							slug: slugify(req.body.name),
-							price: +req.body.price,
-							keywords: req.body.keywords,
+							name: req.body?.name,
+							slug: slugify(req.body?.name),
+							price: +req.body?.price,
+							keywords: req.body?.keywords,
 							image: {
 								// url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
 								url: imageResult.Location,
 								contentType: req.file.mimetype
 							},
 							dimension: {
-								length: +req.body.productLength,
-								width: +req.body.productWidth,
-								height: +req.body.productHeight
+								length: +req.body?.productLength,
+								width: +req.body?.productWidth,
+								height: +req.body?.productHeight
 							},
-							description: req.body.description,
-							category: req.body.category,
-							subCategoryOne: req.body.subCategoryOne,
-							subCategoryTwo: req.body.subCategoryTwo,
+							description: req.body?.description,
+							category: req.body?.category,
+							subCategoryOne: req.body?.subCategoryOne,
+							subCategoryTwo: req.body?.subCategoryTwo,
 							createdBy: authenticatedUser._id
 						});
+
 						return newProduct
 							.save()
 							.then(product => {

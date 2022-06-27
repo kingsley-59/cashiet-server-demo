@@ -31,6 +31,10 @@ const ProductSchema = mongoose.Schema(
 			required: [true, 'Enter image description']
 		},
 
+		weight: {
+			type: Number
+		},
+
 		dimension: {
 			width: {
 				type: Number,
@@ -88,7 +92,7 @@ const ProductSchema = mongoose.Schema(
 					type: String,
 					required: true
 				},
-				
+
 				user: {
 					type: mongoose.Schema.Types.ObjectId,
 					ref: 'User'
