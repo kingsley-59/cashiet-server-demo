@@ -56,8 +56,6 @@ const addProduct = async (req, res, next) => {
 
 					const imageResult = await uploadImage();
 
-					console.log('here')
-
 					try {
 						const newProduct = new Product({
 							_id: new mongoose.Types.ObjectId(),

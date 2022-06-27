@@ -43,8 +43,8 @@ const ProfileSchema = mongoose.Schema(
 		},
 
 		phoneNumber: {
-			type: Number,
-			required: [true, 'You must provide a valid phone number']
+			type: Number || String,
+			// required: [true, 'You must provide a valid phone number']
 		},
 
 		address: {
