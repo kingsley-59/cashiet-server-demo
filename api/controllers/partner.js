@@ -15,12 +15,13 @@ const createPartner = (req, res, next) => {
 			.save()
 			.then(partner => {
 				return res.status(201).json({
+					status: 201,
 					message: 'Partner created successfully',
 					partner
 				});
 			})
 			.catch(error => {
-				return res.status(500).json({ error });
+				return res.status(500).json({ error, message: 'Unable to create partner', status: 500 });
 			});
 	} catch (error) {
 		return res.status(500).json({ error, message: 'Incorrect details. Try again' });
@@ -32,12 +33,13 @@ const getAllPartners = (req, res, next) => {
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Partner.find()
+			.select('_id fullName email phoneNumber message')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all partners', total: result.length, partners: result });
+					res.status(200).json({ message: 'Successfully fetched all partners', total: result.length, partners: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No partner found' });
+					res.status(404).json({ message: 'No partner found', status: 404 });
 				}
 			})
 			.catch(error => {
@@ -51,16 +53,17 @@ const getSinglePartner = (req, res, next) => {
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Partner.find({ _id: req.params.partnerId })
+			.select('_id fullName email phoneNumber message')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched partner', partner: result });
+					res.status(200).json({ message: 'Successfully fetched partner', partner: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No partner with that id found' });
+					res.status(404).json({ message: 'No partner with that id found', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, status: 500 });
 			});
 	} else return res.status(401).json({ message: 'Unauthorized access' });
 };
@@ -77,18 +80,18 @@ const deletePartner = (req, res, next) => {
 				if (partner) {
 					partner.remove((error, success) => {
 						if (error) {
-							return res.status(500).json({ error });
+							return res.status(500).json({ error, message: 'Unable to delete partner details', status: 500 });
 						}
-						res.status(200).json({ message: 'Partner successfully deleted' });
+						res.status(200).json({ message: 'Partner successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(500).json({ message: 'Partner does not exist' });
+					res.status(404).json({ message: 'Partner does not exist', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+				res.status(404).json({ error, message: 'Partner does not exist', status: 404 });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

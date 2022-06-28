@@ -6,14 +6,17 @@ const User = require('../models/user');
 const Token = require('../models/token');
 const { sendEmail } = require('../mail/mailjet');
 const getUsername = require('../../utility/getName');
+const profile = require('../models/profile');
+const address = require('../models/address');
 
 const userSignup = (req, res, next) => {
-	User.find({ email: req.body.email })
+	User.findOne({ $or: [{ email: req.body?.email }, { username: req.body?.username }] })
 		.exec()
 		.then(newUser => {
-			if (newUser.length >= 1) {
-				return res.status(409).json({ message: 'User with that email already exist' });
+			if (newUser) {
+				return res.status(409).json({ message: 'User with that email or username already exist', status: 409 });
 			} else {
+				if (!req.body?.password) return res.status(400).json({ message: 'Password is required', status: 400 });
 				bcrypt.hash(req.body.password, 10, (error, hash) => {
 					if (error) {
 						return res.status(500).json({ error });
@@ -21,7 +24,8 @@ const userSignup = (req, res, next) => {
 						try {
 							const user = new User({
 								_id: new mongoose.Types.ObjectId(),
-								email: req.body.email.toLowerCase(),
+								email: req.body?.email?.toLowerCase(),
+								username: req.body?.username?.toLowerCase(),
 								password: hash
 							});
 
@@ -139,13 +143,15 @@ const userSignup = (req, res, next) => {
 											);
 
 											return res.status(201).json({
-												message: 'Account created successfully',
-												token
+												status: 201,
+												message: 'Account created successfully. Proceed to verify  your email address.'
+												// token
 												// newUser,
 											});
 										})
 										.catch(error => {
 											return res.status(500).json({
+												status: 500,
 												message: 'Unable to save token. Kindly verify your email address ' + req.body.email,
 												error
 												// newUser,
@@ -153,10 +159,10 @@ const userSignup = (req, res, next) => {
 										});
 								})
 								.catch(error => {
-									return res.status(500).json({ error });
+									return res.status(400).json({ error, status: 400 });
 								});
 						} catch (error) {
-							return res.status(500).json({ error, message: 'Check your details and try again' });
+							return res.status(400).json({ error, message: 'Check your details and try again', status: 400 });
 						}
 					}
 				});
@@ -172,74 +178,82 @@ const getAllUsers = (req, res, next) => {
 
 	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
 		User.find()
+			.select('username email role isVerified modeOfRegistration')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
 					res.status(200).json({
+						status: 200,
 						message: 'Successfully fetched all users',
 						total: result.length,
 						// users: result,
 						users: res.paginatedResults
 					});
 				} else {
-					res.status(404).json({ message: 'No users found' });
+					res.status(404).json({ status: 404, message: 'No users found' });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ status: 401, message: 'Unauthorized access' });
 };
 
 const userLogin = (req, res, next) => {
-	User.find({ email: req.body.email })
+	User.findOne({ email: req.body.email })
 		.exec()
 		.then(user => {
-			if (user.length < 1) {
-				return res.status(401).json({ message: 'Authentication failed' });
+			if (!user || user?.role !== 'user') {
+				return res.status(401).json({ status: 401, message: 'User not found' });
 			}
 
-			bcrypt.compare(req.body.password, user[0].password, (error, result) => {
+			bcrypt.compare(req.body.password, user?.password, (error, result) => {
 				if (error) {
-					return res.status(401).json({ message: 'Authentication failed' });
+					return res.status(401).json({ status: 401, message: 'Authentication failed', error });
 				}
+
 				if (result) {
-					if (!user[0].isVerified) {
-						return res.status(400).json({ message: 'You have not verified your email address' });
+					if (!user?.isVerified) {
+						return res.status(400).json({ status: 400, message: 'You have not verified your email address' });
 					}
 
-					const token = jwt.sign({ user: user[0] }, process.env.JWT_KEY, {
-						expiresIn: '7d'
-					});
+					const token = jwt.sign(
+						{ user: { username: user?.username, email: user?.email, role: user?.role, _id: user?._id } },
+						process.env.JWT_KEY,
+						{
+							expiresIn: '7d'
+						}
+					);
+
+					res.cookie('token', token, { httpOnly: true });
 
 					return res.status(200).json({
+						status: 200,
 						message: 'Authentication Successful',
-						user: user[0],
-						// user: {
-						//   id: user[0]._id,
-						//   username: user[0].username,
-						//   email: user[0].email,
-						//   role: user[0].role,
-						// },
 						token
 					});
 				}
-				res.status(401).json({ message: 'Authentication failed' });
+				res.status(401).json({ status: 401, message: 'Invalid credentials' });
 			});
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(404).json({ error, message: 'Unable to find user', status: 404 });
 		});
 };
 
 const getCurrentUser = (req, res, next) => {
 	User.findById(req.decoded.user._id)
+		.select('username email role isVerified modeOfRegistration')
 		.exec()
 		.then(user => {
-			res.status(200).json(user);
+			res.status(200).json({
+				status: 200,
+				message: 'Successfully fetched user',
+				user
+			});
 		})
 		.catch(error => {
-			res.status(500).json({ error, message: 'No valid entry found' });
+			res.status(500).json({ error, message: 'No valid entry found', status: 500 });
 		});
 };
 
@@ -249,18 +263,19 @@ const getUserDetails = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.userId;
 		User.findById(id)
+			.select('username email role isVerified modeOfRegistration')
 			.exec()
 			.then(user => {
 				if (user) {
-					res.status(200).json(user);
+					res.status(200).json({ user, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No valid entry found' });
+					res.status(404).json({ message: 'No valid entry found', status: 400 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const editUser = (req, res, next) => {
@@ -272,21 +287,21 @@ const editUser = (req, res, next) => {
 		}
 
 		if (property === 'email') {
-			return res.status(500).json({ error: { message: 'You cannot edit the email address' } });
+			return res.status(500).json({ error: { message: 'You cannot edit the email address', status: 500 } });
 		}
 
-		if (property === 'userName') {
-			return res.status(500).json({ error: { message: 'You cannot edit the user name' } });
+		if (property === 'username') {
+			return res.status(500).json({ error: { message: 'You cannot edit the user name', status: 500 } });
 		}
 	}
 
 	User.updateOne({ _id: id }, { $set: { ...req.body } })
 		.exec()
-		.then(user => {
-			res.status(200).json({ message: 'Successfully updated user details', user });
+		.then(() => {
+			res.status(200).json({ message: 'Successfully updated user details', status: 200 });
 		})
 		.catch(error => {
-			res.status(500).json({ message: 'Unable to update user details', error });
+			res.status(500).json({ message: 'Unable to update user details', error, status: 500 });
 		});
 };
 
@@ -297,43 +312,47 @@ const deleteUser = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		User.findById({ _id: id })
 			.exec()
-			.then(user => {
+			.then(async user => {
 				if (user) {
+					await profile.deleteMany({ user: user?._id });
+					await address.deleteMany({ user: user?._id });
+
 					user.deleteOne((error, success) => {
 						if (error) {
-							return res.status(500).json({ error });
+							return res.status(500).json({ error, status: 500, message: 'Unable to delete user' });
 						}
-						res.status(200).json({ message: 'User successfully deleted' });
+						res.status(200).json({ message: 'User successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(500).json({ message: 'User does not exist' });
+					res.status(404).json({ message: 'User does not exist', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+				res.status(500).json({ error, message: 'Unable to find user', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const confirmEmail = (req, res) => {
-	Token.findOne({ token: req.params.emailToken }, function (error, token) {
+	Token.findOne({ token: req.params?.emailToken }, function (error, token) {
 		if (!token)
 			return res
 				.status(400)
-				.json({ type: 'not-verified', error, message: 'We were unable to find a valid token. Your token my have expired.' });
+				.json({ type: 'not-verified', error, message: 'We were unable to find a valid token. Your token may have expired.', status: 400 });
 
 		// If we found a token, find a matching user
 		User.findOne({ _id: token._userId }, function (err, user) {
-			if (!user) return res.status(400).json({ message: 'We were unable to find a user for this token.' });
-			if (user.isVerified) return res.status(400).json({ type: 'already-verified', message: 'This user has already been verified.' });
+			if (!user) return res.status(404).json({ message: 'We were unable to find a user for this token.', status: 404 });
+			if (user?.isVerified)
+				return res.status(400).json({ type: 'already-verified', message: 'This user has already been verified.', status: 400 });
 
 			// Verify and save the user
 			user.isVerified = true;
 			user.save(function (error) {
 				if (error) {
-					return res.status(500).json({ message: error.message, error });
+					return res.status(500).json({ message: error?.message, error, status: 500 });
 				}
-				res.status(200).json({ message: 'Verification successful. Please proceed to log in.' });
+				res.status(200).json({ message: 'Verification successful. Please proceed to log in.', status: 200 });
 			});
 		});
 	});
@@ -341,8 +360,8 @@ const confirmEmail = (req, res) => {
 
 const resendEmailToken = (req, res) => {
 	User.findOne({ email: req.body.email }, function (err, user) {
-		if (!user) return res.status(400).json({ message: 'We were unable to find a user with that email.' });
-		if (user.isVerified) return res.status(400).json({ message: 'This account has already been verified. Please log in.' });
+		if (!user) return res.status(404).json({ message: 'We were unable to find a user with that email.', status: 404 });
+		if (user?.isVerified) return res.status(400).json({ message: 'This account has already been verified. Please log in.', status: 400 });
 
 		// Create a verification token, save it, and send email
 		var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
@@ -350,7 +369,7 @@ const resendEmailToken = (req, res) => {
 		// Save the token
 		token.save(function (error) {
 			if (error) {
-				return res.status(500).json({ message: error.message, error });
+				return res.status(500).json({ message: error.message, error, status: 500 });
 			}
 
 			const link = `${process.env.BASE_URL}/confirm-email/${token.token}`;
@@ -455,7 +474,7 @@ const resendEmailToken = (req, res) => {
 				messageToSend
 			);
 
-			res.status(200).json({ message: 'A verification email has been sent to ' + user.email + '.' });
+			res.status(200).json({ message: 'A verification email has been sent to ' + user.email + '.', status: 200 });
 		});
 	});
 };
@@ -468,11 +487,11 @@ const createAdmin = (req, res, next) => {
 			.exec()
 			.then(newUser => {
 				if (newUser.length >= 1) {
-					return res.status(409).json({ message: 'User with that email already exist' });
+					return res.status(409).json({ message: 'User with that email already exist', status: 409 });
 				} else {
 					bcrypt.hash(req.body.password, 10, (error, hash) => {
 						if (error) {
-							return res.status(500).json({ error });
+							return res.status(500).json({ error, status: 500 });
 						} else {
 							try {
 								const user = new User({
@@ -485,26 +504,26 @@ const createAdmin = (req, res, next) => {
 
 								return user
 									.save()
-									.then(newUser => {
+									.then(() => {
 										return res.status(201).json({
-											message: 'Account created successfully',
-											newUser
+											status: 201,
+											message: 'Account created successfully'
 										});
 									})
 									.catch(error => {
-										return res.status(500).json({ error });
+										return res.status(500).json({ error, message: 'Unable to save user details', status: 500 });
 									});
 							} catch (error) {
-								return res.status(500).json({ error, message: 'Check your details and try again' });
+								return res.status(500).json({ error, message: 'Check your details and try again', status: 500 });
 							}
 						}
 					});
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, status: 500 });
 			});
-	} else res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const testEmail = (req, res, next) => {
@@ -610,6 +629,11 @@ const testEmail = (req, res, next) => {
 	}
 };
 
+const userLogout = (req, res) => {
+	res.cookie('token', '', { maxAge: 1 });
+	return res.status(200).json({ message: 'Logged out successfully', status: 200 });
+};
+
 module.exports = {
 	userSignup,
 	getAllUsers,
@@ -621,5 +645,6 @@ module.exports = {
 	confirmEmail,
 	resendEmailToken,
 	createAdmin,
-	testEmail
+	testEmail,
+	userLogout
 };

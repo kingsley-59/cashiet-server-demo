@@ -1,4 +1,4 @@
-const paginatedResults = (model, populate = '') => {
+const paginatedResults = (model, populate = '', select = '') => {
 	return async (req, res, next) => {
 		const page = parseInt(req.query.page || 1);
 		const limit = parseInt(req.query.limit || 10);
@@ -23,7 +23,7 @@ const paginatedResults = (model, populate = '') => {
 		}
 
 		try {
-			results.results = await model.find().populate(populate).limit(limit).skip(startIndex).exec();
+			results.results = await model.find().select(select).populate(populate).limit(limit).skip(startIndex).exec();
 			res.paginatedResults = results;
 			next();
 		} catch (e) {

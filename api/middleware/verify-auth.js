@@ -22,9 +22,11 @@ module.exports = (req, res, next) => {
 			// pass execution to the next middleware
 			next();
 		} catch (error) {
-			console.log('Error error error error error error', error);
+			// console.log('Error', error);
 			// throw an error if anything goes wrong with the verification
-			throw new Error(error);
+			res.status(400);
+			return res.json({ message: 'Invalid token', status: 400 });
+			// throw new Error(error);
 		}
 	} else {
 		result = {

@@ -4,10 +4,12 @@ const UserSchema = mongoose.Schema(
 	{
 		_id: mongoose.Schema.Types.ObjectId,
 
-		// userName: {
-		// 	type: String,
-		// 	minLength: [5, 'Full name must have at least 5 characters']
-		// },
+		username: {
+			type: String,
+			minLength: [3, 'Full name must have at least 3 characters'],
+			unique: true,
+			required: [true, 'You must provide your username']
+		},
 
 		email: {
 			type: String,
@@ -30,7 +32,7 @@ const UserSchema = mongoose.Schema(
 			type: Boolean,
 			default: false
 		},
-		
+
 		modeOfRegistration: {
 			type: String,
 			default: 'manual'
@@ -38,8 +40,8 @@ const UserSchema = mongoose.Schema(
 
 		password: {
 			type: String,
-			// required: [true, 'password is required'],
-			minLength: [8, 'Password must contain at least 8 characters']
+			required: [true, 'password is required'],
+			minLength: [7, 'Password must contain at least 7 characters']
 		},
 
 		// idVerification : { type: Boolean, default: false },

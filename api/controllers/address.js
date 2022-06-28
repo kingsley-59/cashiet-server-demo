@@ -7,16 +7,16 @@ const postAddress = (req, res, next) => {
 	try {
 		const newAddress = new Address({
 			_id: new mongoose.Types.ObjectId(),
-			line1: req.body.line1,
-			line2: req.body.line2,
-			city: req.body.city,
-			state: req.body.state,
-			zip: req.body.zip,
-			country: req.body.country,
-			phoneNumber: req.body.phoneNumber,
-			alternativePhoneNumber: req.body.alternativePhoneNumber,
-			email: req.body.email,
-			alternativeEmail: req.body.alternativeEmail,
+			line1: req.body?.line1,
+			line2: req.body?.line2,
+			city: req.body?.city,
+			state: req.body?.state,
+			zip: req.body?.zip,
+			country: req.body?.country,
+			phoneNumber: req.body?.phoneNumber,
+			alternativePhoneNumber: req.body?.alternativePhoneNumber,
+			email: req.body?.email,
+			alternativeEmail: req.body?.alternativeEmail,
 			user: authenticatedUser._id
 		});
 
@@ -24,14 +24,15 @@ const postAddress = (req, res, next) => {
 			.save()
 			.then(() =>
 				res.status(201).json({
+					status: 201,
 					message: 'Address saved successfully'
 				})
 			)
 			.catch(error => {
-				return res.status(500).json({ error });
+				return res.status(500).json({ error, message: 'Unable to save address', status: 500 });
 			});
 	} catch (error) {
-		return res.status(500).json({ error, message: 'Check your details and try again' });
+		return res.status(500).json({ error, message: 'Invalid details. Try again', status: 500 });
 	}
 };
 
@@ -40,34 +41,36 @@ const getAllAddresses = (req, res, next) => {
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Address.find()
+			.select('line1 line2 city state zip country phoneNumber alternativePhoneNumber email alternativeEmail')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, contacts: result });
+					res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, contacts: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No address found' });
+					res.status(404).json({ message: 'No address found', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, message: 'Unable to fetch user addresses', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getUserAddresses = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	Address.find({ user: authenticatedUser._id })
+		.select('line1 line2 city state zip country phoneNumber alternativePhoneNumber email alternativeEmail')
 		.exec()
 		.then(result => {
 			if (result.length > 0) {
-				res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, contacts: result });
+				res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, addresses: result, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No address found' });
+				res.status(404).json({ message: 'No address found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to fetch user address', status: 500 });
 		});
 };
 
@@ -88,17 +91,17 @@ const updateAddress = (req, res, next) => {
 				if (authenticatedUser._id === result.user) {
 					Address.updateOne({ _id: result._id }, { $set: { ...req.body } })
 						.exec()
-						.then(product => {
-							res.status(200).json({ message: 'Successfully updated address details', product });
+						.then(() => {
+							res.status(200).json({ message: 'Successfully updated address details', status: 200 });
 						})
 						.catch(error => {
-							res.status(500).json({ message: 'Unable to update address details', error });
+							res.status(500).json({ message: 'Unable to update address details', error, status: 500 });
 						});
-				} else res.status(401).json({ message: 'Unauthorized access' });
-			} else return res.status(404).json({ message: 'Address with that id does not exist' });
+				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
+			} else return res.status(404).json({ message: 'Address with that id does not exist', status: 404 });
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Address with that id not found', status: 500 });
 		});
 };
 
@@ -113,17 +116,17 @@ const deleteAddress = (req, res, next) => {
 				if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin' || addr.user === authenticatedUser._id) {
 					addr.remove((error, success) => {
 						if (error) {
-							return res.status(500).json({ error });
+							return res.status(500).json({ error, message: "Unable to delete address", status: 500 });
 						}
-						res.status(200).json({ message: 'Address successfully deleted' });
+						res.status(200).json({ message: 'Address successfully deleted', status: 200 });
 					});
-				} else res.status(401).json({ message: 'Unauthorized access' });
+				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 			} else {
-				res.status(500).json({ message: 'Address does not exist' });
+				res.status(404).json({ message: 'Address does not exist', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error, message: 'An error occured: ' + error.message });
+			res.status(500).json({ error, message: 'Address with that id not found', status: 500 });
 		});
 };
 

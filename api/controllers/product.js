@@ -3,6 +3,9 @@ const Product = require('../models/product');
 const slugify = require('slugify');
 const ProductGallery = require('../models/product-gallery');
 const { uploadFile } = require('../middleware/s3');
+// const path = require('path');
+// const fs = require('fs');
+// const sharp = require('sharp');
 
 const getAllProducts = (req, res, next) => {
 	Product.find()
@@ -40,17 +43,17 @@ const filterProducts = (req, res, next) => {
 
 const addProduct = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+	// const { SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT } = process.env;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
 			.then(async product => {
 				if (product.length >= 1) {
-					return res.status(409).json({ message: 'Product already created by you' });
+					return res.status(409).json({ message: 'Product already created by you', status: 409 });
 				} else {
 					const uploadImage = async () => {
 						const response = await uploadFile(req.file);
-
 						return response;
 					};
 
@@ -96,10 +99,10 @@ const addProduct = async (req, res, next) => {
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, message: 'Invalid details', status: 500 });
 			});
 	} else {
-		return res.status(401).json({ error, message: 'Unauthorized access' });
+		return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 	}
 };
 

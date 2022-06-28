@@ -16,29 +16,31 @@ const sendMessage = (req, res, next) => {
 			.save()
 			.then(newMessage => {
 				return res.status(201).json({
+					status: 201,
 					message: 'Message sent successfully'
 				});
 			})
 			.catch(error => {
-				return res.status(500).json({ error });
+				return res.status(500).json({ error, message: "Unable to send message", status: 500 });
 			});
 	} catch (error) {
-		return res.status(500).json({ error, message: 'Check your details and try again' });
+		return res.status(500).json({ error, message: 'Invalid details', status: 500 });
 	}
 };
 
 const getAllMessages = (req, res, next) => {
 	Contact.find()
+		.select('firstName lastName email phoneNumber message')
 		.exec()
 		.then(result => {
 			if (result.length > 0) {
-				res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, contacts: result });
+				res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, contacts: result, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No users found' });
+				res.status(404).json({ message: 'No users found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: "Unable to send message", status: 500 });
 		});
 };
 
@@ -51,16 +53,16 @@ const deleteMessage = (req, res, next) => {
 			if (message) {
 				message.remove((error, success) => {
 					if (error) {
-						return res.status(500).json({ error });
+						return res.status(500).json({ error, message: "unable to delete message", status: 500 });
 					}
-					res.status(200).json({ message: 'Message successfully deleted' });
+					res.status(200).json({ message: 'Message successfully deleted', status: 200 });
 				});
 			} else {
-				res.status(500).json({ message: 'User does not exist' });
+				res.status(404).json({ message: 'User does not exist', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error, message: 'An error occured: ' + error.message });
+			res.status(500).json({ error, message: "Message with that id not found", status: 500 });
 		});
 };
 

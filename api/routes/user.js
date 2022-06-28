@@ -19,7 +19,7 @@ const { paginatedResults } = require('../middleware/pagination');
 const user = require('../models/user');
 
 // get all users
-router.get('/', verifyAuth, paginatedResults(user), getAllUsers);
+router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isVerified modeOfRegistration'), getAllUsers);
 
 // create user account
 router.post('/signup', userSignup);
@@ -49,5 +49,8 @@ router.put('/:userId', verifyAuth, editUser);
 router.delete('/:userId', verifyAuth, deleteUser);
 
 router.post('/testemail/me', testEmail);
+
+// logout user
+router.get('/logout', verifyAuth, userLogin);
 
 module.exports = router;
