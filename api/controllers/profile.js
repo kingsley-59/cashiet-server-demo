@@ -55,15 +55,15 @@ const getAllUsersProfile = (req, res, next) => {
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all users profiles', total: result.length, profiles: result });
+					res.status(200).json({ message: 'Successfully fetched all users profiles', total: result.length, profiles: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No user profile found' });
+					res.status(404).json({ message: 'No user profile found', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, message: 'Cannot retrieve user profiles', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const getCurrentUserProfile = (req, res, next) => {
@@ -91,7 +91,7 @@ const getUserProfileDetails = (req, res, next) => {
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
 			.select('firstName middleName lastName gender profilePicture nationality dob')
-			.populate('user')
+			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
 				if (!userProfile) return res.status(200).json({ userProfile, status: 200 });

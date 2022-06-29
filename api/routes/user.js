@@ -13,7 +13,8 @@ const {
 	confirmEmail,
 	resendEmailToken,
 	createAdmin,
-	testEmail
+	testEmail,
+	adminLogin
 } = require('../controllers/user');
 const { paginatedResults } = require('../middleware/pagination');
 const user = require('../models/user');
@@ -29,6 +30,9 @@ router.post('/admin/signup', verifyAuth, createAdmin);
 
 // login user
 router.post('/login', userLogin);
+
+// admin login
+router.post('/admin/login', adminLogin);
 
 // confirm user email
 router.get('/confirm/:emailToken', confirmEmail);
