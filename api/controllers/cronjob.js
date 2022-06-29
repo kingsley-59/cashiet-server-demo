@@ -32,7 +32,12 @@ const runCronJob = async () => {
 		const allOrders = await order.find().populate('recurringPayment');
 
 		const defaultOrders = allOrders.filter(
-			order => order.status === 'pending' && order.remainingAmount > 0 && order.recurringPayment && order.failedTransactions > 0
+			order =>
+				order.status === 'pending' &&
+				order.remainingAmount > 0 &&
+				order.recurringPayment &&
+				order.recurringPayment?.isActive &&
+				order.failedTransactions > 0
 		);
 
 		defaultOrders?.forEach(async order => {
