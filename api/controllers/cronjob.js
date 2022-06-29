@@ -9,7 +9,9 @@ const runCronJob = async () => {
 		const now = new Date();
 		const allOrders = await order.find().populate('recurringPayment');
 
-		const activeOrders = allOrders.filter(order => order.status === 'pending' && order.remainingAmount > 0 && order.recurringPayment);
+		const activeOrders = allOrders.filter(
+			order => order.status === 'pending' && order.remainingAmount > 0 && order.recurringPayment && order.recurringPayment?.isActive
+		);
 
 		activeOrders?.forEach(async order => {
 			console.log(order);
