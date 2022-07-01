@@ -87,16 +87,16 @@ const getUserProfileDetails = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		const id = req.params.id;
+		const id = req.params.profileId;
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
 			.select('firstName middleName lastName gender profilePicture nationality dob')
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
-				if (!userProfile) return res.status(200).json({ userProfile, status: 200 });
+				if (!userProfile) return res.status(404).json({ message: 'No valid entry found', status: 404 });
 
-				return res.status(404).json({ message: 'No valid entry found', status: 404 });
+				return res.status(200).json({ userProfile, status: 200 });
 			})
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
@@ -167,7 +167,7 @@ const deleteUserProfile = (req, res, next) => {
 			.catch(error => {
 				res.status(404).json({ error, message: 'User does not exist', status: 404 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

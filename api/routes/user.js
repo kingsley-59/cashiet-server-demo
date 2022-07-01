@@ -18,27 +18,29 @@ const {
 } = require('../controllers/user');
 const { paginatedResults } = require('../middleware/pagination');
 const user = require('../models/user');
+const userSchema = require('../schema/user');
+const { validateUserInput } = require('../middleware/validateFields');
 
 // get all users
 router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isVerified modeOfRegistration'), getAllUsers);
 
 // create user account
-router.post('/signup', userSignup);
+router.post('/signup', validateUserInput(userSchema.validateSignup), userSignup);
 
 // create admin account
-router.post('/admin/signup', verifyAuth, createAdmin);
+router.post('/admin/signup', validateUserInput(userSchema.validateSignup), verifyAuth, createAdmin);
 
 // login user
-router.post('/login', userLogin);
+router.post('/login', validateUserInput(userSchema.validateLogin), userLogin);
 
 // admin login
-router.post('/admin/login', adminLogin);
+router.post('/admin/login', validateUserInput(userSchema.validateLogin), adminLogin);
 
 // confirm user email
 router.get('/confirm/:emailToken', confirmEmail);
 
 // resend email token
-router.post('/resendEmailToken', resendEmailToken);
+router.post('/resendEmailToken', validateUserInput(userSchema.validateEmail), resendEmailToken);
 
 // get current user details
 router.get('/user', verifyAuth, getCurrentUser);

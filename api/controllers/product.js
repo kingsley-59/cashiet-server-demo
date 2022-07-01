@@ -3,61 +3,83 @@ const Product = require('../models/product');
 const slugify = require('slugify');
 const ProductGallery = require('../models/product-gallery');
 const { uploadFile } = require('../middleware/s3');
-// const path = require('path');
-// const fs = require('fs');
-// const sharp = require('sharp');
+const path = require('path');
+const sharp = require('sharp');
 
 const getAllProducts = (req, res, next) => {
 	Product.find()
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
-				return res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products: res.paginatedResults });
+				return res
+					.status(200)
+					.json({ message: 'Successfully fetched all products', total: products.length, products: res.paginatedResults, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found' });
+				res.status(404).json({ message: 'No products found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
 		});
 };
 
 const filterProducts = (req, res, next) => {
 	Product.find()
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
-				if (req.query.name) {
-					const allProducts = products.filter(item => item.name.toLowerCase().includes(req.query.name?.toLowerCase()));
-					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
-				}
-				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+				const filters = req.query;
+
+				const filteredProducts = products.filter(product => {
+					let isValid = true;
+					for (key in filters) {
+						isValid = isValid && (product[key] == filters[key] || product[key]?.indexOf(filters[key]) > -1);
+					}
+					return isValid;
+				});
+
+				res.status(200).json({
+					message: 'Successfully fetched products',
+					total: filteredProducts.length,
+					products: filteredProducts,
+					status: 200
+				});
 			} else {
-				res.status(404).json({ message: 'No products found' });
+				res.status(404).json({ message: 'No products found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
 		});
 };
 
 const addProduct = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
-	// const { SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT } = process.env;
+	const { SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT } = process.env;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
 			.then(async product => {
 				if (product.length >= 1) {
-					return res.status(409).json({ message: 'Product already created by you', status: 409 });
+					return res.status(409).json({ message: 'Product already exist', status: 409 });
 				} else {
-					const uploadImage = async () => {
-						const response = await uploadFile(req.file);
-						return response;
+					const { filename: image } = req.file;
+
+					await sharp(req.file.path)
+						.resize(SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT)
+						.toFile(path.resolve(req.file.destination, 'resized', image));
+
+					const obj = {
+						path: path.resolve(req.file.destination, 'resized', image),
+						filename: image
 					};
 
-					const imageResult = await uploadImage();
+					const imageResult = await uploadFile(obj);
 
 					try {
 						const newProduct = new Product({
@@ -67,7 +89,6 @@ const addProduct = async (req, res, next) => {
 							price: +req.body?.price,
 							keywords: req.body?.keywords,
 							image: {
-								// url: `${process.env.BASE_URL}/uploads/` + req.file.filename,
 								url: imageResult.Location,
 								contentType: req.file.mimetype
 							},
@@ -85,16 +106,17 @@ const addProduct = async (req, res, next) => {
 
 						return newProduct
 							.save()
-							.then(product => {
+							.then(() => {
 								return res.status(201).json({
-									message: 'Product created successfully'
+									message: 'Product created successfully',
+									status: 201
 								});
 							})
 							.catch(error => {
-								return res.status(500).json({ error });
+								return res.status(500).json({ error, message: 'Unable to save product details', status: 500 });
 							});
 					} catch (error) {
-						return res.status(500).json({ error, message: 'Invalid details. Try again' });
+						return res.status(500).json({ error, message: 'Invalid details. Try again', status: 500 });
 					}
 				}
 			})
@@ -102,7 +124,7 @@ const addProduct = async (req, res, next) => {
 				res.status(500).json({ error, message: 'Invalid details', status: 500 });
 			});
 	} else {
-		return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+		return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 	}
 };
 
@@ -110,37 +132,39 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
-		.populate('category')
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(product => {
 			if (product) {
 				ProductGallery.findOne({ product: product._id })
 					.then(gallery => {
-						gallery ? res.status(200).json({ product, gallery }) : res.status(200).json(product);
+						gallery ? res.status(200).json({ product, gallery, status: 200 }) : res.status(200).json({ product, status: 200 });
 					})
-					.catch(error => res.status(500).json({ error, message: 'Unable to get the product category' }));
+					.catch(error => res.status(500).json({ error, message: 'Unable to get the product category', status: 500 }));
 			} else {
-				res.status(404).json({ message: 'Product not found' });
+				res.status(404).json({ message: 'Product not found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to retrieve product', status: 500 });
 		});
 };
 
 const getProductsByCategory = (req, res, next) => {
 	Product.find({ category: req.params.categoryId })
-		.populate('category')
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
-				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found' });
+				res.status(404).json({ message: 'No products found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to retrieve products', status: 500 });
 		});
 };
 
@@ -161,18 +185,18 @@ const editProduct = (req, res, next) => {
 
 					Product.updateOne({ _id: result._id }, { $set: { ...req.body } })
 						.exec()
-						.then(product => {
-							res.status(200).json({ message: 'Successfully updated product details', product });
+						.then(() => {
+							res.status(200).json({ message: 'Successfully updated product details', status: 200 });
 						})
 						.catch(error => {
-							res.status(500).json({ message: 'Unable to update product details', error });
+							res.status(500).json({ message: 'Unable to update product details', error, status: 500 });
 						});
-				} else return res.status(404).json({ message: 'Product with that id does not exist' });
+				} else return res.status(404).json({ message: 'Product with that id does not exist', status: 404 });
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const deleteProduct = (req, res, next) => {
@@ -182,22 +206,32 @@ const deleteProduct = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.findById({ _id: id })
 			.exec()
-			.then(user => {
-				if (user) {
-					Product.deleteOne((error, success) => {
-						if (error) {
-							return res.status(500).json({ error });
-						}
-						res.status(200).json({ message: 'Product successfully deleted' });
-					});
+			.then(product => {
+				if (product) {
+					Product.deleteOne({ _id: id })
+						.exec()
+						.then(() => {
+							// delete product gallery
+							ProductGallery.deleteOne({ product: product._id })
+								.exec()
+								.then(() => {
+									res.status(200).json({ message: 'Successfully deleted product', status: 200 });
+								})
+								.catch(error => {
+									res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
+								});
+						})
+						.catch(error => {
+							res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
+						});
 				} else {
-					res.status(500).json({ message: 'Product does not exist' });
+					res.status(404).json({ message: 'Product does not exist', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+				res.status(500).json({ error, message: 'error occur', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const searchProduct = (req, res, next) => {
@@ -207,15 +241,17 @@ const searchProduct = (req, res, next) => {
 			if (products.length > 0) {
 				if (req.params.search) {
 					const allProducts = products.filter(item => item.name.toLowerCase().includes(req.params.search));
-					return res.status(200).json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts });
+					return res
+						.status(200)
+						.json({ message: 'Successfully fetched all products', total: allProducts.length, products: allProducts, status: 200 });
 				}
-				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products });
+				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found' });
+				res.status(404).json({ message: 'No products found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, message: 'Unable to process the search', status: 500 });
 		});
 };
 

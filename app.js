@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
+// const formidable = require('express-formidable');
 const runCronJob = require('./api/controllers/cronjob');
 
 require('dotenv').config();
@@ -43,6 +44,7 @@ var corsOptions = {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
+
 
 app.use(express.static(path.resolve('./public')));
 

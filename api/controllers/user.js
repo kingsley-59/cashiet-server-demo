@@ -8,17 +8,16 @@ const { sendEmail } = require('../mail/mailjet');
 const getUsername = require('../../utility/getName');
 const profile = require('../models/profile');
 const address = require('../models/address');
-const user = require('../schema/user');
-const { validateUserInput } = require('../../utility/validateFields');
-const { generateError } = require('../../utility/generateError');
+
+// create a function that returns a secured token
+const generateToken = (userId, username, email, role) => {
+	const token = jwt.sign({ user: { username, email, role: role, _id: userId } }, process.env.JWT_KEY, {
+		expiresIn: '3d'
+	});
+	return token;
+};
 
 const userSignup = async (req, res, next) => {
-	const { error } = await validateUserInput(req.body, user.validateSignup, res, next);
-	if (error) {
-		const errors = await generateError(error?.details);
-		return res.status(400).json({ message: 'Parameter validation error', error: errors, status: 400 });
-	}
-
 	User.findOne({ $or: [{ email: req.body?.email }, { username: req.body?.username }] })
 		.exec()
 		.then(newUser => {
@@ -207,12 +206,6 @@ const getAllUsers = (req, res, next) => {
 };
 
 const userLogin = async (req, res, next) => {
-	const { error } = await validateUserInput(req.body, user.validateLogin, res, next);
-	if (error) {
-		const errors = await generateError(error?.details);
-		return res.status(400).json({ message: 'Parameter validation error', error: errors, status: 400 });
-	}
-
 	User.findOne({ email: req.body.email })
 		.exec()
 		.then(user => {
@@ -230,15 +223,9 @@ const userLogin = async (req, res, next) => {
 						return res.status(400).json({ status: 400, message: 'You have not verified your email address' });
 					}
 
-					const token = jwt.sign(
-						{ user: { username: user?.username, email: user?.email, role: user?.role, _id: user?._id } },
-						process.env.JWT_KEY,
-						{
-							expiresIn: '7d'
-						}
-					);
+					const token = generateToken(user?._id, user?.username, user?.email, user?.role);
 
-					res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // expires in 7days
+					res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 7days
 
 					return res.status(200).json({
 						status: 200,
@@ -372,12 +359,6 @@ const confirmEmail = (req, res) => {
 };
 
 const resendEmailToken = async (req, res, next) => {
-	const { error } = await validateUserInput(req.body, user.validateEmail, res, next);
-	if (error) {
-		const errors = await generateError(error?.details);
-		return res.status(400).json({ message: 'Parameter validation error', error: errors, status: 400 });
-	}
-
 	User.findOne({ email: req.body.email }, function (err, user) {
 		if (!user) return res.status(404).json({ message: 'We were unable to find a user with that email.', status: 404 });
 		if (user?.isVerified) return res.status(400).json({ message: 'This account has already been verified. Please log in.', status: 400 });
@@ -498,13 +479,7 @@ const resendEmailToken = async (req, res, next) => {
 	});
 };
 
-const createAdmin = async (req, res, next) => {
-	const { error } = await validateUserInput(req.body, user.validateSignup, res, next);
-	if (error) {
-		const errors = await generateError(error?.details);
-		return res.status(400).json({ message: 'Parameter validation error', error: errors, status: 400 });
-	}
-
+const createAdmin = async (req, res) => {
 	const authenticatedUser = req.decoded.user;
 	if (authenticatedUser.role === 'superadmin') {
 		User.find({ email: req.body.email })
@@ -530,11 +505,19 @@ const createAdmin = async (req, res, next) => {
 								return user
 									.save()
 									.then(() => {
-										return res.status(201).json({
+										const token = generateToken(user?._id, user?.username, user?.email, user?.role);
+
+										res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 3days
+
+										res.status(201).json({
+											message: 'Admin created successfully',
 											status: 201,
-											message: 'Account created successfully'
+											username: req.body?.username.toLowerCase(),
+											email: req.body?.email.toLowerCase(),
+											token
 										});
 									})
+
 									.catch(error => {
 										return res.status(500).json({ error, message: 'Unable to save user details', status: 500 });
 									});
@@ -552,12 +535,6 @@ const createAdmin = async (req, res, next) => {
 };
 
 const adminLogin = async (req, res, next) => {
-	const { error } = await validateUserInput(req.body, user.validateLogin, res, next);
-	if (error) {
-		const errors = await generateError(error?.details);
-		return res.status(400).json({ message: 'Parameter validation error', error: errors, status: 400 });
-	}
-
 	User.findOne({ email: req.body.email })
 		.exec()
 		.then(user => {
@@ -579,7 +556,7 @@ const adminLogin = async (req, res, next) => {
 						}
 					);
 
-					res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // expires in 7days
+					res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 7days
 
 					return res.status(200).json({
 						status: 200,

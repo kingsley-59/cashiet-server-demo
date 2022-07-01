@@ -23,7 +23,8 @@ const ProductSchema = mongoose.Schema(
 
 		keywords: {
 			type: Array,
-			default: []
+			default: [],
+			required: true
 		},
 
 		description: {
@@ -37,16 +38,16 @@ const ProductSchema = mongoose.Schema(
 
 		dimension: {
 			width: {
-				type: Number,
-				required: true
+				type: Number
+				// required: true
 			},
 			height: {
-				type: Number,
-				required: true
+				type: Number
+				// required: true
 			},
 			length: {
-				type: Number,
-				required: true
+				type: Number
+				// required: true
 			}
 		},
 
