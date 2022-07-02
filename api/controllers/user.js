@@ -230,6 +230,9 @@ const userLogin = async (req, res, next) => {
 					return res.status(200).json({
 						status: 200,
 						message: 'Authentication Successful',
+						username: user?.username,
+						email: user?.email,
+						userId: user?._id,
 						token
 					});
 				}
@@ -561,6 +564,9 @@ const adminLogin = async (req, res, next) => {
 					return res.status(200).json({
 						status: 200,
 						message: 'Authentication Successful',
+						username: user?.username,
+						email: user?.email,
+						userId: user?._id,
 						token
 					});
 				}
