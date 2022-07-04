@@ -8,7 +8,7 @@ const getUsername = require('../../utility/getName');
 const sendPasswordResetLink = async (req, res) => {
 	try {
 		const user = await User.findOne({ email: req.body.email });
-		if (!user) return res.status(400).json({ message: "user with given email doesn't exist" });
+		if (!user) return res.status(400).json({ message: "user with given email doesn't exist", status: 400 });
 
 		let token = await Token.findOne({ _userId: user._id });
 
@@ -75,7 +75,7 @@ const sendPasswordResetLink = async (req, res) => {
 														You have requested to reset your password. Kindly use the link provided below to do so.
 													</p>
 													<p style="margin: 0 0 29px 0; width: 243px; font-size: 14.5px; line-height: 25px">
-														You can also copy and paste this link <span style="color: #fff000">${link}</span> into your browser
+														You can also copy and paste this link <span style="color: white">${link}</span> into your browser
 													</p>
 													<a href=${link}>
 														<button
@@ -124,16 +124,16 @@ const sendPasswordResetLink = async (req, res) => {
 			messageToSend
 		);
 
-		res.status(200).json({ message: 'Password reset link sent to your email account' });
+		res.status(200).json({ message: 'Password reset link sent to your email account', status: 200 });
 	} catch (error) {
-		res.status(500).json({ message: 'An error occured' });
+		res.status(500).json({ message: 'An error occured', status: 500 });
 	}
 };
 
 const resetPassword = async (req, res) => {
 	try {
 		const user = await User.findById({ _id: req.body.userId });
-		if (!user) return res.status(400).json({ message: 'Invalid link or expired' });
+		if (!user) return res.status(400).json({ message: 'User with that id not found', status: 400 });
 
 		const token = await Token.findOne({
 			_userId: user._id,
@@ -141,9 +141,7 @@ const resetPassword = async (req, res) => {
 			password: req.body.password
 		});
 
-		console.log(token);
-
-		if (!token) return res.status(400).send({ json: 'Invalid link or expired' });
+		if (!token) return res.status(400).json({ message: 'Invalid link or expired', status: 500 });
 
 		bcrypt.hash(req.body.password, 10, async (error, hash) => {
 			if (error) {
@@ -155,10 +153,10 @@ const resetPassword = async (req, res) => {
 			await user.save();
 			await token.delete();
 
-			res.status(200).json({ message: 'Password updated successfully.' });
+			res.status(200).json({ message: 'Password updated successfully.', status: 200 });
 		});
 	} catch (error) {
-		res.status(500).json({ message: 'An error occured' });
+		res.status(500).json({ message: 'An error occured', status: 500 });
 		console.log(error);
 	}
 };
@@ -168,21 +166,21 @@ const changePassword = async (req, res) => {
 
 	try {
 		const user = await User.findById({ _id: authenticatedUser._id });
-		if (!user) return res.status(400).json({ message: 'User does not exist' });
+		if (!user) return res.status(400).json({ message: 'User does not exist', status: 400 });
 
 		bcrypt.hash(req.body.newPassword, 10, async (error, hash) => {
 			if (error) {
-				return res.status(500).json({ message: 'Unable to save new password' });
+				return res.status(500).json({ message: 'Unable to save new password', status: 500 });
 			}
 
 			user.password = hash;
 
 			await user.save();
 
-			res.status(200).json({ message: 'Password updated successfully.' });
+			res.status(200).json({ message: 'Password updated successfully.', status: 200 });
 		});
 	} catch (error) {
-		res.status(500).json({ message: 'An error occured' });
+		res.status(500).json({ message: 'An error occured', status: 500 });
 		console.log(error);
 	}
 };

@@ -27,6 +27,11 @@ const ProductSchema = mongoose.Schema(
 			required: true
 		},
 
+		quantity: {
+			type: Number,
+			default: 1
+		},
+
 		description: {
 			type: String,
 			required: [true, 'Enter image description']
@@ -55,6 +60,11 @@ const ProductSchema = mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'Category',
 			required: [true, 'Enter the category id']
+		},
+
+		gallery: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'ProductGallery',
 		},
 
 		subCategoryOne: {

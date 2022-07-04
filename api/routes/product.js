@@ -23,7 +23,11 @@ router.get(
 	'/',
 	paginatedResults(
 		product,
-		{ path: 'category', select: 'name' },
+		// { path: 'category', select: 'name' },
+		[
+			{ path: 'category', select: 'name' },
+			{ path: 'gallery', select: 'images' }
+		],
 		'name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
 	),
 	validateUserInput(productSchema.filterProduct, (params = true)),
@@ -50,7 +54,5 @@ router.put('/:productId', verifyAuth, validateUserInput(productSchema.validatePr
 
 // delete user details
 router.delete('/:productId', validateUserInput(productSchema.validateProductId, (params = true)), verifyAuth, deleteProduct);
-
-
 
 module.exports = router;

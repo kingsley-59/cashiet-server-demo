@@ -10,6 +10,7 @@ const getAllProducts = (req, res, next) => {
 	Product.find()
 		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
+		.populate({ path: 'gallery', select: 'images' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
@@ -71,7 +72,7 @@ const addProduct = async (req, res, next) => {
 					const { filename: image } = req.file;
 
 					await sharp(req.file.path)
-						.resize(SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT)
+						.resize(+SMALL_IMAGE_WIDTH, +SMALL_IMAGE_HEIGHT)
 						.toFile(path.resolve(req.file.destination, 'resized', image));
 
 					const obj = {
@@ -93,12 +94,13 @@ const addProduct = async (req, res, next) => {
 								contentType: req.file.mimetype
 							},
 							dimension: {
-								length: +req.body?.productLength,
-								width: +req.body?.productWidth,
-								height: +req.body?.productHeight
+								length: +req.body?.productLength || null,
+								width: +req.body?.productWidth || null,
+								height: +req.body?.productHeight || null
 							},
 							description: req.body?.description,
 							category: req.body?.category,
+							quantity: req.body?.quantity,
 							subCategoryOne: req.body?.subCategoryOne,
 							subCategoryTwo: req.body?.subCategoryTwo,
 							createdBy: authenticatedUser._id
