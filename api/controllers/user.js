@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user');
+const Profile = require('../models/profile');
 const Token = require('../models/token');
 const { sendEmail } = require('../mail/mailjet');
 const getUsername = require('../../utility/getName');
@@ -213,7 +214,7 @@ const userLogin = async (req, res, next) => {
 				return res.status(401).json({ status: 401, message: 'User not found' });
 			}
 
-			bcrypt.compare(req.body.password, user?.password, (error, result) => {
+			bcrypt.compare(req.body.password, user?.password, async (error, result) => {
 				if (error) {
 					return res.status(401).json({ status: 401, message: 'Authentication failed', error });
 				}
@@ -225,7 +226,11 @@ const userLogin = async (req, res, next) => {
 
 					const token = generateToken(user?._id, user?.username, user?.email, user?.role);
 
-					res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 7days
+					res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 }); // expires in 30days
+
+					const findUserProfile = await Profile.findOne({ user: user?._id }).select(
+						'firstName middleName lastName gender profilePicture nationality dob phoneNumber address'
+					);
 
 					return res.status(200).json({
 						status: 200,
@@ -233,7 +238,8 @@ const userLogin = async (req, res, next) => {
 						username: user?.username,
 						email: user?.email,
 						userId: user?._id,
-						token
+						token,
+						userProfile: findUserProfile
 					});
 				}
 				res.status(401).json({ status: 401, message: 'Invalid credentials' });
@@ -545,7 +551,7 @@ const adminLogin = async (req, res, next) => {
 				return res.status(401).json({ status: 401, message: 'User not found' });
 			}
 
-			bcrypt.compare(req.body.password, user?.password, (error, result) => {
+			bcrypt.compare(req.body.password, user?.password, async (error, result) => {
 				if (error) {
 					return res.status(401).json({ status: 401, message: 'Authentication failed', error });
 				}
@@ -559,7 +565,11 @@ const adminLogin = async (req, res, next) => {
 						}
 					);
 
-					res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 7days
+					res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 }); // expires in 30days
+
+					const findUserProfile = await Profile.findOne({ user: user?._id }).select(
+						'firstName middleName lastName gender profilePicture nationality dob phoneNumber address'
+					);
 
 					return res.status(200).json({
 						status: 200,
@@ -567,7 +577,8 @@ const adminLogin = async (req, res, next) => {
 						username: user?.username,
 						email: user?.email,
 						userId: user?._id,
-						token
+						token,
+						userProfile: findUserProfile
 					});
 				}
 				res.status(401).json({ status: 401, message: 'Invalid credentials' });
