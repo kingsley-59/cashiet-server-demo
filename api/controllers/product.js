@@ -26,6 +26,48 @@ const getAllProducts = (req, res, next) => {
 		});
 };
 
+const getTopSellingProducts = (req, res, next) => {
+	Product.find({ quantitySold: { $gte: 0 } })
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate('category gallery')
+		.sort({ quantitySold: -1 })
+		.limit(req.query?.limit || 10)
+		.exec()
+		.then(products => {
+			if (products.length > 0) {
+				return res
+					.status(200)
+					.json({ message: 'Successfully fetched all top selling products', total: products.length, products, status: 200 });
+			} else {
+				res.status(404).json({ message: 'No products found', status: 404 });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
+		});
+};
+
+const getNewProducts = (req, res, next) => {
+	Product.find()
+		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.populate('category gallery')
+		.sort({ createdAt: -1 })
+		.limit(req.query?.limit || 10)
+		.exec()
+		.then(products => {
+			if (products.length > 0) {
+				return res
+					.status(200)
+					.json({ message: 'Successfully fetched latest products', total: products.length, products, status: 200 });
+			} else {
+				res.status(404).json({ message: 'No products found', status: 404 });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
+		});
+};
+
 const filterProducts = (req, res, next) => {
 	Product.find()
 		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
@@ -265,5 +307,7 @@ module.exports = {
 	addProduct,
 	editProduct,
 	deleteProduct,
-	searchProduct
+	searchProduct,
+	getTopSellingProducts,
+	getNewProducts
 };

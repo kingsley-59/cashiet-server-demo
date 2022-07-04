@@ -15,13 +15,13 @@ const sendMessage = (req, res, next) => {
 		return message
 			.save()
 			.then(() => {
-				res.status(201).json({ message: 'Message sent successfully' });
+				res.status(201).json({ message: 'Message sent successfully', status: 201 });
 			})
 			.catch(error => {
-				return res.status(500).json({ error });
+				return res.status(500).json({ error, status: 'Unable to send message', status: 500 });
 			});
 	} catch (error) {
-		return res.status(500).json({ error, message: 'Check your details and try again' });
+		return res.status(500).json({ error, message: 'Check your details and try again', status: 500 });
 	}
 };
 
@@ -30,19 +30,20 @@ const getAllMessages = (req, res, next) => {
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Support.find()
-			.populate('user')
+			.populate({ path: 'user', select: 'email username' })
+			.select('message fullName')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, messages: result });
+					res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, messages: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No message found' });
+					res.status(404).json({ message: 'No message found', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error });
+				res.status(500).json({ error, message: 'unable to fetch message', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access' });
 };
 
 const getCurrentUserMessages = (req, res, next) => {

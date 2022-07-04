@@ -32,6 +32,11 @@ const ProductSchema = mongoose.Schema(
 			default: 1
 		},
 
+		quantitySold: {
+			type: Number,
+			default: 0
+		},
+
 		description: {
 			type: String,
 			required: [true, 'Enter image description']
@@ -40,6 +45,7 @@ const ProductSchema = mongoose.Schema(
 		weight: {
 			type: Number
 		},
+		
 
 		dimension: {
 			width: {
