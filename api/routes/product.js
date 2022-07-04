@@ -23,11 +23,12 @@ router.get(
 	'/',
 	paginatedResults(
 		product,
+		'gallery category',
 		// { path: 'category', select: 'name' },
-		[
-			{ path: 'category', select: 'name' },
-			{ path: 'gallery', select: 'images' }
-		],
+		// [
+		// 	{ path: 'category', select: 'name' },
+		// 	{ path: 'gallery', select: 'images' }
+		// ],
 		'name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
 	),
 	validateUserInput(productSchema.filterProduct, (params = true)),

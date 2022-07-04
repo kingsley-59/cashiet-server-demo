@@ -5,16 +5,17 @@ const ProductGallery = require('../models/product-gallery');
 
 const getAllProductGallery = (req, res, next) => {
 	ProductGallery.find()
+		.select('product images')
 		.exec()
 		.then(galleries => {
 			if (galleries.length > 0) {
-				res.status(200).json({ message: 'Successfully fetched all product galleries', total: galleries.length, galleries });
+				res.status(200).json({ message: 'Successfully fetched all product galleries', total: galleries.length, galleries, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No product gallery found' });
+				res.status(404).json({ message: 'No product gallery found', status: 404 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({ error, status: 500 });
 		});
 };
 
@@ -54,6 +55,9 @@ const addProductGallery = async (req, res, next) => {
 							// })
 						});
 
+						product.gallery = productCategory._id;
+						await product.save();
+
 						return productCategory
 							.save()
 							.then(gallery =>
@@ -64,7 +68,7 @@ const addProductGallery = async (req, res, next) => {
 								})
 							)
 							.catch(error => {
-								return res.status(500).json({ error, message: "Unable to save images", status: 500 });
+								return res.status(500).json({ error, message: 'Unable to save images', status: 500 });
 							});
 					} catch (error) {
 						return res.status(500).json({ error, message: 'Invalid details. Try again', status: 500 });
@@ -88,9 +92,9 @@ const getProductCategoryById = (req, res, next) => {
 		.exec()
 		.then(gallery => {
 			if (gallery) {
-				res.status(200).json(gallery);
+				res.status(200).json({ gallery, status: 200 });
 			} else {
-				res.status(404).json({ message: 'Product gallery not found' });
+				res.status(404).json({ message: 'Product gallery not found', status: 404 });
 			}
 		})
 		.catch(error => {
@@ -109,16 +113,16 @@ const deleteProductGallery = (req, res, next) => {
 				if (productGallery) {
 					ProductGallery.deleteOne((error, success) => {
 						if (error) {
-							return res.status(500).json({ error });
+							return res.status(500).json({ error, message: 'Unable to delete picture', status: 500 });
 						}
-						res.status(200).json({ message: 'Product gallery successfully deleted' });
+						res.status(200).json({ message: 'Product gallery successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(500).json({ message: 'Product gallery does not exist' });
+					res.status(404).json({ message: 'Product gallery does not exist', status: 404 });
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+				res.status(500).json({ error, message: 'An error occured: ' + error.message, status: 500 });
 			});
 	} else return res.status(401).json({ error, message: 'Unauthorized access' });
 };
