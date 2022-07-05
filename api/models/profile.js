@@ -6,19 +6,19 @@ const ProfileSchema = mongoose.Schema(
 
 		firstName: {
 			type: String,
-			minLength: [2, 'First name must have at least 2 characters'],
-			required: [true, 'You must provide your first name']
+			// minLength: [2, 'First name must have at least 2 characters'],
+			// required: [true, 'You must provide your first name']
 		},
 
 		middleName: {
 			type: String,
-			minLength: [2, 'Middle Name must have at least 2 characters']
+			// minLength: [2, 'Middle Name must have at least 2 characters']
 		},
 
 		lastName: {
 			type: String,
-			minLength: [2, 'Last name must have at least 2 characters'],
-			required: [true, 'You must provide your last name']
+			// minLength: [2, 'Last name must have at least 2 characters'],
+			// required: [true, 'You must provide your last name']
 		},
 
 		gender: {
@@ -44,7 +44,7 @@ const ProfileSchema = mongoose.Schema(
 
 		phoneNumber: {
 			type: Number,
-			required: [true, 'You must provide a valid phone number']
+			// required: [true, 'You must provide a valid phone number']
 		},
 
 		address: {
@@ -55,7 +55,7 @@ const ProfileSchema = mongoose.Schema(
 		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
-			required: [true, 'You must provide a valid userId']
+			// required: [true, 'You must provide a valid userId']
 		}
 	},
 	{ timestamps: true }
