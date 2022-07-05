@@ -18,7 +18,8 @@ const profileSchema = require('../schema/profile');
 router.get('/', verifyAuth, getAllUsersProfile);
 
 // add new user profile
-router.post('/', verifyAuth, validateUserInput(profileSchema.addProfile), upload.single('profileImage'), addProfileDetails);
+// router.post('/', verifyAuth, validateUserInput(profileSchema.addProfile), upload.single('profileImage'), addProfileDetails);
+router.post('/', verifyAuth,  upload.single('profileImage'), addProfileDetails);
 
 // get current user profile
 router.get('/user', verifyAuth, getCurrentUserProfile);
