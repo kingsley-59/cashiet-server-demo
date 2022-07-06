@@ -14,7 +14,7 @@ const sendMessage = (req, res, next) => {
 
 		return message
 			.save()
-			.then(newMessage => {
+			.then(() => {
 				return res.status(201).json({
 					status: 201,
 					message: 'Message sent successfully'

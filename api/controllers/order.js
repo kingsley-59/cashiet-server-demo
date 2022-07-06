@@ -114,7 +114,7 @@ const createOrder = (req, res, next) => {
 			.catch(error => {
 				return res.status(500).json({ error, message: error.message });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getAllUserOrders = (req, res, next) => {
@@ -152,7 +152,7 @@ const getAllOrders = (req, res, next) => {
 		} catch (error) {
 			res.status(500).json({ error });
 		}
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const getSpecificOrder = (req, res, next) => {
@@ -241,7 +241,7 @@ const deleteUserOrder = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

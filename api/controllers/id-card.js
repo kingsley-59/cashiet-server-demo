@@ -151,7 +151,7 @@ const getAllCards = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getSpecificCard = (req, res, next) => {
@@ -167,7 +167,7 @@ const getSpecificCard = (req, res, next) => {
 			if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin' || authenticatedUser._id === card.user) {
 				res.status(200).json({ card });
 			} else {
-				return res.status(401).json({ error, message: 'Unauthorized access' });
+				return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 			}
 		})
 		.catch(error => {
@@ -249,7 +249,7 @@ const updateCard = (req, res, next) => {
 						.catch(error => {
 							return res.status(500).json({ message: 'Unable to update card details', error });
 						});
-				} else return res.status(401).json({ message: 'Unauthorized access' });
+				} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 			} else return res.status(404).json({ message: 'ID card with that id does not exist' });
 		})
 		.catch(error => {
@@ -281,7 +281,7 @@ const verifyCard = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: "Can't find card with that id" });
 			});
-	} else res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const disableCard = (req, res, next) => {
@@ -308,7 +308,7 @@ const disableCard = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: "Can't find card with that id" });
 			});
-	} else res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const deleteCard = (req, res, next) => {
@@ -330,7 +330,7 @@ const deleteCard = (req, res, next) => {
 						}
 						res.status(200).json({ message: 'ID card successfully deleted' });
 					});
-				} else res.status(401).json({ message: 'Unauthorized access' });
+				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 			} else {
 				res.status(500).json({ message: 'ID card does not exist' });
 			}

@@ -38,7 +38,7 @@ const subscribeToNewsletter = (req, res, next) => {
 							status: 201
 						});
 					})
-					.catch(error => res.status(500).json({ error, message: "Unable to save subscriber email", status: 500 }));
+					.catch(error => res.status(500).json({ error, message: 'Unable to save subscriber email', status: 500 }));
 			} else {
 				res.status(409).json({ message: 'Email already saved', status: 409 });
 			}
@@ -56,7 +56,7 @@ const deleteSubscriber = (req, res, next) => {
 				if (subscriber) {
 					subscriber.deleteOne((error, success) => {
 						if (error) {
-							return res.status(500).json({ error, message: "Unable to delete subscriber", status: 500 });
+							return res.status(500).json({ error, message: 'Unable to delete subscriber', status: 500 });
 						}
 						res.status(200).json({ message: 'Subscriber successfully deleted', status: 200 });
 					});
@@ -67,7 +67,7 @@ const deleteSubscriber = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'Subscriber not found', status: 500 });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

@@ -43,7 +43,7 @@ const getAllMessages = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'unable to fetch message', status: 500 });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const getCurrentUserMessages = (req, res, next) => {
@@ -82,7 +82,7 @@ const deleteMessage = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

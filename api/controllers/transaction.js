@@ -272,7 +272,7 @@ const deleteTransaction = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else res.status(401).json({ error, message: 'Unauthorized access' });
+	} else res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

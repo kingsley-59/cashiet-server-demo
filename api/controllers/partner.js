@@ -45,7 +45,7 @@ const getAllPartners = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const getSinglePartner = (req, res, next) => {
@@ -65,7 +65,7 @@ const getSinglePartner = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
 			});
-	} else return res.status(401).json({ message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const deletePartner = (req, res, next) => {

@@ -203,7 +203,7 @@ const getAllUsers = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
 			});
-	} else return res.status(401).json({ status: 401, message: 'Unauthorized access' });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const userLogin = async (req, res, next) => {

@@ -26,7 +26,7 @@ const addInventory = (req, res, next) => {
 		} catch (error) {
 			return res.status(500).json({ error, message: 'Check your details and try again' });
 		}
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getInventories = (req, res, next) => {
@@ -46,7 +46,7 @@ const getInventories = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getSpecificInventory = (req, res, next) => {
@@ -66,7 +66,7 @@ const getSpecificInventory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const updateInventory = (req, res, next) => {
@@ -97,7 +97,7 @@ const updateInventory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const deleteInventory = (req, res, next) => {
@@ -123,7 +123,7 @@ const deleteInventory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else res.status(401).json({ message: 'Unauthorized access' });
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {

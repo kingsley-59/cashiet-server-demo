@@ -51,7 +51,7 @@ const addSubcategory = (req, res, next) => {
 				res.status(500).json({ error });
 			});
 	} else {
-		return res.status(401).json({ error, message: 'Unauthorized access' });
+		return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 	}
 };
 
@@ -71,7 +71,7 @@ const getAllSubcategories = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const getCategory = (req, res, next) => {
@@ -93,7 +93,7 @@ const getCategory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const editSubcategory = (req, res, next) => {
@@ -122,7 +122,7 @@ const editSubcategory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ message: 'Unable to update category details', error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const deleteSubcategory = (req, res, next) => {
@@ -147,7 +147,7 @@ const deleteSubcategory = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error, message: 'An error occured: ' + error.message });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access' });
+	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 module.exports = {
