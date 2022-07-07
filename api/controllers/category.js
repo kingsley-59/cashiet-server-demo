@@ -135,14 +135,16 @@ const deleteCategory = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.findById({ _id: id })
 			.exec()
-			.then(category => {
+			.then(async (category) => {
 				if (category) {
-					Category.deleteOne((error, success) => {
-						if (error) {
-							return res.status(500).json({ error, status:500 });
-						}
-						res.status(200).json({ message: 'Category successfully deleted', status: 200 });
-					});
+					await category.remove();
+					res.status(200).json({ message: 'Category successfully deleted', status: 200 });
+					// Category.deleteOne((error, success) => {
+					// 	if (error) {
+					// 		return res.status(500).json({ error, status:500 });
+					// 	}
+					// 	res.status(200).json({ message: 'Category successfully deleted', status: 200 });
+					// });
 				} else {
 					res.status(404).json({ message: 'Category does not exist', status: 404 });
 				}
