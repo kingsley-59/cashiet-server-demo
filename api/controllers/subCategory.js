@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 const SubCategory = require('../models/subcategory');
 const slugify = require('slugify');
+const category = require('../models/category');
 
-const addSubcategory = (req, res, next) => {
+const addSubcategory = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+
+	const findCategory = await category.findOne({ _id: req.body.category });
+	if (!findCategory) {
+		return res.status(404).json({ message: 'Category does not exist', status: 404 });
+	}
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		SubCategory.find({ name: req.body.name })
@@ -13,14 +19,16 @@ const addSubcategory = (req, res, next) => {
 					return res.status(409).json({ message: 'Sub category already exist' });
 				} else {
 					try {
-						const newCategory = new Category({
+						console.log(req.body);
+						const newCategory = new SubCategory({
 							_id: new mongoose.Types.ObjectId(),
-							name: req.body.name,
-							slug: slugify(req.body.name),
-							description: req.body.description || '',
-							category: req.body.categoryId,
+							name: req.body?.name,
+							slug: slugify(req.body?.name),
+							description: req.body?.description || '',
+							category: req.body?.category,
 							createdBy: authenticatedUser._id
 						});
+						console.log(newCategory);
 
 						return newCategory
 							.save()
@@ -29,21 +37,23 @@ const addSubcategory = (req, res, next) => {
 									.save()
 									.then(() => {
 										return res.status(201).json({
-											message: 'Subcategory created successfully'
+											message: 'Subcategory created successfully',
+											status: 201
 										});
 									})
 									.catch(error => {
 										return res.status(500).json({
 											message: 'Unable to create subcategory',
-											error
+											error,
+											status: 500
 										});
 									});
 							})
 							.catch(error => {
-								return res.status(500).json({ error });
+								return res.status(500).json({ error, status: 500 });
 							});
 					} catch (error) {
-						return res.status(500).json({ error, message: 'Invalid details. Try again' });
+						return res.status(500).json({ error, message: 'Invalid details. Try again', status: 500 });
 					}
 				}
 			})
@@ -56,25 +66,30 @@ const addSubcategory = (req, res, next) => {
 };
 
 const getAllSubcategories = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+	// const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		SubCategory.find()
-			.exec()
-			.then(subcategories => {
-				if (subcategories.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all sub categories', total: subcategories.length, categories });
-				} else {
-					res.status(404).json({ message: 'No categories found' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+	SubCategory.find()
+		.exec()
+		.then(subcategories => {
+			if (subcategories.length > 0) {
+				res.status(200).json({
+					message: 'Successfully fetched all sub categories',
+					total: subcategories.length,
+					subcategories,
+					status: 200
+				});
+			} else {
+				res.status(404).json({ message: 'No categories found', status: 404 });
+			}
+		})
+		.catch(error => {
+			res.status(500).json({ error });
+		});
+	// } else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
-const getCategory = (req, res, next) => {
+const getSingleCategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
@@ -83,11 +98,11 @@ const getCategory = (req, res, next) => {
 
 		SubCategory.findById({ $or: [{ id }, { slug }] })
 			.exec()
-			.then(category => {
-				if (category) {
-					res.status(200).json(category);
+			.then(subcategory => {
+				if (subcategory) {
+					res.status(200).json({ subcategory, status: 200 });
 				} else {
-					res.status(404).json({ message: 'Subcategory not found' });
+					res.status(404).json({ message: 'Subcategory not found', status: 404 });
 				}
 			})
 			.catch(error => {
@@ -130,16 +145,19 @@ const deleteSubcategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		Category.findById({ $or: [{ id }, { slug }] })
+		SubCategory.findById({ $or: [{ id }, { slug }] })
 			.exec()
-			.then(user => {
-				if (user) {
-					Category.remove((error, success) => {
-						if (error) {
-							return res.status(500).json({ error });
-						}
-						res.status(200).json({ message: 'Category successfully deleted' });
-					});
+			.then(async subcategory => {
+				if (subcategory) {
+					await subcategory.remove();
+					return res.status(200).json({ message: 'Subcategory deleted successfully', status: 200 });
+
+					// Category.remove((error, success) => {
+					// 	if (error) {
+					// 		return res.status(500).json({ error });
+					// 	}
+					// 	res.status(200).json({ message: 'Category successfully deleted' });
+					// });
 				} else {
 					res.status(500).json({ message: 'Category does not exist' });
 				}
@@ -153,7 +171,7 @@ const deleteSubcategory = (req, res, next) => {
 module.exports = {
 	addSubcategory,
 	getAllSubcategories,
-	getCategory,
+	getSingleCategory,
 	editSubcategory,
 	deleteSubcategory
 };

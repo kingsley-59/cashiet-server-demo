@@ -5,6 +5,7 @@ const ProductGallery = require('../models/product-gallery');
 const { uploadFile } = require('../middleware/s3');
 const path = require('path');
 const sharp = require('sharp');
+const category = require('../models/category');
 
 const getNewArrivals = async () => {
 	const total = await Product.find()
@@ -133,6 +134,14 @@ const addProduct = async (req, res, next) => {
 	const { SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT } = process.env;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		const findCategory = await category.findOne({ _id: req.body.category });
+		if (!findCategory) {
+			return res.status(404).json({ message: 'Category not found', status: 404 });
+		}
+		// category.findById(req.body?.category).then(category => {
+
+		// });
+
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
 			.then(async product => {
@@ -286,24 +295,27 @@ const deleteProduct = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Product.findById({ _id: id })
 			.exec()
-			.then(product => {
+			.then(async product => {
 				if (product) {
-					Product.deleteOne({ _id: id })
-						.exec()
-						.then(() => {
-							// delete product gallery
-							ProductGallery.deleteOne({ product: product._id })
-								.exec()
-								.then(() => {
-									res.status(200).json({ message: 'Successfully deleted product', status: 200 });
-								})
-								.catch(error => {
-									res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
-								});
-						})
-						.catch(error => {
-							res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
-						});
+					await ProductGallery.deleteMany({ product: product._id });
+					await product.remove();
+
+					return res.status(200).json({ message: 'Successfully deleted product', status: 200 });
+					// Product.deleteOne({ _id: id })
+					// 	.exec()
+					// 	.then(() => {
+					// 		ProductGallery.deleteOne({ product: product._id })
+					// 			.exec()
+					// 			.then(() => {
+					// 				res.status(200).json({ message: 'Successfully deleted product', status: 200 });
+					// 			})
+					// 			.catch(error => {
+					// 				res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
+					// 			});
+					// 	})
+					// 	.catch(error => {
+					// 		res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
+					// 	});
 				} else {
 					res.status(404).json({ message: 'Product does not exist', status: 404 });
 				}
