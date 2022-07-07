@@ -56,14 +56,12 @@ const getTopSellingProducts = (req, res, next) => {
 					.exec()
 					.then(newProducts => {
 						if (newProducts.length > 0) {
-							return res
-								.status(200)
-								.json({
-									message: 'Successfully fetched all products',
-									total: newProducts.length,
-									products: newProducts,
-									status: 200
-								});
+							return res.status(200).json({
+								message: 'Successfully fetched all products',
+								total: newProducts.length,
+								products: newProducts,
+								status: 200
+							});
 						} else {
 							res.status(404).json({ message: 'No products found', status: 404 });
 						}
@@ -152,7 +150,15 @@ const addProduct = async (req, res, next) => {
 						filename: image
 					};
 
-					const imageResult = await uploadFile(obj);
+					let imageResult;
+
+					try {
+						imageResult = await uploadFile(obj);
+					} catch (error) {
+						return res.status(500).json({ error, message: 'Unable to upload product image', status: 500 });
+					}
+
+					// const imageResult = await uploadFile(obj);
 
 					try {
 						const newProduct = new Product({
