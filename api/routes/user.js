@@ -14,7 +14,8 @@ const {
 	resendEmailToken,
 	createAdmin,
 	testEmail,
-	adminLogin
+	adminLogin,
+	getAllAdmin
 } = require('../controllers/user');
 const { paginatedResults } = require('../middleware/pagination');
 const user = require('../models/user');
@@ -44,6 +45,9 @@ router.post('/resendEmailToken', validateUserInput(userSchema.validateEmail), re
 
 // get current user details
 router.get('/user', verifyAuth, getCurrentUser);
+
+// get all admin details
+router.get('/admin', verifyAuth, getAllAdmin);
 
 // get specific user details
 router.get('/:userId', verifyAuth, getUserDetails);

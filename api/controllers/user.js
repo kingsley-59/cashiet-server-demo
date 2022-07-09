@@ -561,7 +561,7 @@ const adminLogin = async (req, res, next) => {
 						{ user: { username: user?.username, email: user?.email, role: user?.role, _id: user?._id } },
 						process.env.JWT_KEY,
 						{
-							expiresIn: '7d'
+							expiresIn: '30d'
 						}
 					);
 
@@ -587,6 +587,31 @@ const adminLogin = async (req, res, next) => {
 		.catch(error => {
 			res.status(404).json({ error, message: 'Unable to find user', status: 404 });
 		});
+};
+
+const getAllAdmin = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+
+	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
+		User.find({ $or: [{ role: 'admin' }, { role: 'superadmin' }] })
+			.select('username email role isVerified modeOfRegistration')
+			.exec()
+			.then(result => {
+				if (result.length > 0) {
+					res.status(200).json({
+						status: 200,
+						message: 'Successfully fetched all users',
+						total: result.length,
+						users: result
+					});
+				} else {
+					res.status(404).json({ status: 404, message: 'No users found' });
+				}
+			})
+			.catch(error => {
+				res.status(500).json({ error, status: 500 });
+			});
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const testEmail = (req, res, next) => {
@@ -710,5 +735,6 @@ module.exports = {
 	createAdmin,
 	testEmail,
 	userLogout,
-	adminLogin
+	adminLogin,
+	getAllAdmin
 };
