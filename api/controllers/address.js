@@ -78,9 +78,10 @@ const updateAddress = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const id = req.params.addressId;
 
-	Address.findOne({ _id: id })
+	Address.findOne({ _id: id, user: authenticatedUser?._id })
 		.exec()
 		.then(result => {
+			console.log(result);
 			if (result) {
 				for (const property in req.body) {
 					if (req.body[property] === null || req.body[property] === undefined) {
@@ -88,16 +89,14 @@ const updateAddress = (req, res, next) => {
 					}
 				}
 
-				if (authenticatedUser._id === result.user) {
-					Address.updateOne({ _id: result._id }, { $set: { ...req.body } })
-						.exec()
-						.then(() => {
-							res.status(200).json({ message: 'Successfully updated address details', status: 200 });
-						})
-						.catch(error => {
-							res.status(500).json({ message: 'Unable to update address details', error, status: 500 });
-						});
-				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
+				Address.updateOne({ _id: result._id }, { $set: { ...req.body } })
+					.exec()
+					.then(() => {
+						res.status(200).json({ message: 'Successfully updated address details', status: 200 });
+					})
+					.catch(error => {
+						res.status(500).json({ message: 'Unable to update address details', error, status: 500 });
+					});
 			} else return res.status(404).json({ message: 'Address with that id does not exist', status: 404 });
 		})
 		.catch(error => {
@@ -111,15 +110,21 @@ const deleteAddress = (req, res, next) => {
 
 	Address.findById({ _id: id })
 		.exec()
-		.then(addr => {
+		.then(async addr => {
 			if (addr) {
-				if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin' || addr.user === authenticatedUser._id) {
-					addr.remove((error, success) => {
-						if (error) {
-							return res.status(500).json({ error, message: "Unable to delete address", status: 500 });
-						}
-						res.status(200).json({ message: 'Address successfully deleted', status: 200 });
-					});
+				if (
+					authenticatedUser.role === 'superadmin' ||
+					authenticatedUser.role === 'admin' ||
+					addr.user?.toString() === authenticatedUser._id?.toString()
+				) {
+					await addr.remove();
+					return res.status(200).json({ message: 'Address successfully deleted', status: 200 });
+					// addr.remove((error, success) => {
+					// 	if (error) {
+					// 		return res.status(500).json({ error, message: 'Unable to delete address', status: 500 });
+					// 	}
+					// 	res.status(200).json({ message: 'Address successfully deleted', status: 200 });
+					// });
 				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 			} else {
 				res.status(404).json({ message: 'Address does not exist', status: 404 });
