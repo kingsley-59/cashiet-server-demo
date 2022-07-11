@@ -1,11 +1,24 @@
 const express = require('express');
-const { getAllOrders, getAllUserOrders, createOrder, cancelOrder, deleteUserOrder, getCurrentOrder } = require('../controllers/order');
+const {
+	getAllOrders,
+	getAllUserOrders,
+	createOrder,
+	cancelOrder,
+	deleteUserOrder,
+	getCurrentOrder,
+	getSpecificOrder,
+	adminGetSpecificOrder
+} = require('../controllers/order');
 const router = express.Router();
-const verifyAuth = require("../middleware/verify-auth");
+const verifyAuth = require('../middleware/verify-auth');
 
 router.get('/', verifyAuth, getAllOrders);
 
 router.get('/user', verifyAuth, getAllUserOrders);
+
+router.get('/:orderId', verifyAuth, getSpecificOrder);
+
+router.get('/admin/:orderId', verifyAuth, adminGetSpecificOrder);
 
 router.get('/pending', verifyAuth, getCurrentOrder);
 
