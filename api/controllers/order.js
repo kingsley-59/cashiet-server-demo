@@ -111,7 +111,7 @@ const getAllUserOrders = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	Order.find({ user: authenticatedUser._id })
-		.populate('user recurringPayment')
+		.populate('user recurringPayment product')
 		.exec()
 		.then(orders => {
 			if (orders.length > 0) {
@@ -130,6 +130,7 @@ const getAllOrders = (req, res, next) => {
 		try {
 			Order.find()
 				.populate('user recurringPayment')
+				.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 				.exec()
 				.then(orders => {
 					if (orders.length > 0) {
