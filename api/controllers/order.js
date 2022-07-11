@@ -111,7 +111,7 @@ const getAllUserOrders = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	Order.find({ user: authenticatedUser._id })
-		.populate('user recurringPayment product')
+		.populate('user recurringPayment')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.exec()
 		.then(orders => {
@@ -200,11 +200,7 @@ const getCurrentOrder = (req, res, next) => {
 		.populate('user recurringPayment')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.then(order => {
-			if (order) {
-				return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
-			} else {
-				return res.status(404).json({ message: 'No pending order found', status: 404 });
-			}
+			return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
 		})
 		.catch(error => {
 			return res.status(500).json({ error, message: 'Unable to get order', status: 500 });
