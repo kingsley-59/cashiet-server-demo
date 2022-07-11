@@ -112,6 +112,7 @@ const getAllUserOrders = (req, res, next) => {
 
 	Order.find({ user: authenticatedUser._id })
 		.populate('user recurringPayment product')
+		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.exec()
 		.then(orders => {
 			if (orders.length > 0) {
@@ -152,6 +153,7 @@ const getSpecificOrder = (req, res, next) => {
 
 	Order.findOne({ _id: orderId, user: authenticatedUser._id })
 		.populate('user recurringPayment')
+		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.then(order => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
@@ -171,6 +173,7 @@ const adminGetSpecificOrder = (req, res, next) => {
 	if (authenticatedUser?.role === 'admin' || authenticatedUser?.role === 'superadmin') {
 		Order.findOne({ _id: orderId })
 			.populate('user recurringPayment')
+			.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 			.then(order => {
 				if (order) {
 					return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
@@ -195,6 +198,7 @@ const getCurrentOrder = (req, res, next) => {
 		]
 	})
 		.populate('user recurringPayment')
+		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.then(order => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
