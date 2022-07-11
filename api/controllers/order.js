@@ -114,6 +114,7 @@ const getAllUserOrders = (req, res, next) => {
 		.populate('user recurringPayment')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.exec()
+		
 		.then(orders => {
 			if (orders.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length, status: 20 });

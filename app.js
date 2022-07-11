@@ -32,6 +32,7 @@ const partnerRoute = require('./api/routes/partner');
 const recurringPaymentRoute = require('./api/routes/recurring-payment');
 const buyLaterRoute = require('./api/routes/buy-later');
 const subCategoryRoute = require('./api/routes/subcategory');
+const wishListRoute = require('./api/routes/wishlist');
 
 // mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority`);
@@ -72,6 +73,7 @@ app.use('/api/v1/partner', partnerRoute);
 app.use('/api/v1/rc-payment', recurringPaymentRoute);
 app.use('/api/v1/buy-later', buyLaterRoute);
 app.use('/api/v1/subcategory', subCategoryRoute);
+app.use('/api/v1/wishlist', wishListRoute);
 
 app.use('/check', (req, res, next) => {
 	res.json({
