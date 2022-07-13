@@ -13,7 +13,7 @@ const address = require('../models/address');
 // create a function that returns a secured token
 const generateToken = (userId, username, email, role) => {
 	const token = jwt.sign({ user: { username, email, role: role, _id: userId } }, process.env.JWT_KEY, {
-		expiresIn: '3d'
+		expiresIn: '30d'
 	});
 	return token;
 };
@@ -516,7 +516,7 @@ const createAdmin = async (req, res) => {
 									.then(() => {
 										const token = generateToken(user?._id, user?.username, user?.email, user?.role);
 
-										res.cookie('token', token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 }); // expires in 3days
+										res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 }); // expires in 30days
 
 										res.status(201).json({
 											message: 'Admin created successfully',

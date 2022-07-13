@@ -64,7 +64,7 @@ const addProductToWishList = (req, res, next) => {
 				.find({ user: authenticatedUser?._id })
 				.exec()
 				.then(wishList => {
-					const productIndex = wishList[0].products.findIndex(product => product.product.toString() === req.body.productId);
+					const productIndex = wishList[0]?.products.findIndex(product => product.product.toString() === req.body.productId);
 					if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
 
 					if (wishList?.length === 0) {
