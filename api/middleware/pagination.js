@@ -1,4 +1,4 @@
-const paginatedResults = (model, populate = '', select = '') => {
+const paginatedResults = (model, populate = '', select = '', condition = {}) => {
 	// const isArray = Array.isArray(populate);
 	// const arr1 = isArray ? isArray[0] : '';
 	// const arr2 = isArray ? isArray[1] : '';
@@ -31,7 +31,7 @@ const paginatedResults = (model, populate = '', select = '') => {
 			// results.results = isArray
 			// 	? await model.find().populate(arr1).populate(arr2).select(select).limit(limit).skip(startIndex).exec()
 			// 	: await model.find().select(select).populate(populate).limit(limit).skip(startIndex).exec();
-			results.results = await model.find().select(select).populate(populate).limit(limit).skip(startIndex).exec();
+			results.results = await model.find(condition).select(select).populate(populate).limit(limit).skip(startIndex).exec();
 			res.paginatedResults = results;
 			next();
 		} catch (e) {

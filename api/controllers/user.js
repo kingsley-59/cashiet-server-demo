@@ -193,7 +193,7 @@ const getAllUsers = (req, res, next) => {
 					res.status(200).json({
 						status: 200,
 						message: 'Successfully fetched all users',
-						total: result.length,
+						total: res.paginatedResults?.results?.length,
 						users: res.paginatedResults
 					});
 				} else {

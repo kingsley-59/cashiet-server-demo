@@ -23,7 +23,7 @@ const userSchema = require('../schema/user');
 const { validateUserInput } = require('../middleware/validateFields');
 
 // get all users
-router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isVerified modeOfRegistration'), getAllUsers);
+router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isVerified modeOfRegistration', { role: 'user' }), getAllUsers);
 
 // create user account
 router.post('/signup', validateUserInput(userSchema.validateSignup), userSignup);
