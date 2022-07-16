@@ -67,7 +67,7 @@ const saveTransaction = (req, res, next) => {
 								Invoice.findOne({ order: req.body.order })
 									.populate('order')
 									.then(invoiceDetails => {
-										if (!invoiceDetails) return res.status(404).json({ message: 'Unable to fetch invoice details' });
+										if (!invoiceDetails) return res.status(200).json({ message: 'Unable to fetch invoice details' });
 
 										Invoice.findOne({ order: req.body.order, status: 'unpaid' })
 											.exec()
@@ -214,7 +214,7 @@ const getSingleTransaction = (req, res, next) => {
 			.then(transaction => {
 				if (transaction) {
 					res.status(200).json({ message: 'Transaction fetched successfully', transaction });
-				} else res.status(404).json({ message: 'Transaction not found' });
+				} else res.status(200).json({ message: 'Transaction not found' });
 			})
 			.catch(error => res.status(500).json(error));
 	} else {
@@ -223,7 +223,7 @@ const getSingleTransaction = (req, res, next) => {
 			.then(transaction => {
 				if (transaction) {
 					res.status(200).json({ message: 'Transaction fetched successfully', transaction });
-				} else res.status(404).json({ message: 'Transaction not found' });
+				} else res.status(200).json({ message: 'Transaction not found' });
 			})
 			.catch(error => res.status(500).json(error));
 	}
@@ -245,7 +245,7 @@ const getOrderTransactions = (req, res) => {
 					allTransactions: transactionOrders,
 					total: transactionOrders.length
 				});
-			} else res.status(404).json({ message: 'No transaction attached to the order found' });
+			} else res.status(200).json({ message: 'No transaction attached to the order found' });
 		})
 		.catch(error => res.status(500).json(error));
 };

@@ -10,7 +10,7 @@ const getAllOrderItems = (req, res, next) => {
 			if (orderItems.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all order items', total: orderItems.length, orderItems });
 			} else {
-				res.status(404).json({ message: 'No orderItems found' });
+				res.status(200).json({ message: 'No orderItems found' });
 			}
 		})
 		.catch(error => {
@@ -129,7 +129,7 @@ const addItemToPreviousOrder = async (req, res, next) => {
 					return res.status(500).json({ error, message: 'Invalid details. Try again' });
 				}
 			} else {
-				return res.status(404).json({ message: 'Order not found' });
+				return res.status(200).json({ message: 'Order not found' });
 			}
 		})
 		.catch(error => {

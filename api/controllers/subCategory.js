@@ -8,7 +8,7 @@ const addSubcategory = async (req, res, next) => {
 
 	const findCategory = await category.findOne({ _id: req.body.category });
 	if (!findCategory) {
-		return res.status(404).json({ message: 'Category does not exist', status: 404 });
+		return res.status(200).json({ message: 'Category does not exist', status: 200 });
 	}
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
@@ -80,7 +80,7 @@ const getAllSubcategories = (req, res, next) => {
 					status: 200
 				});
 			} else {
-				res.status(404).json({ message: 'No categories found', status: 404 });
+				res.status(200).json({ message: 'No categories found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -102,7 +102,7 @@ const getSingleCategory = (req, res, next) => {
 				if (subcategory) {
 					res.status(200).json({ subcategory, status: 200 });
 				} else {
-					res.status(404).json({ message: 'Subcategory not found', status: 404 });
+					res.status(200).json({ message: 'Subcategory not found', status: 200 });
 				}
 			})
 			.catch(error => {

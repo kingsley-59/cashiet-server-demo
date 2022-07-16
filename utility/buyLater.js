@@ -16,7 +16,7 @@ class buyLater {
 		const findUserProfile = await Profile.findOne({ user: authenticatedUser._id });
 
 		if (!findUserProfile || !findUserProfile.firstName || !findUserProfile.lastName || !findUserProfile.phoneNumber) {
-			return res.status(404).json({ message: 'User is yet to complete profile registration' });
+			return res.status(200).json({ message: 'User is yet to complete profile registration' });
 		}
 
 		const findOrder = await order.findOne({ _id: req.body.order });
@@ -96,7 +96,7 @@ class buyLater {
 		const buyLaterDetails = await RecurringPayment.findOne({ mandateId: req.body.mandateId });
 
 		if (!buyLaterDetails) {
-			return res.status(404).json({ message: 'Mandate with this id not found' });
+			return res.status(200).json({ message: 'Mandate with this id not found' });
 		}
 
 		if (buyLaterDetails.isActive) {
@@ -134,7 +134,7 @@ class buyLater {
 
 		const buyLaterDetails = await RecurringPayment.findOne({ mandateId: req.body.mandateId });
 
-		if (!buyLaterDetails) return res.status(404).json({ message: 'Mandate with this id not found' });
+		if (!buyLaterDetails) return res.status(200).json({ message: 'Mandate with this id not found' });
 
 		if (buyLaterDetails.isActive) return res.status(400).json({ message: 'Mandate is active' });
 
@@ -178,7 +178,7 @@ class buyLater {
 
 		const buyLaterDetails = await RecurringPayment.findOne({ mandateId: req.body.mandateId });
 
-		if (!buyLaterDetails) return res.status(404).json({ message: 'Mandate with this id not found' });
+		if (!buyLaterDetails) return res.status(200).json({ message: 'Mandate with this id not found' });
 
 		if (buyLaterDetails?.isActive) return res.status(400).json({ message: 'Mandate is active' });
 

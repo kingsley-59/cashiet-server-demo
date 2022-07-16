@@ -11,7 +11,7 @@ const getAllSubscribers = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all subscribers', total: result.length, subscribers: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No subscriber found', status: 404 });
+					res.status(200).json({ message: 'No subscriber found', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -61,7 +61,7 @@ const deleteSubscriber = (req, res, next) => {
 						res.status(200).json({ message: 'Subscriber successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(404).json({ message: 'Subscriber does not exist', status: 404 });
+					res.status(200).json({ message: 'Subscriber does not exist', status: 200 });
 				}
 			})
 			.catch(error => {

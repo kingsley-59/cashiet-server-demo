@@ -47,7 +47,7 @@ const getAllAddresses = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, addresses: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No address found', status: 404, total: 0, addresses: [] });
+					res.status(200).json({ message: 'No address found', status: 200, total: 0, addresses: [] });
 				}
 			})
 			.catch(error => {
@@ -66,7 +66,7 @@ const getUserAddresses = (req, res, next) => {
 			if (result.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, addresses: result, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No address found', status: 404, total: 0, addresses: [] });
+				res.status(200).json({ message: 'No address found', status: 200, total: 0, addresses: [] });
 			}
 		})
 		.catch(error => {
@@ -97,7 +97,7 @@ const updateAddress = (req, res, next) => {
 					.catch(error => {
 						res.status(500).json({ message: 'Unable to update address details', error, status: 500 });
 					});
-			} else return res.status(404).json({ message: 'Address with that id does not exist', status: 404 });
+			} else return res.status(200).json({ message: 'Address with that id does not exist', status: 200 });
 		})
 		.catch(error => {
 			res.status(500).json({ error, message: 'Address with that id not found', status: 500 });
@@ -127,7 +127,7 @@ const deleteAddress = (req, res, next) => {
 					// });
 				} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 			} else {
-				res.status(404).json({ message: 'Address does not exist', status: 404 });
+				res.status(200).json({ message: 'Address does not exist', status: 200 });
 			}
 		})
 		.catch(error => {

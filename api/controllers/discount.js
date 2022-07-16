@@ -40,7 +40,7 @@ const getAllDiscounts = (req, res, next) => {
 			if (result.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all discounts', total: result.length, discounts: result });
 			} else {
-				res.status(404).json({ message: 'No discount found' });
+				res.status(200).json({ message: 'No discount found' });
 			}
 		})
 		.catch(error => {
@@ -60,7 +60,7 @@ const getSpecificDiscount = (req, res, next) => {
 			if (discount) {
 				res.status(200).json({ discount, message: 'Successfully fetched discount' });
 			} else {
-				res.status(404).json({ message: 'No valid entry found' });
+				res.status(200).json({ message: 'No valid entry found' });
 			}
 		})
 		.catch(error => {
@@ -92,7 +92,7 @@ const updateDiscount = (req, res, next) => {
 						.catch(error => {
 							res.status(500).json({ message: 'Unable to update discount details', error });
 						});
-				} else return res.status(404).json({ message: 'Discount with that id does not exist' });
+				} else return res.status(200).json({ message: 'Discount with that id does not exist' });
 			})
 			.catch(error => {
 				res.status(500).json({ error });

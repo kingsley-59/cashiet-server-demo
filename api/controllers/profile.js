@@ -57,7 +57,7 @@ const getAllUsersProfile = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all users profiles', total: result.length, profiles: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No user profile found', status: 404 });
+					res.status(200).json({ message: 'No user profile found', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -76,7 +76,7 @@ const getCurrentUserProfile = (req, res, next) => {
 		.then(userProfile => {
 			if (userProfile) return res.status(200).json({ userProfile, message: 'Successfully fetched user profile', status: 200 });
 
-			return res.status(404).json({ message: 'User is yet to to add profile details', status: 404 });
+			return res.status(200).json({ message: 'User is yet to to add profile details', status: 200 });
 		})
 		.catch(error => {
 			res.status(500).json({ error, message: 'No valid entry found', status: 500 });
@@ -94,7 +94,7 @@ const getUserProfileDetails = (req, res, next) => {
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
-				if (!userProfile) return res.status(404).json({ message: 'No valid entry found', status: 404 });
+				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200 });
 
 				return res.status(200).json({ userProfile, status: 200 });
 			})
@@ -165,7 +165,7 @@ const deleteUserProfile = (req, res, next) => {
 				});
 			})
 			.catch(error => {
-				res.status(404).json({ error, message: 'User does not exist', status: 404 });
+				res.status(200).json({ error, message: 'User does not exist', status: 200 });
 			});
 	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };

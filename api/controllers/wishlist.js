@@ -18,7 +18,7 @@ const getAllWishList = (req, res, next) => {
 						status: 200
 					});
 				} else {
-					res.status(404).json({ message: 'No wishlist found', status: 404 });
+					res.status(200).json({ message: 'No wishlist found', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -42,7 +42,7 @@ const getUserWishList = (req, res, next) => {
 					status: 200
 				});
 			} else {
-				res.status(404).json({ message: 'No wishlist found', status: 404 });
+				res.status(200).json({ message: 'No wishlist found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -58,7 +58,7 @@ const addProductToWishList = (req, res, next) => {
 	// find product with the given id. return error if not found
 	Product.findById(req.body.productId)
 		.then(product => {
-			if (!product) return res.status(404).json({ message: 'Product not found', status: 404 });
+			if (!product) return res.status(200).json({ message: 'Product not found', status: 200 });
 
 			wishlist
 				.find({ user: authenticatedUser?._id })
@@ -113,10 +113,10 @@ const removeProductFromWishList = (req, res, next) => {
 					wishList[0].save();
 					res.status(200).json({ message: 'Successfully removed product from wishlist', status: 200 });
 				} else {
-					res.status(404).json({ message: 'Product not found in wishlist', status: 404 });
+					res.status(200).json({ message: 'Product not found in wishlist', status: 200 });
 				}
 			} else {
-				res.status(404).json({ message: 'No wishlist found', status: 404 });
+				res.status(200).json({ message: 'No wishlist found', status: 200 });
 			}
 		})
 		.catch(error => res.status(500).json({ error, message: 'Unable to remove product from wish list', status: 500 }));

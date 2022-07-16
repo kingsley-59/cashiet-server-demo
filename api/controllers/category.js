@@ -63,7 +63,7 @@ const getAllCategories = (req, res, next) => {
 			if (categories.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all categories', total: categories.length, categories, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No categories found', status: 404, total: 0, categories: [] });
+				res.status(200).json({ message: 'No categories found', status: 200, total: 0, categories: [] });
 			}
 		})
 		.catch(error => {
@@ -82,7 +82,7 @@ const getCategory = (req, res, next) => {
 			if (category) {
 				res.status(200).json({ category, status: 200 });
 			} else {
-				res.status(404).json({ message: 'Category not found', status: 404 });
+				res.status(200).json({ message: 'Category not found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -120,7 +120,7 @@ const editCategory = (req, res, next) => {
 						.catch(error => {
 							res.status(500).json({ message: 'Unable to update category details', error, status: 500 });
 						});
-				} else return res.status(404).json({ message: 'Category with that id does not exist', status: 404 });
+				} else return res.status(200).json({ message: 'Category with that id does not exist', status: 200 });
 			})
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
@@ -146,7 +146,7 @@ const deleteCategory = (req, res, next) => {
 					// 	res.status(200).json({ message: 'Category successfully deleted', status: 200 });
 					// });
 				} else {
-					res.status(404).json({ message: 'Category does not exist', status: 404 });
+					res.status(200).json({ message: 'Category does not exist', status: 200 });
 				}
 			})
 			.catch(error => {

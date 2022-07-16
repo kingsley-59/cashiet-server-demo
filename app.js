@@ -48,7 +48,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
 
-
 app.use(express.static(path.resolve('./public')));
 
 app.use('/api/v1/subscribers', subscriberRoute);

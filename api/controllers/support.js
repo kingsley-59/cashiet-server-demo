@@ -37,7 +37,7 @@ const getAllMessages = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, messages: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No message found', status: 404 });
+					res.status(200).json({ message: 'No message found', status: 200 });
 				}
 			})
 			.catch(error => {

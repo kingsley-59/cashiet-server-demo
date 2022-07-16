@@ -39,7 +39,7 @@ const getAllPartners = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all partners', total: result.length, partners: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No partner found', status: 404 });
+					res.status(200).json({ message: 'No partner found', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -59,7 +59,7 @@ const getSinglePartner = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched partner', partner: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No partner with that id found', status: 404 });
+					res.status(200).json({ message: 'No partner with that id found', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -85,11 +85,11 @@ const deletePartner = (req, res, next) => {
 						res.status(200).json({ message: 'Partner successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(404).json({ message: 'Partner does not exist', status: 404 });
+					res.status(200).json({ message: 'Partner does not exist', status: 200 });
 				}
 			})
 			.catch(error => {
-				res.status(404).json({ error, message: 'Partner does not exist', status: 404 });
+				res.status(200).json({ error, message: 'Partner does not exist', status: 200 });
 			});
 	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };

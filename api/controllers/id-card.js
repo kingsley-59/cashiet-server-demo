@@ -145,7 +145,7 @@ const getAllCards = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all id cards', total: result.length, cards: result });
 				} else {
-					res.status(404).json({ message: 'No card found' });
+					res.status(200).json({ message: 'No card found' });
 				}
 			})
 			.catch(error => {
@@ -250,7 +250,7 @@ const updateCard = (req, res, next) => {
 							return res.status(500).json({ message: 'Unable to update card details', error });
 						});
 				} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
-			} else return res.status(404).json({ message: 'ID card with that id does not exist' });
+			} else return res.status(200).json({ message: 'ID card with that id does not exist' });
 		})
 		.catch(error => {
 			res.status(500).json({ error });

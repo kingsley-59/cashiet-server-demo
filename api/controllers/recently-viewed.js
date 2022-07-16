@@ -16,7 +16,7 @@ const getAllRecentlyViewed = async (req, res, next) => {
 				status: 200
 			});
 		} else {
-			res.status(404).json({ message: 'No recently viewed found', status: 404 });
+			res.status(200).json({ message: 'No recently viewed found', status: 200 });
 		}
 	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
@@ -34,7 +34,7 @@ const getUserRecentlyViewed = async (req, res, next) => {
 			status: 200
 		});
 	} else {
-		res.status(404).json({ message: 'No recently viewed found', status: 404 });
+		res.status(200).json({ message: 'No recently viewed found', status: 200 });
 	}
 };
 
@@ -48,10 +48,10 @@ const addProductToRecentlyViewed = async (req, res, next) => {
 	try {
 		product = await Product.findById(req.body?.productId);
 	} catch (error) {
-		return res.status(404).json({ message: 'Product not found', status: 404, error: error?.message });
+		return res.status(200).json({ message: 'Product not found', status: 200, error: error?.message });
 	}
 
-	if (!product) return res.status(404).json({ message: 'Product not found', status: 404 });
+	if (!product) return res.status(200).json({ message: 'Product not found', status: 200 });
 
 	RecentlyViewed.find({ user: authenticatedUser?._id })
 		.exec()
@@ -90,8 +90,7 @@ const removeProductFromRecentlyViewed = async (req, res, next) => {
 	const id = req.params.productId;
 	const authenticatedUser = req.decoded.user;
 
-	RecentlyViewed
-		.find({ user: authenticatedUser?._id })
+	RecentlyViewed.find({ user: authenticatedUser?._id })
 		.exec()
 		.then(recentlyViewed => {
 			// console.log({recentlyViewed})
@@ -102,10 +101,10 @@ const removeProductFromRecentlyViewed = async (req, res, next) => {
 					recentlyViewed[0].save();
 					res.status(200).json({ message: 'Successfully removed product from recently viewed', status: 200 });
 				} else {
-					res.status(404).json({ message: 'Product not found in recently viewed', status: 404 });
+					res.status(200).json({ message: 'Product not found in recently viewed', status: 200 });
 				}
 			} else {
-				res.status(404).json({ message: 'No recently viewed found', status: 404 });
+				res.status(200).json({ message: 'No recently viewed found', status: 200 });
 			}
 		})
 		.catch(error => res.status(500).json({ error, message: 'Unable to remove product from recently viewed', status: 500 }));
@@ -118,7 +117,7 @@ const removeAllProductsFromRecentlyViewed = async (req, res, next) => {
 	const recentlyViewed = await RecentlyViewed.findOne({ user: userId });
 
 	if (!recentlyViewed) {
-		return res.status(404).json({ message: 'No recently viewed found', status: 404 });
+		return res.status(200).json({ message: 'No recently viewed found', status: 200 });
 	}
 
 	await RecentlyViewed.deleteMany({ user: userId });

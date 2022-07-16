@@ -197,7 +197,7 @@ const getAllUsers = (req, res, next) => {
 						users: res.paginatedResults
 					});
 				} else {
-					res.status(404).json({ status: 404, message: 'No users found' });
+					res.status(200).json({ status: 200, message: 'No users found', total: 0, users: [] });
 				}
 			})
 			.catch(error => {
@@ -246,7 +246,7 @@ const userLogin = async (req, res, next) => {
 			});
 		})
 		.catch(error => {
-			res.status(404).json({ error, message: 'Unable to find user', status: 404 });
+			res.status(200).json({ error, message: 'Unable to find user', status: 200 });
 		});
 };
 
@@ -278,7 +278,7 @@ const getUserDetails = (req, res, next) => {
 				if (user) {
 					res.status(200).json({ user, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No valid entry found', status: 400 });
+					res.status(200).json({ message: 'No valid entry found', status: 200, user: null });
 				}
 			})
 			.catch(error => {
@@ -333,7 +333,7 @@ const deleteUser = (req, res, next) => {
 						res.status(200).json({ message: 'User successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(404).json({ message: 'User does not exist', status: 404 });
+					res.status(200).json({ message: 'User does not exist', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -351,7 +351,7 @@ const confirmEmail = (req, res) => {
 
 		// If we found a token, find a matching user
 		User.findOne({ _id: token._userId }, function (err, user) {
-			if (!user) return res.status(404).json({ message: 'We were unable to find a user for this token.', status: 404 });
+			if (!user) return res.status(200).json({ message: 'We were unable to find a user for this token.', status: 200 });
 			if (user?.isVerified)
 				return res.status(400).json({ type: 'already-verified', message: 'This user has already been verified.', status: 400 });
 
@@ -369,7 +369,7 @@ const confirmEmail = (req, res) => {
 
 const resendEmailToken = async (req, res, next) => {
 	User.findOne({ email: req.body.email }, function (err, user) {
-		if (!user) return res.status(404).json({ message: 'We were unable to find a user with that email.', status: 404 });
+		if (!user) return res.status(200).json({ message: 'We were unable to find a user with that email.', status: 200 });
 		if (user?.isVerified) return res.status(400).json({ message: 'This account has already been verified. Please log in.', status: 400 });
 
 		// Create a verification token, save it, and send email
@@ -585,7 +585,7 @@ const adminLogin = async (req, res, next) => {
 			});
 		})
 		.catch(error => {
-			res.status(404).json({ error, message: 'Unable to find user', status: 404 });
+			res.status(200).json({ error, message: 'Unable to find user', status: 200 });
 		});
 };
 
@@ -605,7 +605,7 @@ const getAllAdmin = (req, res, next) => {
 						users: result
 					});
 				} else {
-					res.status(404).json({ status: 404, message: 'No users found' });
+					res.status(200).json({ status: 200, message: 'No users found', total: 0, users: [] });
 				}
 			})
 			.catch(error => {

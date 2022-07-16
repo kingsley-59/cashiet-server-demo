@@ -40,7 +40,7 @@ const getInventories = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all product inventories', total: result.length, inventories: result });
 				} else {
-					res.status(404).json({ message: 'No product inventory found' });
+					res.status(200).json({ message: 'No product inventory found' });
 				}
 			})
 			.catch(error => {
@@ -60,7 +60,7 @@ const getSpecificInventory = (req, res, next) => {
 				if (inventory) {
 					res.status(200).json({ inventory, message: 'Successfully fetched product inventory' });
 				} else {
-					res.status(404).json({ message: 'No valid entry found' });
+					res.status(200).json({ message: 'No valid entry found' });
 				}
 			})
 			.catch(error => {
@@ -92,7 +92,7 @@ const updateInventory = (req, res, next) => {
 						.catch(error => {
 							res.status(500).json({ message: 'Unable to update product inventory', error });
 						});
-				} else return res.status(404).json({ message: 'Product inventory with that id does not exist' });
+				} else return res.status(200).json({ message: 'Product inventory with that id does not exist' });
 			})
 			.catch(error => {
 				res.status(500).json({ error });

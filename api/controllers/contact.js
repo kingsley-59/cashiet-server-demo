@@ -21,7 +21,7 @@ const sendMessage = (req, res, next) => {
 				});
 			})
 			.catch(error => {
-				return res.status(500).json({ error, message: "Unable to send message", status: 500 });
+				return res.status(500).json({ error, message: 'Unable to send message', status: 500 });
 			});
 	} catch (error) {
 		return res.status(500).json({ error, message: 'Invalid details', status: 500 });
@@ -36,11 +36,11 @@ const getAllMessages = (req, res, next) => {
 			if (result.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, contacts: result, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No users found', status: 404 });
+				res.status(200).json({ message: 'No users found', status: 200 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error, message: "Unable to send message", status: 500 });
+			res.status(500).json({ error, message: 'Unable to send message', status: 500 });
 		});
 };
 
@@ -53,16 +53,16 @@ const deleteMessage = (req, res, next) => {
 			if (message) {
 				message.remove((error, success) => {
 					if (error) {
-						return res.status(500).json({ error, message: "unable to delete message", status: 500 });
+						return res.status(500).json({ error, message: 'unable to delete message', status: 500 });
 					}
 					res.status(200).json({ message: 'Message successfully deleted', status: 200 });
 				});
 			} else {
-				res.status(404).json({ message: 'User does not exist', status: 404 });
+				res.status(200).json({ message: 'User does not exist', status: 200 });
 			}
 		})
 		.catch(error => {
-			res.status(500).json({ error, message: "Message with that id not found", status: 500 });
+			res.status(500).json({ error, message: 'Message with that id not found', status: 500 });
 		});
 };
 

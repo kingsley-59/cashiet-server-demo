@@ -29,7 +29,7 @@ const getAllProducts = (req, res, next) => {
 					.status(200)
 					.json({ message: 'Successfully fetched all products', total: products.length, products: res.paginatedResults, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404 });
+				res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -64,13 +64,13 @@ const getTopSellingProducts = (req, res, next) => {
 								status: 200
 							});
 						} else {
-							res.status(404).json({ message: 'No products found', status: 404 });
+							res.status(200).json({ message: 'No products found', status: 200 });
 						}
 					})
 					.catch(error => {
 						res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
 					});
-				// res.status(404).json({ message: 'No products found', status: 404 });
+				// res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -89,7 +89,7 @@ const getNewProducts = (req, res, next) => {
 			if (products.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched latest products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404 });
+				res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -121,7 +121,7 @@ const filterProducts = (req, res, next) => {
 					status: 200
 				});
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404 });
+				res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -136,7 +136,7 @@ const addProduct = async (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const findCategory = await category.findOne({ _id: req.body.category });
 		if (!findCategory) {
-			return res.status(404).json({ message: 'Category not found', status: 404 });
+			return res.status(200).json({ message: 'Category not found', status: 200 });
 		}
 
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
@@ -248,7 +248,7 @@ const getProduct = (req, res, next) => {
 					})
 					.catch(error => res.status(500).json({ error, message: 'Unable to get the product category', status: 500 }));
 			} else {
-				res.status(404).json({ message: 'Product not found', status: 404 });
+				res.status(200).json({ message: 'Product not found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -265,7 +265,7 @@ const getProductsByCategory = (req, res, next) => {
 			if (products.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404, total: 0 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0 });
 			}
 		})
 		.catch(error => {
@@ -296,7 +296,7 @@ const editProduct = (req, res, next) => {
 						.catch(error => {
 							res.status(500).json({ message: 'Unable to update product details', error, status: 500 });
 						});
-				} else return res.status(404).json({ message: 'Product with that id does not exist', status: 404 });
+				} else return res.status(200).json({ message: 'Product with that id does not exist', status: 200 });
 			})
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
@@ -333,7 +333,7 @@ const deleteProduct = (req, res, next) => {
 					// 		res.status(500).json({ error, message: 'Unable to delete product', status: 500 });
 					// 	});
 				} else {
-					res.status(404).json({ message: 'Product does not exist', status: 404 });
+					res.status(200).json({ message: 'Product does not exist', status: 200 });
 				}
 			})
 			.catch(error => {
@@ -355,7 +355,7 @@ const searchProduct = (req, res, next) => {
 				}
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404 });
+				res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {

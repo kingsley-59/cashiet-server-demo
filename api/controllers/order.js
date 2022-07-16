@@ -15,7 +15,7 @@ const createOrder = (req, res, next) => {
 				}
 
 				if (!req.body.orderItems) {
-					return res.status(404).json({ message: 'Order items not found', status: 404 });
+					return res.status(200).json({ message: 'Order items not found', status: 200 });
 				}
 
 				try {
@@ -114,11 +114,11 @@ const getAllUserOrders = (req, res, next) => {
 		.populate('user recurringPayment')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.exec()
-		
+
 		.then(orders => {
 			if (orders.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length, status: 20 });
-			} else return res.status(404).json({ message: 'No order found', status: 404 });
+			} else return res.status(200).json({ message: 'No order found', status: 200 });
 		})
 		.catch(error => {
 			return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
@@ -137,7 +137,7 @@ const getAllOrders = (req, res, next) => {
 				.then(orders => {
 					if (orders.length > 0) {
 						return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length, status: 200 });
-					} else return res.status(404).json({ message: 'No order found', status: 404 });
+					} else return res.status(200).json({ message: 'No order found', status: 200 });
 				})
 				.catch(error => {
 					return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
@@ -159,7 +159,7 @@ const getSpecificOrder = (req, res, next) => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
 			} else {
-				return res.status(404).json({ message: 'Order not found', status: 404 });
+				return res.status(200).json({ message: 'Order not found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -179,7 +179,7 @@ const adminGetSpecificOrder = (req, res, next) => {
 				if (order) {
 					return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
 				} else {
-					return res.status(404).json({ message: 'Order not found', status: 404 });
+					return res.status(200).json({ message: 'Order not found', status: 200 });
 				}
 			})
 			.catch(error => {
