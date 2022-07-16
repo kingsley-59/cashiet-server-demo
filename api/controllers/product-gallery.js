@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const { uploadFile } = require('../middleware/s3');
 const Product = require('../models/product');
 const ProductGallery = require('../models/product-gallery');
+const path = require('path');
+const sharp = require('sharp');
+const fs = require('fs');
 
 const getAllProductGallery = (req, res, next) => {
 	ProductGallery.find()
@@ -11,7 +14,7 @@ const getAllProductGallery = (req, res, next) => {
 			if (galleries.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all product galleries', total: galleries.length, galleries, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No product gallery found', status: 200 });
+				res.status(404).json({ message: 'No product gallery found', status: 404 });
 			}
 		})
 		.catch(error => {
@@ -31,7 +34,19 @@ const addProductGallery = async (req, res, next) => {
 					try {
 						const uploadImages = await Promise.all(
 							req.files.map(async file => {
-								const result = await uploadFile(file);
+								const { filename: image } = file;
+								await sharp(file.path).resize(800, 800).toFile(path.resolve(file.destination, 'resized', image));
+
+								const obj = {
+									path: path.resolve(file.destination, 'resized', image),
+									filename: image
+								};
+
+								const result = await uploadFile(obj);
+
+								// delete the product image from file
+								fs.unlinkSync(file.path);
+								fs.unlinkSync(obj.path);
 
 								return {
 									url: result?.Location,
@@ -74,7 +89,7 @@ const addProductGallery = async (req, res, next) => {
 						return res.status(500).json({ error, message: 'Invalid details. Try again', status: 500 });
 					}
 				} else {
-					res.status(200).json({ message: 'Product not found', status: 200 });
+					res.status(404).json({ message: 'Product not found', status: 404 });
 				}
 			})
 			.catch(error => {
@@ -94,7 +109,7 @@ const getProductCategoryById = (req, res, next) => {
 			if (gallery) {
 				res.status(200).json({ gallery, status: 200 });
 			} else {
-				res.status(200).json({ message: 'Product gallery not found', status: 200 });
+				res.status(404).json({ message: 'Product gallery not found', status: 404 });
 			}
 		})
 		.catch(error => {
@@ -118,7 +133,7 @@ const deleteProductGallery = (req, res, next) => {
 						res.status(200).json({ message: 'Product gallery successfully deleted', status: 200 });
 					});
 				} else {
-					res.status(200).json({ message: 'Product gallery does not exist', status: 200 });
+					res.status(404).json({ message: 'Product gallery does not exist', status: 404 });
 				}
 			})
 			.catch(error => {
