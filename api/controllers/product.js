@@ -242,7 +242,7 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
-		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(product => {
