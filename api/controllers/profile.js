@@ -57,7 +57,7 @@ const getAllUsersProfile = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all users profiles', total: result.length, profiles: result, status: 200 });
 				} else {
-					res.status(200).json({ message: 'No user profile found', status: 200 });
+					res.status(200).json({ message: 'No user profile found', status: 200, total: 0, profiles: [] });
 				}
 			})
 			.catch(error => {
@@ -94,7 +94,7 @@ const getUserProfileDetails = (req, res, next) => {
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
-				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200 });
+				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: {} });
 
 				return res.status(200).json({ userProfile, status: 200 });
 			})
