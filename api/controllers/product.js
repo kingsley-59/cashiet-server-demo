@@ -138,9 +138,6 @@ const addProduct = async (req, res, next) => {
 		if (!findCategory) {
 			return res.status(404).json({ message: 'Category not found', status: 404 });
 		}
-		// category.findById(req.body?.category).then(category => {
-
-		// });
 
 		Product.find({ name: req.body.name, createdBy: authenticatedUser._id })
 			.exec()
@@ -168,6 +165,8 @@ const addProduct = async (req, res, next) => {
 					}
 
 					// const imageResult = await uploadFile(obj);
+
+					// create a function that generates sku with product id
 
 					try {
 						const newProduct = new Product({
@@ -249,7 +248,7 @@ const getProductsByCategory = (req, res, next) => {
 			if (products.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No products found', status: 404 });
+				res.status(404).json({ message: 'No products found', status: 404, total: 0 });
 			}
 		})
 		.catch(error => {

@@ -185,7 +185,7 @@ const getAllUsers = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
-		User.find()
+		User.find({ role: 'user' })
 			.select('username email role isVerified modeOfRegistration')
 			.exec()
 			.then(result => {
@@ -592,7 +592,7 @@ const adminLogin = async (req, res, next) => {
 const getAllAdmin = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
+	if (authenticatedUser?.role === 'superadmin') {
 		User.find({ $or: [{ role: 'admin' }, { role: 'superadmin' }] })
 			.select('username email role isVerified modeOfRegistration')
 			.exec()

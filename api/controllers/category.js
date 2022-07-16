@@ -63,7 +63,7 @@ const getAllCategories = (req, res, next) => {
 			if (categories.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all categories', total: categories.length, categories, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No categories found', status: 404 });
+				res.status(404).json({ message: 'No categories found', status: 404, total: 0, categories: [] });
 			}
 		})
 		.catch(error => {
@@ -135,7 +135,7 @@ const deleteCategory = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Category.findById({ _id: id })
 			.exec()
-			.then(async (category) => {
+			.then(async category => {
 				if (category) {
 					await category.remove();
 					res.status(200).json({ message: 'Category successfully deleted', status: 200 });

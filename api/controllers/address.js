@@ -45,9 +45,9 @@ const getAllAddresses = (req, res, next) => {
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
-					res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, contacts: result, status: 200 });
+					res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, addresses: result, status: 200 });
 				} else {
-					res.status(404).json({ message: 'No address found', status: 404 });
+					res.status(404).json({ message: 'No address found', status: 404, total: 0, addresses: [] });
 				}
 			})
 			.catch(error => {
@@ -66,7 +66,7 @@ const getUserAddresses = (req, res, next) => {
 			if (result.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all addresses', total: result.length, addresses: result, status: 200 });
 			} else {
-				res.status(404).json({ message: 'No address found', status: 404 });
+				res.status(404).json({ message: 'No address found', status: 404, total: 0, addresses: [] });
 			}
 		})
 		.catch(error => {
