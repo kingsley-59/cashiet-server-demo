@@ -6,6 +6,7 @@ const { uploadFile } = require('../middleware/s3');
 const path = require('path');
 const sharp = require('sharp');
 const category = require('../models/category');
+const fs = require('fs');
 
 const getNewArrivals = async () => {
 	const total = await Product.find()
