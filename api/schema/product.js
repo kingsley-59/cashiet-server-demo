@@ -26,7 +26,7 @@ const addProduct = Joi.object().keys({
 	productLength: Joi.number().optional(),
 	productWidth: Joi.number().optional(),
 	productHeight: Joi.number().optional(),
-	quantity: Joi.number().optional(),
+	quantity: Joi.number().optional()
 });
 
 module.exports = { validateCategoryId, validateProductId, filterProduct, addProduct };

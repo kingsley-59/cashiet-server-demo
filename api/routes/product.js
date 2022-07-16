@@ -31,7 +31,7 @@ router.get(
 		// 	{ path: 'category', select: 'name' },
 		// 	{ path: 'gallery', select: 'images' }
 		// ],
-		'name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
 	),
 	validateUserInput(productSchema.filterProduct, (params = true)),
 	getAllProducts

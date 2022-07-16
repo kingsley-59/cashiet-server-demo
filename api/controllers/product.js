@@ -9,7 +9,7 @@ const category = require('../models/category');
 
 const getNewArrivals = async () => {
 	const total = await Product.find()
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate('category gallery')
 		.sort({ createdAt: -1 })
 		.limit(req.query?.limit || 10);
@@ -19,7 +19,7 @@ const getNewArrivals = async () => {
 
 const getAllProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'gallery', select: 'images' })
 		.exec()
@@ -39,7 +39,7 @@ const getAllProducts = (req, res, next) => {
 
 const getTopSellingProducts = (req, res, next) => {
 	Product.find({ quantitySold: { $gte: 0 } })
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate('category gallery')
 		.sort({ quantitySold: -1 })
 		.limit(req.query?.limit || 10)
@@ -51,7 +51,7 @@ const getTopSellingProducts = (req, res, next) => {
 					.json({ message: 'Successfully fetched all top selling products', total: products.length, products, status: 200 });
 			} else {
 				Product.find()
-					.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+					.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 					.populate({ path: 'category', select: 'name' })
 					.populate({ path: 'gallery', select: 'images' })
 					.exec()
@@ -80,7 +80,7 @@ const getTopSellingProducts = (req, res, next) => {
 
 const getNewProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate('category gallery')
 		.sort({ createdAt: -1 })
 		.limit(req.query?.limit || 10)
@@ -99,7 +99,7 @@ const getNewProducts = (req, res, next) => {
 
 const filterProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(products => {
@@ -166,13 +166,30 @@ const addProduct = async (req, res, next) => {
 
 					// const imageResult = await uploadFile(obj);
 
-					// create a function that generates sku with product id
+					const generateProductSku = () => {
+						const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+						const numbers = '0123456789';
+						const id = [
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length)),
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length)),
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length)),
+							numbers.charAt(Math.floor(Math.random() * numbers.length)),
+							numbers.charAt(Math.floor(Math.random() * numbers.length)),
+							numbers.charAt(Math.floor(Math.random() * numbers.length)),
+							numbers.charAt(Math.floor(Math.random() * numbers.length)),
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length)),
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length)),
+							alphabet.charAt(Math.floor(Math.random() * alphabet.length))
+						].join('');
+						return id;
+					};
 
 					try {
 						const newProduct = new Product({
 							_id: new mongoose.Types.ObjectId(),
 							name: req.body?.name,
 							slug: slugify(req.body?.name),
+							sku: generateProductSku()?.toUpperCase(),
 							price: +req.body?.price,
 							keywords: req.body?.keywords,
 							image: {
@@ -220,7 +237,7 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(product => {
@@ -241,7 +258,7 @@ const getProduct = (req, res, next) => {
 
 const getProductsByCategory = (req, res, next) => {
 	Product.find({ category: req.params.categoryId })
-		.select('name slug price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(products => {

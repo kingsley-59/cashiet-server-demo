@@ -16,6 +16,12 @@ const ProductSchema = mongoose.Schema(
 			required: true
 		},
 
+		sku: {
+			type: String,
+			unique: true,
+			required: true
+		},
+
 		price: {
 			type: Number,
 			required: [true, 'Specify the price of the product']
