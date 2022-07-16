@@ -163,10 +163,10 @@ const addProduct = async (req, res, next) => {
 						imageResult = await uploadFile(obj);
 					} catch (error) {
 						return res.status(500).json({ error, message: 'Unable to upload product image', status: 500 });
-					} finally {
-						fs.unlinkSync(obj.path);
-						fs.unlinkSync(req.file.path);
 					}
+
+					fs.unlinkSync(obj.path);
+					fs.unlinkSync(req.file.path);
 
 					// const imageResult = await uploadFile(obj);
 
