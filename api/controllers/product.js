@@ -211,10 +211,11 @@ const addProduct = async (req, res, next) => {
 
 						return newProduct
 							.save()
-							.then(() => {
+							.then((product) => {
 								return res.status(201).json({
 									message: 'Product created successfully',
-									status: 201
+									status: 201,
+									product
 								});
 							})
 							.catch(error => {
