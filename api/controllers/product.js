@@ -248,11 +248,7 @@ const getProduct = (req, res, next) => {
 		.exec()
 		.then(product => {
 			if (product) {
-				ProductGallery.findOne({ product: product._id })
-					.then(gallery => {
-						gallery ? res.status(200).json({ product, gallery, status: 200 }) : res.status(200).json({ product, status: 200 });
-					})
-					.catch(error => res.status(500).json({ error, message: 'Unable to get the product category', status: 500 }));
+				res.status(200).json({ product, status: 200, message: "Successfully fetched product details" });
 			} else {
 				res.status(200).json({ message: 'Product not found', status: 200 });
 			}
