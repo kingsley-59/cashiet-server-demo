@@ -215,7 +215,7 @@ const addProduct = async (req, res, next) => {
 								return res.status(201).json({
 									message: 'Product created successfully',
 									status: 201,
-									product
+									productId: product?._id
 								});
 							})
 							.catch(error => {
