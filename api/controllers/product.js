@@ -164,8 +164,8 @@ const addProduct = async (req, res, next) => {
 					} catch (error) {
 						return res.status(500).json({ error, message: 'Unable to upload product image', status: 500 });
 					} finally {
-						fs.unlinkSync(req.file.path);
 						fs.unlinkSync(obj.path);
+						fs.unlinkSync(req.file.path);
 					}
 
 					// const imageResult = await uploadFile(obj);
@@ -215,7 +215,7 @@ const addProduct = async (req, res, next) => {
 
 						return newProduct
 							.save()
-							.then((product) => {
+							.then(product => {
 								return res.status(201).json({
 									message: 'Product created successfully',
 									status: 201,

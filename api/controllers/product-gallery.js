@@ -45,8 +45,8 @@ const addProductGallery = async (req, res, next) => {
 								const result = await uploadFile(obj);
 
 								// delete the product image from file
-								fs.unlinkSync(file.path);
 								fs.unlinkSync(obj.path);
+								fs.unlinkSync(file.path);
 
 								return {
 									url: result?.Location,
