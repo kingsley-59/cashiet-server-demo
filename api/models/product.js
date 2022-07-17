@@ -51,7 +51,6 @@ const ProductSchema = mongoose.Schema(
 		weight: {
 			type: Number
 		},
-		
 
 		dimension: {
 			width: {
@@ -77,6 +76,7 @@ const ProductSchema = mongoose.Schema(
 		gallery: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'ProductGallery',
+			default: null
 		},
 
 		subCategoryOne: {
