@@ -47,7 +47,7 @@ const getSpecificInvoice = (req, res, next) => {
 			if (invoice) {
 				return res.status(200).json({ message: 'Invoice fetched successfully', invoice, status: 200 });
 			} else {
-				return res.status(200).json({ message: 'Invoice not found', status: 200, invoice: null });
+				return res.status(200).json({ message: 'Invoice not found', status: 200, invoice: {} });
 			}
 		})
 		.catch(error => {

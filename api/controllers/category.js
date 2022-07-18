@@ -82,7 +82,7 @@ const getCategory = (req, res, next) => {
 			if (category) {
 				res.status(200).json({ category, status: 200 });
 			} else {
-				res.status(200).json({ message: 'Category not found', status: 200, category: null });
+				res.status(200).json({ message: 'Category not found', status: 200, category: {} });
 			}
 		})
 		.catch(error => {

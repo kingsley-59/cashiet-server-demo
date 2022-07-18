@@ -30,7 +30,7 @@ const getAllProducts = (req, res, next) => {
 					.status(200)
 					.json({ message: 'Successfully fetched all products', total: products.length, products: res.paginatedResults, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No products found', status: 200 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 			}
 		})
 		.catch(error => {
@@ -65,13 +65,12 @@ const getTopSellingProducts = (req, res, next) => {
 								status: 200
 							});
 						} else {
-							res.status(200).json({ message: 'No products found', status: 200 });
+							res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 						}
 					})
 					.catch(error => {
 						res.status(500).json({ error, message: 'Unable to fetch products', status: 500 });
 					});
-				// res.status(200).json({ message: 'No products found', status: 200 });
 			}
 		})
 		.catch(error => {
@@ -90,7 +89,7 @@ const getNewProducts = (req, res, next) => {
 			if (products.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched latest products', total: products.length, products, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No products found', status: 200 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 			}
 		})
 		.catch(error => {
@@ -122,7 +121,7 @@ const filterProducts = (req, res, next) => {
 					status: 200
 				});
 			} else {
-				res.status(200).json({ message: 'No products found', status: 200 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 			}
 		})
 		.catch(error => {
@@ -248,9 +247,9 @@ const getProduct = (req, res, next) => {
 		.exec()
 		.then(product => {
 			if (product) {
-				res.status(200).json({ product, status: 200, message: "Successfully fetched product details" });
+				res.status(200).json({ product, status: 200, message: 'Successfully fetched product details' });
 			} else {
-				res.status(200).json({ message: 'Product not found', status: 200 });
+				res.status(200).json({ message: 'Product not found', status: 200, product: {} });
 			}
 		})
 		.catch(error => {
@@ -267,7 +266,7 @@ const getProductsByCategory = (req, res, next) => {
 			if (products.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No products found', status: 200, total: 0 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 			}
 		})
 		.catch(error => {
@@ -357,7 +356,7 @@ const searchProduct = (req, res, next) => {
 				}
 				res.status(200).json({ message: 'Successfully fetched all products', total: products.length, products, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No products found', status: 200 });
+				res.status(200).json({ message: 'No products found', status: 200, total: 0, products: [] });
 			}
 		})
 		.catch(error => {

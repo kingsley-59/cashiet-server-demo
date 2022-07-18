@@ -18,7 +18,7 @@ const getAllWishList = (req, res, next) => {
 						status: 200
 					});
 				} else {
-					res.status(200).json({ message: 'No wishlist found', status: 200 });
+					res.status(200).json({ message: 'No wishlist found', status: 200, total: 0, wishlists: [] });
 				}
 			})
 			.catch(error => {
@@ -42,7 +42,7 @@ const getUserWishList = (req, res, next) => {
 					status: 200
 				});
 			} else {
-				res.status(200).json({ message: 'No wishlist found', status: 200 });
+				res.status(200).json({ message: 'No wishlist found', status: 200, total: 0, wishlist: [] });
 			}
 		})
 		.catch(error => {

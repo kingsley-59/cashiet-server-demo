@@ -278,7 +278,7 @@ const getUserDetails = (req, res, next) => {
 				if (user) {
 					res.status(200).json({ user, status: 200 });
 				} else {
-					res.status(200).json({ message: 'No valid entry found', status: 200, user: null });
+					res.status(200).json({ message: 'No valid entry found', status: 200, user: {} });
 				}
 			})
 			.catch(error => {

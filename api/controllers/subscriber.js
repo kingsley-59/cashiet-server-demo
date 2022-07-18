@@ -11,7 +11,7 @@ const getAllSubscribers = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched all subscribers', total: result.length, subscribers: result, status: 200 });
 				} else {
-					res.status(200).json({ message: 'No subscriber found', status: 200 });
+					res.status(200).json({ message: 'No subscriber found', status: 200, total: 0, subscribers: [] });
 				}
 			})
 			.catch(error => {

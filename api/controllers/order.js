@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Invoice = require('../models/invoice');
 const paymentOptions = require('../models/payment-options');
-const cron = require('node-cron');
+// const cron = require('node-cron');
 
 const createOrder = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
@@ -159,7 +159,7 @@ const getSpecificOrder = (req, res, next) => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
 			} else {
-				return res.status(200).json({ message: 'Order not found', status: 200, order: null });
+				return res.status(200).json({ message: 'Order not found', status: 200, order: {} });
 			}
 		})
 		.catch(error => {
@@ -179,7 +179,7 @@ const adminGetSpecificOrder = (req, res, next) => {
 				if (order) {
 					return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
 				} else {
-					return res.status(200).json({ message: 'Order not found', status: 200, order: null });
+					return res.status(200).json({ message: 'Order not found', status: 200, order: {} });
 				}
 			})
 			.catch(error => {
