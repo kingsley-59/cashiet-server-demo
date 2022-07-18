@@ -246,7 +246,7 @@ const userLogin = async (req, res, next) => {
 			});
 		})
 		.catch(error => {
-			res.status(200).json({ error, message: 'Unable to find user', status: 200 });
+			res.status(400).json({ error, message: 'Unable to find user', status: 400 });
 		});
 };
 
@@ -351,7 +351,7 @@ const confirmEmail = (req, res) => {
 
 		// If we found a token, find a matching user
 		User.findOne({ _id: token._userId }, function (err, user) {
-			if (!user) return res.status(200).json({ message: 'We were unable to find a user for this token.', status: 200 });
+			if (!user) return res.status(400).json({ message: 'We were unable to find a user for this token.', status: 400 });
 			if (user?.isVerified)
 				return res.status(400).json({ type: 'already-verified', message: 'This user has already been verified.', status: 400 });
 
@@ -369,7 +369,7 @@ const confirmEmail = (req, res) => {
 
 const resendEmailToken = async (req, res, next) => {
 	User.findOne({ email: req.body.email }, function (err, user) {
-		if (!user) return res.status(200).json({ message: 'We were unable to find a user with that email.', status: 200 });
+		if (!user) return res.status(400).json({ message: 'We were unable to find a user with that email.', status: 400 });
 		if (user?.isVerified) return res.status(400).json({ message: 'This account has already been verified. Please log in.', status: 400 });
 
 		// Create a verification token, save it, and send email
@@ -585,7 +585,7 @@ const adminLogin = async (req, res, next) => {
 			});
 		})
 		.catch(error => {
-			res.status(200).json({ error, message: 'Unable to find user', status: 200 });
+			res.status(400).json({ error, message: 'Unable to find user', status: 400 });
 		});
 };
 
