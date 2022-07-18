@@ -59,7 +59,7 @@ const getSinglePartner = (req, res, next) => {
 				if (result.length > 0) {
 					res.status(200).json({ message: 'Successfully fetched partner', partner: result, status: 200 });
 				} else {
-					res.status(200).json({ message: 'No partner with that id found', status: 200, partner: {} });
+					res.status(200).json({ message: 'No partner with that id found', status: 200, partner: null });
 				}
 			})
 			.catch(error => {

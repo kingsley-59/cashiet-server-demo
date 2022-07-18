@@ -249,7 +249,7 @@ const getProduct = (req, res, next) => {
 			if (product) {
 				res.status(200).json({ product, status: 200, message: 'Successfully fetched product details' });
 			} else {
-				res.status(200).json({ message: 'Product not found', status: 200, product: {} });
+				res.status(200).json({ message: 'Product not found', status: 200, product: null });
 			}
 		})
 		.catch(error => {

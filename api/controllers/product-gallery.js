@@ -109,7 +109,7 @@ const getProductCategoryById = (req, res, next) => {
 			if (gallery) {
 				res.status(200).json({ gallery, status: 200 });
 			} else {
-				res.status(200).json({ message: 'Product gallery not found', status: 200, gallery: {} });
+				res.status(200).json({ message: 'Product gallery not found', status: 200, gallery: null });
 			}
 		})
 		.catch(error => {

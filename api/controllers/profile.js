@@ -76,7 +76,7 @@ const getCurrentUserProfile = (req, res, next) => {
 		.then(userProfile => {
 			if (userProfile) return res.status(200).json({ userProfile, message: 'Successfully fetched user profile', status: 200 });
 
-			return res.status(200).json({ message: 'User is yet to to add profile details', status: 200, profile: {} });
+			return res.status(200).json({ message: 'User is yet to to add profile details', status: 200, profile: null });
 		})
 		.catch(error => {
 			res.status(500).json({ error, message: 'No valid entry found', status: 500 });
@@ -94,7 +94,7 @@ const getUserProfileDetails = (req, res, next) => {
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
-				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: {} });
+				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: null });
 
 				return res.status(200).json({ userProfile, status: 200 });
 			})

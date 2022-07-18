@@ -159,7 +159,7 @@ const getSpecificOrder = (req, res, next) => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
 			} else {
-				return res.status(200).json({ message: 'Order not found', status: 200, order: {} });
+				return res.status(200).json({ message: 'Order not found', status: 200, order: null });
 			}
 		})
 		.catch(error => {
@@ -179,7 +179,7 @@ const adminGetSpecificOrder = (req, res, next) => {
 				if (order) {
 					return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
 				} else {
-					return res.status(200).json({ message: 'Order not found', status: 200, order: {} });
+					return res.status(200).json({ message: 'Order not found', status: 200, order: null });
 				}
 			})
 			.catch(error => {
