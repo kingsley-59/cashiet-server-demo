@@ -76,7 +76,7 @@ const ProductSchema = mongoose.Schema(
 		gallery: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'ProductGallery',
-			default: null
+			default: []
 		},
 
 		subCategoryOne: {
