@@ -118,7 +118,7 @@ const getAllUserOrders = (req, res, next) => {
 		.then(orders => {
 			if (orders.length > 0) {
 				return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length, status: 20 });
-			} else return res.status(200).json({ message: 'No order found', status: 200 });
+			} else return res.status(200).json({ message: 'No order found', status: 200, orders: [], total: 0 });
 		})
 		.catch(error => {
 			return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
@@ -137,7 +137,7 @@ const getAllOrders = (req, res, next) => {
 				.then(orders => {
 					if (orders.length > 0) {
 						return res.status(200).json({ message: 'Successfully fetched all orders', orders, total: orders.length, status: 200 });
-					} else return res.status(200).json({ message: 'No order found', status: 200 });
+					} else return res.status(200).json({ message: 'No order found', status: 200, orders: [], total: 0 });
 				})
 				.catch(error => {
 					return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
@@ -159,7 +159,7 @@ const getSpecificOrder = (req, res, next) => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
 			} else {
-				return res.status(200).json({ message: 'Order not found', status: 200 });
+				return res.status(200).json({ message: 'Order not found', status: 200, order: null });
 			}
 		})
 		.catch(error => {
@@ -179,7 +179,7 @@ const adminGetSpecificOrder = (req, res, next) => {
 				if (order) {
 					return res.status(200).json({ message: 'Order fetched successfully', order, status: 200 });
 				} else {
-					return res.status(200).json({ message: 'Order not found', status: 200 });
+					return res.status(200).json({ message: 'Order not found', status: 200, order: null });
 				}
 			})
 			.catch(error => {

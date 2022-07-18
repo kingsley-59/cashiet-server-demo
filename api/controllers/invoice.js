@@ -10,7 +10,7 @@ const getAllInvoices = (req, res, next) => {
 				.then(invoices => {
 					if (invoices.length > 0) {
 						return res.status(200).json({ message: 'Successfully fetched all invoices', invoices, total: invoices.length, status: 200 });
-					} else return res.status(200).json({ message: 'No order found', status: 200 });
+					} else return res.status(200).json({ message: 'No order found', status: 200, invoices: [], total: 0 });
 				})
 				.catch(error => {
 					return res.status(500).json({ error, message: 'Unable to find invoices', status: 500 });
@@ -32,7 +32,7 @@ const getAllUserInvoices = (req, res, next) => {
 					.status(200)
 					.json({ message: 'Successfully fetched all invoices', invoices: allInvoice, total: allInvoice.length, status: 200 });
 			} else {
-				return res.status(200).json({ message: 'No invoice found', status: 200 });
+				return res.status(200).json({ message: 'No invoice found', status: 200, invoices: [], total: 0 });
 			}
 		})
 		.catch(error => res.status(500).json({ error, status: 500 }));
@@ -47,7 +47,7 @@ const getSpecificInvoice = (req, res, next) => {
 			if (invoice) {
 				return res.status(200).json({ message: 'Invoice fetched successfully', invoice, status: 200 });
 			} else {
-				return res.status(200).json({ message: 'Invoice not found', status: 200 });
+				return res.status(200).json({ message: 'Invoice not found', status: 200, invoice: null });
 			}
 		})
 		.catch(error => {
@@ -94,7 +94,7 @@ const getOrderInvoices = (req, res) => {
 					allInvoices: invoices,
 					total: invoices?.length
 				});
-			} else res.status(200).json({ message: 'No invoice attached to the order found' });
+			} else res.status(200).json({ message: 'No invoice attached to the order found', allInvoices: [], total: 0 });
 		})
 		.catch(error => res.status(500).json(error));
 };

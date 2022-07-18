@@ -36,7 +36,7 @@ const getAllMessages = (req, res, next) => {
 			if (result.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all messages', total: result.length, contacts: result, status: 200 });
 			} else {
-				res.status(200).json({ message: 'No users found', status: 200 });
+				res.status(200).json({ message: 'No users found', status: 200, total: 0, contacts: [] });
 			}
 		})
 		.catch(error => {

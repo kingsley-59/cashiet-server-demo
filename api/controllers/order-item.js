@@ -10,7 +10,7 @@ const getAllOrderItems = (req, res, next) => {
 			if (orderItems.length > 0) {
 				res.status(200).json({ message: 'Successfully fetched all order items', total: orderItems.length, orderItems });
 			} else {
-				res.status(200).json({ message: 'No orderItems found' });
+				res.status(200).json({ message: 'No orderItems found', total: 0, orderItems: [] });
 			}
 		})
 		.catch(error => {
