@@ -44,7 +44,6 @@ const addProductGallery = async (req, res, next) => {
 
 								const result = await uploadFile(obj);
 
-								// delete the product image from file
 								fs.unlinkSync(obj.path);
 								fs.unlinkSync(file.path);
 
@@ -59,15 +58,6 @@ const addProductGallery = async (req, res, next) => {
 							_id: new mongoose.Types.ObjectId(),
 							product: req.body.productId,
 							images: uploadImages
-							// images: req.files.map(async item => {
-							// 	const getImageUrl = await getImageLink(item);
-							// 	console.log({ getImageUrl });
-							// 	return {
-							// 		...item,
-							// 		url: getImageUrl
-							// 		// url: `${process.env.BASE_URL}/uploads/` + item.filename
-							// 	};
-							// })
 						});
 
 						product.gallery = productCategory._id;

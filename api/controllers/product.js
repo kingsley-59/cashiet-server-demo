@@ -42,6 +42,8 @@ const getTopSellingProducts = (req, res, next) => {
 	Product.find({ quantitySold: { $gte: 0 } })
 		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate('category gallery')
+		.populate({ path: 'subCategoryOne', select: 'name' })
+		.populate({ path: 'subCategoryTwo', select: 'name' })
 		.sort({ quantitySold: -1 })
 		.limit(req.query?.limit || 10)
 		.exec()
@@ -82,6 +84,8 @@ const getNewProducts = (req, res, next) => {
 	Product.find()
 		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate('category gallery')
+		.populate({ path: 'subCategoryOne', select: 'name' })
+		.populate({ path: 'subCategoryTwo', select: 'name' })
 		.sort({ createdAt: -1 })
 		.limit(req.query?.limit || 10)
 		.exec()
@@ -101,6 +105,8 @@ const filterProducts = (req, res, next) => {
 	Product.find()
 		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
+		.populate({ path: 'subCategoryOne', select: 'name' })
+		.populate({ path: 'subCategoryTwo', select: 'name' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
@@ -241,9 +247,11 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
-		.select('name slug sku price keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings')
+		.select('name slug sku quantity price keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'gallery', select: 'images' })
+		.populate({ path: 'subCategoryOne', select: 'name' })
+		.populate({ path: 'subCategoryTwo', select: 'name' })
 		.exec()
 		.then(product => {
 			if (product) {
@@ -261,6 +269,8 @@ const getProductsByCategory = (req, res, next) => {
 	Product.find({ category: req.params.categoryId })
 		.select('name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
+		.populate({ path: 'subCategoryOne', select: 'name' })
+		.populate({ path: 'subCategoryTwo', select: 'name' })
 		.exec()
 		.then(products => {
 			if (products.length > 0) {
