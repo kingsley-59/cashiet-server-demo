@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Product = require('../models/product');
 const slugify = require('slugify');
 const ProductGallery = require('../models/product-gallery');
+const SubCategoryOne = require('../models/subcategory');
+const SubCategoryTwo = require('../models/subcategory-two');
 const { uploadFile } = require('../middleware/s3');
 const path = require('path');
 const sharp = require('sharp');
@@ -250,8 +252,8 @@ const getProduct = (req, res, next) => {
 		.select('name slug sku quantity price keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings')
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'gallery', select: 'images' })
-		.populate({ path: 'subCategoryOne', select: 'name' })
-		.populate({ path: 'subCategoryTwo', select: 'name' })
+		.populate({ path: 'subCategoryOne', select: 'name slug' })
+		.populate({ path: 'subCategoryTwo', select: 'name slug' })
 		.exec()
 		.then(product => {
 			if (product) {
