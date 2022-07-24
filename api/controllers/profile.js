@@ -50,7 +50,7 @@ const getAllUsersProfile = (req, res, next) => {
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Profile.find()
-			.select('firstName middleName lastName gender profilePicture nationality dob')
+			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(result => {
@@ -70,7 +70,7 @@ const getCurrentUserProfile = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	Profile.findOne({ user: authenticatedUser._id })
-		.select('firstName middleName lastName gender profilePicture nationality dob')
+		.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
 		.populate({ path: 'user', select: 'username email' })
 		.exec()
 		.then(userProfile => {
@@ -90,7 +90,7 @@ const getUserProfileDetails = (req, res, next) => {
 		const id = req.params.profileId;
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
-			.select('firstName middleName lastName gender profilePicture nationality dob')
+			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
 			.populate({ path: 'user', select: 'username email' })
 			.exec()
 			.then(userProfile => {
