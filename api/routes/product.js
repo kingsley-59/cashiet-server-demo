@@ -31,14 +31,22 @@ router.get(
 		// 	{ path: 'category', select: 'name' },
 		// 	{ path: 'gallery', select: 'images' }
 		// ],
-		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
 	),
 	validateUserInput(productSchema.filterProduct, (params = true)),
 	getAllProducts
 );
 
 // filter all products
-router.get('/filter', filterProducts);
+router.get(
+	'/filter',
+	paginatedResults(
+		product,
+		'gallery category',
+		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
+	),
+	filterProducts
+);
 
 // create new product
 router.post('/', verifyAuth, upload.single('image'), validateUserInput(productSchema.addProduct), addProduct);

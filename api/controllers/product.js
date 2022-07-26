@@ -117,15 +117,43 @@ const filterProducts = (req, res, next) => {
 				const filteredProducts = products.filter(product => {
 					let isValid = true;
 					for (key in filters) {
+						if (key === 'limit' || key === 'page') continue;
 						isValid = isValid && (product[key] == filters[key] || product[key]?.indexOf(filters[key]) > -1);
 					}
 					return isValid;
 				});
 
+				const page = parseInt(req.query.page || 1);
+				const limit = parseInt(req.query.limit || 10);
+
+				const startIndex = (page - 1) * limit;
+				const endIndex = page * limit;
+
+				const results = {};
+
+				if (endIndex < filteredProducts?.length) {
+					results.next = {
+						page: page + 1,
+						limit: limit
+					};
+				}
+
+				if (startIndex > 0) {
+					results.previous = {
+						page: page - 1,
+						limit: limit
+					};
+				}
+
+				results.results = filteredProducts.slice(startIndex, endIndex);
+
+				console.log({ results });
+
 				res.status(200).json({
 					message: 'Successfully fetched products',
+					// total: filteredProducts.length,
 					total: filteredProducts.length,
-					products: filteredProducts,
+					products: results,
 					status: 200
 				});
 			} else {
