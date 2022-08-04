@@ -246,6 +246,7 @@ const addProduct = async (req, res, next) => {
 							quantity: req.body?.quantity,
 							subCategoryOne: req.body?.subCategoryOne,
 							subCategoryTwo: req.body?.subCategoryTwo,
+							availablePaymentOptions: req.body?.availablePaymentOptions,
 							createdBy: authenticatedUser._id
 						});
 

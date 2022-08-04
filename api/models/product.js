@@ -101,7 +101,7 @@ const ProductSchema = mongoose.Schema(
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'PaymentOptions',
-				required: [true, 'Upload the available payment options']
+				required: [true, 'Add the available payment options']
 			}
 		],
 
