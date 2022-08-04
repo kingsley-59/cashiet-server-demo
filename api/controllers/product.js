@@ -118,7 +118,10 @@ const filterProducts = (req, res, next) => {
 					let isValid = true;
 					for (key in filters) {
 						if (key === 'limit' || key === 'page') continue;
-						isValid = isValid && (product[key] == filters[key] || product[key]?.indexOf(filters[key]) > -1);
+						isValid =
+							isValid &&
+							(product[key]?.toLowerCase() == filters[key]?.toLowerCase() ||
+								product[key]?.toLowerCase()?.indexOf(filters[key]?.toLowerCase()) > -1);
 					}
 					return isValid;
 				});
@@ -146,8 +149,6 @@ const filterProducts = (req, res, next) => {
 				}
 
 				results.results = filteredProducts.slice(startIndex, endIndex);
-
-				console.log({ results });
 
 				res.status(200).json({
 					message: 'Successfully fetched products',

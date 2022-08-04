@@ -133,10 +133,10 @@ const editSubcategory = (req, res, next) => {
 		SubCategory.updateOne({ $or: [{ id }, { slug }] }, { $set: { ...values } })
 			.exec()
 			.then(category => {
-				res.status(200).json({ message: 'Successfully updated subcategory details' });
+				res.status(200).json({ message: 'Successfully updated subcategory details', status: 200 });
 			})
 			.catch(error => {
-				res.status(500).json({ message: 'Unable to update category details', error });
+				res.status(500).json({ message: 'Unable to update category details', error, status: 500 });
 			});
 	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
