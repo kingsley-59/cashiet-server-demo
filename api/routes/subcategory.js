@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const verifyAuth = require('../middleware/verify-auth');
-const { getAllCategories, getCategory, editCategory, deleteCategory, addCategory, deleteAllCategories } = require('../controllers/category');
-const { addSubcategory, getAllSubcategories, getSingleCategory, editSubcategory } = require('../controllers/subCategory');
+// const { getAllCategories, getCategory, editCategory, deleteCategory, addCategory, deleteAllCategories } = require('../controllers/category');
+const { addSubcategory, getAllSubcategories, getSingleCategory, editSubcategory, deleteSubcategory } = require('../controllers/subCategory');
 
 // add new subcategory
 router.post('/', verifyAuth, addSubcategory);
@@ -19,9 +19,9 @@ router.get('/:slug', getSingleCategory);
 router.put('/:categoryId', verifyAuth, editSubcategory);
 
 // delete category details
-router.delete('/:categoryId', verifyAuth, deleteCategory);
+router.delete('/:categoryId', verifyAuth, deleteSubcategory);
 
 // delete all categories
-router.delete('/delete/all', verifyAuth, deleteAllCategories);
+// router.delete('/delete/all', verifyAuth, deleteAllCategories);
 
 module.exports = router;

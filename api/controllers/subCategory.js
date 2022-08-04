@@ -70,6 +70,7 @@ const getAllSubcategories = (req, res, next) => {
 
 	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 	SubCategory.find()
+		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(subcategories => {
 			if (subcategories.length > 0) {
@@ -145,7 +146,7 @@ const deleteSubcategory = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		SubCategory.findById({ $or: [{ id }, { slug }] })
+		SubCategory.findById(id)
 			.exec()
 			.then(async subcategory => {
 				if (subcategory) {
@@ -159,7 +160,7 @@ const deleteSubcategory = (req, res, next) => {
 					// 	res.status(200).json({ message: 'Category successfully deleted' });
 					// });
 				} else {
-					res.status(500).json({ message: 'Category does not exist' });
+					res.status(500).json({ message: 'Subcategory does not exist' });
 				}
 			})
 			.catch(error => {
