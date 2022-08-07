@@ -37,10 +37,15 @@ const getUserWishList = (req, res, next) => {
 		.populate({ path: 'products' })
 		.then(result => {
 			if (result.length > 0) {
+				const wishList = result[0];
 				res.status(200).json({
 					message: 'Successfully fetched all wish lists',
-					total: result[0]?.products?.length,
-					wishlist: result[0],
+					wishlist: {
+						user: wishList?.user,
+						products: wishList?.products || [],
+						_id: wishList?._id,
+						total: wishList?.products?.length || 0
+					},
 					status: 200
 				});
 			} else {
@@ -109,10 +114,11 @@ const removeProductFromWishList = (req, res, next) => {
 		.exec()
 		.then(wishList => {
 			if (wishList?.length > 0) {
-				// check if product exists in wishlist
-				const productIndex = wishList[0].products.findIndex(product => product.product.toString() === id);
+				// check if product exists in wishlist,remove it if it does
+				const allProducts = wishList[0]?.products;
+				const productIndex = allProducts.findIndex(product => product.toString() === id);
 				if (productIndex > -1) {
-					wishList[0].products.splice(productIndex, 1);
+					allProducts.splice(productIndex, 1);
 					wishList[0].save();
 					res.status(200).json({ message: 'Successfully removed product from wishlist', status: 200 });
 				} else {

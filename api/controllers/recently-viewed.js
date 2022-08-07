@@ -27,10 +27,15 @@ const getUserRecentlyViewed = async (req, res, next) => {
 	const result = await RecentlyViewed.find({ user: authenticatedUser?._id });
 
 	if (result.length > 0) {
+		const recentlyViewed = result[0];
 		res.status(200).json({
-			message: 'Successfully fetched all recently viewed',
-			total: result[0]?.products?.length,
-			recentlyViewed: result[0],
+			message: 'Successfully fetched all wish lists',
+			recentlyViewed: {
+				user: recentlyViewed?.user,
+				products: recentlyViewed?.products || [],
+				_id: recentlyViewed?._id,
+				total: recentlyViewed?.products?.length || 0
+			},
 			status: 200
 		});
 	} else {
@@ -56,13 +61,10 @@ const addProductToRecentlyViewed = async (req, res, next) => {
 	RecentlyViewed.find({ user: authenticatedUser?._id })
 		.exec()
 		.then(recentlyViewed => {
-			const productIndex = recentlyViewed[0]?.products.findIndex(product => product.product.toString() === req.body?.productId);
-			if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in recently viewed', status: 409 });
-
 			if (recentlyViewed?.length === 0) {
 				const newProduct = new RecentlyViewed({
 					_id: new mongoose.Types.ObjectId(),
-					products: [{ product: req.body?.productId }],
+					products: [req.body?.productId],
 					user: authenticatedUser?._id
 				});
 
@@ -76,10 +78,11 @@ const addProductToRecentlyViewed = async (req, res, next) => {
 					})
 					.catch(error => res.status(500).json({ error, message: 'Unable to save add product to recently viewed', status: 500 }));
 			} else {
-				const productIndex = recentlyViewed[0].products.findIndex(product => product.product.toString() === req.body?.productId);
+				const allProducts = recentlyViewed[0]?.products;
+				const productIndex = allProducts.findIndex(product => product.toString() === req.body.productId);
 				if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in recently viewed', status: 409 });
 
-				recentlyViewed[0].products?.push({ product: req.body?.productId });
+				recentlyViewed[0].products?.push(req.body?.productId);
 				recentlyViewed[0].save();
 				res.status(201).json({ message: 'Successfully added a product to recently viewed', status: 201 });
 			}
@@ -95,9 +98,10 @@ const removeProductFromRecentlyViewed = async (req, res, next) => {
 		.then(recentlyViewed => {
 			// console.log({recentlyViewed})
 			if (recentlyViewed?.length > 0) {
-				const productIndex = recentlyViewed[0]?.products.findIndex(product => product.product.toString() === id);
+				const allProducts = recentlyViewed[0]?.products;
+				const productIndex = allProducts.findIndex(product => product.toString() === id);
 				if (productIndex > -1) {
-					recentlyViewed[0].products.splice(productIndex, 1);
+					allProducts.splice(productIndex, 1);
 					recentlyViewed[0].save();
 					res.status(200).json({ message: 'Successfully removed product from recently viewed', status: 200 });
 				} else {
