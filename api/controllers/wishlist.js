@@ -8,7 +8,8 @@ const getAllWishList = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		wishlist
 			.find()
-			.populate({ path: 'products', populate: { path: 'product', model: 'Product' } })
+			.populate({ path: 'products' })
+			// .populate({ path: 'products', populate: { path: 'product', model: 'Product' } })
 			.then(result => {
 				if (result.length > 0) {
 					res.status(200).json({
@@ -32,7 +33,8 @@ const getUserWishList = (req, res, next) => {
 
 	wishlist
 		.find({ user: authenticatedUser?._id })
-		.populate({ path: 'products', populate: { path: 'product', model: 'Product' } })
+		// .populate({ path: 'products', populate: { path: 'product', model: 'Product' } })
+		.populate({ path: 'products' })
 		.then(result => {
 			if (result.length > 0) {
 				res.status(200).json({
@@ -55,7 +57,6 @@ const addProductToWishList = (req, res, next) => {
 
 	if (!req.body.productId) return res.status(400).json({ message: 'Please provide a product id', status: 400 });
 
-	// find product with the given id. return error if not found
 	Product.findById(req.body.productId)
 		.then(product => {
 			if (!product) return res.status(200).json({ message: 'Product not found', status: 200 });
@@ -64,30 +65,32 @@ const addProductToWishList = (req, res, next) => {
 				.find({ user: authenticatedUser?._id })
 				.exec()
 				.then(wishList => {
-					const productIndex = wishList[0]?.products.findIndex(product => product.product.toString() === req.body.productId);
-					if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
+					console.log(wishList);
 
 					if (wishList?.length === 0) {
 						const newProduct = new wishlist({
 							_id: new mongoose.Types.ObjectId(),
-							products: [{ product: req.body.productId }],
+							products: [req.body.productId],
 							user: authenticatedUser?._id
 						});
 
 						return newProduct
 							.save()
 							.then(() => {
-								res.status(201).json({
+								console.log('hh');
+								return res.status(201).json({
 									message: 'Successfully added a product to wishList',
 									status: 201
 								});
 							})
 							.catch(error => res.status(500).json({ error, message: 'Unable to save add product to wish list', status: 500 }));
 					} else {
-						const productIndex = wishList[0].products.findIndex(product => product.product.toString() === req.body.productId);
+						// if product exist in wishlist, return error
+						const allProducts = wishList[0]?.products;
+						const productIndex = allProducts.findIndex(product => product.toString() === req.body.productId);
 						if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
 
-						wishList[0].products?.push({ product: req.body.productId });
+						wishList[0].products?.push(req.body.productId);
 						wishList[0].save();
 						res.status(201).json({ message: 'Successfully added a product to wishList', status: 201 });
 					}
@@ -145,3 +148,6 @@ module.exports = {
 	removeProductFromWishList,
 	deleteWishList
 };
+
+// const productIndex = wishList[0].products.findIndex(product => product.product.toString() === req.body.productId);
+// if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
