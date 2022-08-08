@@ -12,10 +12,10 @@ const addSubcategory = async (req, res, next) => {
 	}
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		SubCategory.find({ name: req.body.name })
+		SubCategory.find({ name: req.body?.name })
 			.exec()
 			.then(category => {
-				if (category.length >= 1) {
+				if (category?.length >= 1) {
 					return res.status(409).json({ message: 'Sub category already exist' });
 				} else {
 					try {
