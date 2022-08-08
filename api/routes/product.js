@@ -25,13 +25,13 @@ router.get(
 	'/',
 	paginatedResults(
 		product,
-		'gallery category',
+		'gallery category availablePaymentOptions',
 		// { path: 'category', select: 'name' },
 		// [
 		// 	{ path: 'category', select: 'name' },
 		// 	{ path: 'gallery', select: 'images' }
 		// ],
-		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
+		'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
 	),
 	validateUserInput(productSchema.filterProduct, (params = true)),
 	getAllProducts
@@ -42,8 +42,8 @@ router.get(
 	'/filter',
 	paginatedResults(
 		product,
-		'gallery category',
-		'name slug sku price keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
+		'gallery category availablePaymentOptions',
+		'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings quantity'
 	),
 	filterProducts
 );

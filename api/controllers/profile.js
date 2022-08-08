@@ -51,7 +51,7 @@ const getAllUsersProfile = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		Profile.find()
 			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
-			.populate({ path: 'user', select: 'username email' })
+			.populate({ path: 'user', select: 'username email isRevoked' })
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
@@ -71,7 +71,7 @@ const getCurrentUserProfile = (req, res, next) => {
 
 	Profile.findOne({ user: authenticatedUser._id })
 		.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
-		.populate({ path: 'user', select: 'username email' })
+		.populate({ path: 'user', select: 'username email isRevoked' })
 		.exec()
 		.then(userProfile => {
 			if (userProfile) return res.status(200).json({ userProfile, message: 'Successfully fetched user profile', status: 200 });
@@ -91,7 +91,7 @@ const getUserProfileDetails = (req, res, next) => {
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
 			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
-			.populate({ path: 'user', select: 'username email' })
+			.populate({ path: 'user', select: 'username email isRevoked' })
 			.exec()
 			.then(userProfile => {
 				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: null });

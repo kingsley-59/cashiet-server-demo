@@ -19,4 +19,3 @@ const PaymentOptionsSchema = mongoose.Schema(
 );
 
 module.exports = mongoose.model('PaymentOptions', PaymentOptionsSchema);
- 

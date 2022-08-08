@@ -15,7 +15,9 @@ const {
 	createAdmin,
 	testEmail,
 	adminLogin,
-	getAllAdmin
+	getAllAdmin,
+	revokeUserAccount,
+	unRevokeUserAccount
 } = require('../controllers/user');
 const { paginatedResults } = require('../middleware/pagination');
 const user = require('../models/user');
@@ -23,7 +25,7 @@ const userSchema = require('../schema/user');
 const { validateUserInput } = require('../middleware/validateFields');
 
 // get all users
-router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isVerified modeOfRegistration', { role: 'user' }), getAllUsers);
+router.get('/', verifyAuth, paginatedResults(user, '', 'username email role isRevoked isVerified modeOfRegistration', { role: 'user' }), getAllUsers);
 
 // create user account
 router.post('/signup', validateUserInput(userSchema.validateSignup), userSignup);
@@ -36,6 +38,12 @@ router.post('/login', validateUserInput(userSchema.validateLogin), userLogin);
 
 // admin login
 router.post('/admin/login', validateUserInput(userSchema.validateLogin), adminLogin);
+
+// revoke user account
+router.post('/revoke/:userId', verifyAuth, revokeUserAccount);
+
+// unrevoke user account
+router.post('/unrevoke/:userId', verifyAuth, unRevokeUserAccount);
 
 // confirm user email
 router.get('/confirm/:emailToken', confirmEmail);

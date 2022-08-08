@@ -33,6 +33,11 @@ const UserSchema = mongoose.Schema(
 			default: false
 		},
 
+		isRevoked: {
+			type: Boolean,
+			default: false
+		},
+
 		modeOfRegistration: {
 			type: String,
 			default: 'manual'

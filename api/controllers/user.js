@@ -186,7 +186,7 @@ const getAllUsers = (req, res, next) => {
 
 	if (authenticatedUser?.role === 'superadmin' || authenticatedUser?.role === 'admin') {
 		User.find({ role: 'user' })
-			.select('username email role isVerified modeOfRegistration')
+			.select('username email role isVerified modeOfRegistration isRevoked')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
@@ -252,7 +252,7 @@ const userLogin = async (req, res, next) => {
 
 const getCurrentUser = (req, res, next) => {
 	User.findById(req.decoded.user._id)
-		.select('username email role isVerified modeOfRegistration')
+		.select('username email role isVerified modeOfRegistration isRevoked')
 		.exec()
 		.then(user => {
 			res.status(200).json({
@@ -272,7 +272,7 @@ const getUserDetails = (req, res, next) => {
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 		const id = req.params.userId;
 		User.findById(id)
-			.select('username email role isVerified modeOfRegistration')
+			.select('username email role isVerified modeOfRegistration isRevoked')
 			.exec()
 			.then(user => {
 				if (user) {
@@ -312,6 +312,62 @@ const editUser = (req, res, next) => {
 		.catch(error => {
 			res.status(500).json({ message: 'Unable to update user details', error, status: 500 });
 		});
+};
+
+const revokeUserAccount = (req, res, next) => {
+	const id = req.params?.userId;
+	const authenticatedUser = req.decoded.user;
+
+	// if user is revoked, throw error else revoke user
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		User.findById(id)
+			.exec()
+			.then(user => {
+				if (!user?.isRevoked) {
+					User.updateOne({ _id: id }, { $set: { isRevoked: true } })
+						.exec()
+						.then(() => {
+							return res.status(200).json({ message: 'Successfully revoked user', status: 200 });
+						})
+						.catch(error => {
+							return res.status(500).json({ message: 'Unable to revoke user', error, status: 500 });
+						});
+				} else {
+					return res.status(500).json({ message: 'User is already revoked', status: 500 });
+				}
+			})
+			.catch(error => {
+				return res.status(500).json({ message: 'Unable to find user', error, status: 500 });
+			});
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
+};
+
+const unRevokeUserAccount = (req, res, next) => {
+	const id = req.params.userId;
+	const authenticatedUser = req.decoded.user;
+
+	// if user is unblocked, throw error else unblock user
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		User.findById(id)
+			.exec()
+			.then(user => {
+				if (user?.isRevoked) {
+					User.updateOne({ _id: id }, { $set: { isRevoked: false } })
+						.exec()
+						.then(() => {
+							return res.status(200).json({ message: 'Successfully unblocked user', status: 200 });
+						})
+						.catch(error => {
+							return res.status(500).json({ message: 'Unable to unblock user', error, status: 500 });
+						});
+				} else {
+					return res.status(500).json({ message: 'User is already unblocked', status: 500 });
+				}
+			})
+			.catch(error => {
+				return res.status(500).json({ message: 'Unable to find user', error, status: 500 });
+			});
+	} else res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const deleteUser = (req, res, next) => {
@@ -594,7 +650,7 @@ const getAllAdmin = (req, res, next) => {
 
 	if (authenticatedUser?.role === 'superadmin') {
 		User.find({ $or: [{ role: 'admin' }, { role: 'superadmin' }] })
-			.select('username email role isVerified modeOfRegistration')
+			.select('username email role isVerified modeOfRegistration isRevoked')
 			.exec()
 			.then(result => {
 				if (result.length > 0) {
@@ -736,5 +792,7 @@ module.exports = {
 	testEmail,
 	userLogout,
 	adminLogin,
-	getAllAdmin
+	getAllAdmin,
+	revokeUserAccount,
+	unRevokeUserAccount
 };

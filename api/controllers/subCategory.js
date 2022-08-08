@@ -6,7 +6,7 @@ const category = require('../models/category');
 const addSubcategory = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
-	const findCategory = await category.findOne({ _id: req.body.category });
+	const findCategory = await category.findOne({ _id: req.body?.category });
 	if (!findCategory) {
 		return res.status(200).json({ message: 'Category does not exist', status: 200 });
 	}
@@ -70,6 +70,7 @@ const getAllSubcategories = (req, res, next) => {
 
 	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 	SubCategory.find()
+		.select('name slug description category')
 		.populate({ path: 'category', select: 'name' })
 		.exec()
 		.then(subcategories => {
@@ -90,26 +91,29 @@ const getAllSubcategories = (req, res, next) => {
 	// } else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
-const getSingleCategory = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+const getSingleSubcategory = (req, res, next) => {
+	// const authenticatedUser = req.decoded.user;
 
-	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		const id = req.params.categoryId;
-		const slug = req.params.slug;
+	// if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
 
-		SubCategory.findById({ $or: [{ id }, { slug }] })
-			.exec()
-			.then(subcategory => {
-				if (subcategory) {
-					res.status(200).json({ subcategory, status: 200 });
-				} else {
-					res.status(200).json({ message: 'Subcategory not found', status: 200 });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+	const id = req.params?.subcategoryId;
+
+	SubCategory.findOne({ $or: [{ _id: id }, { slug: id }] })
+		.select('name slug')
+		.populate({ path: 'category', select: 'name slug' })
+		.exec()
+		.then(subcategory => {
+			if (subcategory) {
+				res.status(200).json({ subcategory, status: 200 });
+			} else {
+				res.status(200).json({ message: 'Subcategory not found', status: 200 });
+			}
+		})
+		.catch(error => {
+			console.log(error);
+			res.status(500).json({ error });
+		});
+	// } else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
 const editSubcategory = (req, res, next) => {
@@ -125,14 +129,14 @@ const editSubcategory = (req, res, next) => {
 		}
 
 		const values = {
-			name: req.body.name,
+			name: req.body?.name,
 			slug: slugify(req.body.name)
 		};
 
 		// Category.updateOne({ _id: id }, { $set: { ...values } })
-		SubCategory.updateOne({ $or: [{ id }, { slug }] }, { $set: { ...values } })
+		SubCategory.updateOne({ _id: id }, { $set: { ...values } })
 			.exec()
-			.then(category => {
+			.then(() => {
 				res.status(200).json({ message: 'Successfully updated subcategory details', status: 200 });
 			})
 			.catch(error => {
@@ -142,7 +146,7 @@ const editSubcategory = (req, res, next) => {
 };
 
 const deleteSubcategory = (req, res, next) => {
-	const id = req.params.categoryId;
+	const id = req.params.subcategoryId;
 	const authenticatedUser = req.decoded.user;
 
 	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
@@ -150,17 +154,10 @@ const deleteSubcategory = (req, res, next) => {
 			.exec()
 			.then(async subcategory => {
 				if (subcategory) {
-					await subcategory.remove();
+					await SubCategory.deleteOne({ _id: id });
 					return res.status(200).json({ message: 'Subcategory deleted successfully', status: 200 });
-
-					// Category.remove((error, success) => {
-					// 	if (error) {
-					// 		return res.status(500).json({ error });
-					// 	}
-					// 	res.status(200).json({ message: 'Category successfully deleted' });
-					// });
 				} else {
-					res.status(500).json({ message: 'Subcategory does not exist' });
+					res.status(500).json({ message: 'Subcategory does not exist', status: 500 });
 				}
 			})
 			.catch(error => {
@@ -172,7 +169,7 @@ const deleteSubcategory = (req, res, next) => {
 module.exports = {
 	addSubcategory,
 	getAllSubcategories,
-	getSingleCategory,
+	getSingleSubcategory,
 	editSubcategory,
 	deleteSubcategory
 };

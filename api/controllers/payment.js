@@ -15,21 +15,24 @@ const createPaymentOption = (req, res, next) => {
 		try {
 			newPaymentOption
 				.save()
-				.then(() => res.status(201).json({ message: 'Payment Option saved successfully' }))
+				.then(() => res.status(201).json({ message: 'Payment Option saved successfully', status: 201 }))
 				.catch(error => res.status(500).json({ error, message: 'Unable to create payment option' }));
 		} catch (error) {
-			return res.status(500).json({ error, message: error.message });
+			return res.status(500).json({ error, message: error?.message, status: 500 });
 		}
 	}
 };
 
 const getAllPaymentOptions = (req, res, next) => {
 	PaymentOptions.find()
+		.select('type description')
 		.then(paymentOptions => {
-			return res.status(200).json({ message: 'Successfully fetched all payment details', paymentOptions, total: paymentOptions.length });
+			return res
+				.status(200)
+				.json({ message: 'Successfully fetched all payment details', paymentOptions, total: paymentOptions.length, status: 200 });
 		})
 		.catch(error => {
-			return res.status(500).json({ error, message: error.message });
+			return res.status(500).json({ error, message: error?.message, status: 500 });
 		});
 };
 
@@ -37,8 +40,9 @@ const getOnePaymentOption = (req, res, next) => {
 	const paymentId = req.params.paymentId;
 
 	PaymentOptions.findById({ _id: paymentId })
-		.then(paymentOption => res.status(200).json({ paymentOption, message: 'Successfully fetched payment option' }))
-		.catch(error => res.status(500).json({ error, message: error.message }));
+		.select('type description')
+		.then(paymentOption => res.status(200).json({ paymentOption, message: 'Successfully fetched payment option', status: 200 }))
+		.catch(error => res.status(500).json({ error, message: error?.message, status: 500 }));
 };
 
 const deletePaymentOption = (req, res, next) => {
@@ -61,7 +65,7 @@ const deletePaymentOption = (req, res, next) => {
 				}
 			})
 			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error.message });
+				res.status(500).json({ error, message: 'An error occured: ' + error?.message, status: 500 });
 			});
 	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
