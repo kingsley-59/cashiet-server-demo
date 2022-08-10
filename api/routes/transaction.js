@@ -14,6 +14,8 @@ router.post('/', verifyAuth, saveTransaction);
 
 router.get('/', verifyAuth, getAllTransactions);
 
+router.get('/user/:userId', verifyAuth, getAllTransactions);
+
 router.get('/:transactionId', verifyAuth, getSingleTransaction);
 
 router.get('/user/me', verifyAuth, getAllUserTransactions);

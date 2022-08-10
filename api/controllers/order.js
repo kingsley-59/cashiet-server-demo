@@ -167,6 +167,27 @@ const getSpecificOrder = (req, res, next) => {
 		});
 };
 
+const adminGetSpecificUserOrders = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+	const userId = req.params?.userId;
+
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		Order.find({ user: userId })
+			.populate('user recurringPayment')
+			.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
+			.exec()
+
+			.then(orders => {
+				if (orders.length > 0) {
+					return res.status(200).json({ message: 'Successfully fetched all user orders', orders, total: orders.length, status: 20 });
+				} else return res.status(200).json({ message: 'No order found', status: 200, orders: [], total: 0 });
+			})
+			.catch(error => {
+				return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
+			});
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
+};
+
 const adminGetSpecificOrder = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const orderId = req.params.orderId;
@@ -261,6 +282,7 @@ module.exports = {
 	getAllUserOrders,
 	getAllOrders,
 	getSpecificOrder,
+	adminGetSpecificUserOrders,
 	adminGetSpecificOrder,
 	getCurrentOrder,
 	cancelOrder,

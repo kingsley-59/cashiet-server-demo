@@ -1,11 +1,20 @@
 const express = require('express');
-const { getAllInvoices, getSpecificInvoice, getAllUserInvoices, deleteInvoice, getOrderInvoices } = require('../controllers/invoice');
+const {
+	getAllInvoices,
+	getSpecificInvoice,
+	getAllUserInvoices,
+	deleteInvoice,
+	getOrderInvoices,
+	adminGetSpecificUserInvoices
+} = require('../controllers/invoice');
 const router = express.Router();
 const verifyAuth = require('../middleware/verify-auth');
 
 router.get('/', verifyAuth, getAllInvoices);
 
 router.get('/me', verifyAuth, getAllUserInvoices);
+
+router.get('/order/user/:userId', verifyAuth, adminGetSpecificUserInvoices);
 
 router.get('/order/:orderId', verifyAuth, getOrderInvoices);
 

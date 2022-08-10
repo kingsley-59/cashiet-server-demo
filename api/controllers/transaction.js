@@ -191,6 +191,21 @@ const getAllUserTransactions = (req, res, next) => {
 		.catch(error => res.status(500).json({ error }));
 };
 
+const adminGetSpecificUserTransactions = (req, res, next) => {
+	const authenticatedUser = req.decoded.user;
+	const userId = req.params?.userId;
+
+	if (authenticatedUser.role !== 'admin' || authenticatedUser.role !== 'superadmin')
+		return res.status(403).json({ message: 'You are not authorized to perform this action' });
+
+	Transaction.find({ user: userId })
+		.populate('invoice user')
+		.then(allTransactions =>
+			res.status(200).json({ message: 'Successfully fetched all transactions', allTransactions, total: allTransactions.length })
+		)
+		.catch(error => res.status(500).json({ error }));
+};
+
 const getAllTransactions = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
@@ -278,6 +293,7 @@ const deleteTransaction = (req, res, next) => {
 module.exports = {
 	saveTransaction,
 	getAllUserTransactions,
+	adminGetSpecificUserTransactions,
 	getAllTransactions,
 	getSingleTransaction,
 	deleteTransaction,

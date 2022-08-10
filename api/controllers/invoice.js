@@ -38,6 +38,25 @@ const getAllUserInvoices = (req, res, next) => {
 		.catch(error => res.status(500).json({ error, status: 500 }));
 };
 
+const adminGetSpecificUserInvoices = (req, res) => {
+	const authenticatedUser = req.decoded.user;
+	const userId = req.params?.userId;
+
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		Invoice.find({ user: userId })
+			.populate('order')
+			.then(allInvoice => {
+				if (allInvoice.length > 0) {
+					return res
+						.status(200)
+						.json({ message: 'Successfully fetched all user invoices', invoices: allInvoice, total: allInvoice.length, status: 200 });
+				} else {
+					return res.status(200).json({ message: 'No invoice found', status: 200, invoices: [], total: 0 });
+				}
+			}).catch(error => res.status(500).json({ error, status: 500 }));
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
+}
+
 const getSpecificInvoice = (req, res, next) => {
 	const invoiceId = req.params.invoiceId;
 
@@ -102,6 +121,7 @@ const getOrderInvoices = (req, res) => {
 module.exports = {
 	getAllInvoices,
 	getAllUserInvoices,
+	adminGetSpecificUserInvoices,
 	getSpecificInvoice,
 	deleteInvoice,
 	getOrderInvoices
