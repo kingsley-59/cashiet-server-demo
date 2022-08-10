@@ -12,7 +12,9 @@ const fs = require('fs');
 
 const getNewArrivals = async () => {
 	const total = await Product.find()
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate('category gallery')
 		.sort({ createdAt: -1 })
 		.limit(req.query?.limit || 10);
@@ -22,7 +24,9 @@ const getNewArrivals = async () => {
 
 const getAllProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'gallery', select: 'images' })
 		.exec()
@@ -42,7 +46,9 @@ const getAllProducts = (req, res, next) => {
 
 const getTopSellingProducts = (req, res, next) => {
 	Product.find({ quantitySold: { $gte: 0 } })
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate('category gallery')
 		.populate({ path: 'subCategoryOne', select: 'name' })
 		.populate({ path: 'subCategoryTwo', select: 'name' })
@@ -56,7 +62,9 @@ const getTopSellingProducts = (req, res, next) => {
 					.json({ message: 'Successfully fetched all top selling products', total: products.length, products, status: 200 });
 			} else {
 				Product.find()
-					.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+					.select(
+						'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+					)
 					.populate({ path: 'category', select: 'name' })
 					.populate({ path: 'gallery', select: 'images' })
 					.exec()
@@ -84,7 +92,9 @@ const getTopSellingProducts = (req, res, next) => {
 
 const getNewProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate('category gallery')
 		.populate({ path: 'subCategoryOne', select: 'name' })
 		.populate({ path: 'subCategoryTwo', select: 'name' })
@@ -105,7 +115,9 @@ const getNewProducts = (req, res, next) => {
 
 const filterProducts = (req, res, next) => {
 	Product.find()
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'subCategoryOne', select: 'name' })
 		.populate({ path: 'subCategoryTwo', select: 'name' })
@@ -281,7 +293,9 @@ const getProduct = (req, res, next) => {
 	const id = req.params.productId;
 
 	Product.findOne({ _id: id })
-		.select('name slug sku quantity price availablePaymentOptions keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku quantity price availablePaymentOptions keywords description weight dimension gallery category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate({ path: 'availablePaymentOptions', select: 'type description' })
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'gallery', select: 'images' })
@@ -302,7 +316,9 @@ const getProduct = (req, res, next) => {
 
 const getProductsByCategory = (req, res, next) => {
 	Product.find({ category: req.params.categoryId })
-		.select('name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings')
+		.select(
+			'name slug sku price availablePaymentOptions keywords description weight dimension category subCategoryOne subCategoryTwo image ratings'
+		)
 		.populate({ path: 'availablePaymentOptions', select: 'type description' })
 		.populate({ path: 'category', select: 'name' })
 		.populate({ path: 'subCategoryOne', select: 'name' })

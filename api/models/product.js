@@ -101,7 +101,7 @@ const ProductSchema = mongoose.Schema(
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'PaymentOptions',
-				unique: true,
+				// unique: true,
 				default: null,
 				required: [true, 'Add the available payment options']
 			}
