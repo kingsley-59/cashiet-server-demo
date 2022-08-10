@@ -5,7 +5,8 @@ const {
 	getSingleTransaction,
 	getAllUserTransactions,
 	deleteTransaction,
-	getOrderTransactions
+	getOrderTransactions,
+	adminGetSpecificUserTransactions
 } = require('../controllers/transaction');
 const router = express.Router();
 const verifyAuth = require('../middleware/verify-auth');
@@ -14,7 +15,7 @@ router.post('/', verifyAuth, saveTransaction);
 
 router.get('/', verifyAuth, getAllTransactions);
 
-router.get('/user/:userId', verifyAuth, getAllTransactions);
+router.get('/admin/user/:userId', verifyAuth, adminGetSpecificUserTransactions);
 
 router.get('/:transactionId', verifyAuth, getSingleTransaction);
 
