@@ -1,0 +1,40 @@
+version: "3.8" 
+services: 
+  mongodb: 
+    image: mongo:5.0.2 
+    restart: unless-stopped 
+    env_file: ./.env 
+    environment: 
+      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USERNAME 
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD 
+    # ports: 
+    #   - $MONGODB_LOCAL_PORT:$MONGODB_DOCKER_PORT 
+    networks: 
+      - app-network  
+    volumes: 
+      - db:/data/db 
+
+  app: 
+    depends_on: 
+      - mongodb 
+    build: ./cashiet 
+    restart: unless-stopped 
+    env_file: ./.env 
+    ports: 
+      - $NODE_LOCAL_PORT:$PORT 
+    environment: 
+      - DB_HOST=cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority 
+      - DB_USER=cashiet
+      - DB_PASSWORD=dL96UTqxAlBLQekJ 
+      # - DB_NAME=$MONGODB_DATABASE 
+      - PORT=27017
+    stdin_open: true 
+    tty: true 
+    networks: 
+      - app-network 
+
+volumes: 
+  db: 
+networks: 
+  app-network: 
+    driver: bridge
