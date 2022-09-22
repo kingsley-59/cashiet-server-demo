@@ -91,9 +91,9 @@ const createOkraCustomer = async (req, res, next) => {
 const listOkraCustomers = async (req, res, next) => {
     const authenticatedUser = req.decoded.user
 
-    // if (authenticatedUser?.role !== 'superadmin' || authenticatedUser?.role !== 'admin') {
-    //     return res.status(401).json({ message: 'Unauthorized access', status: 401 });
-    // } 
+    if (authenticatedUser?.role !== 'superadmin' || authenticatedUser?.role !== 'admin') {
+        return res.status(401).json({ message: 'Unauthorized access', status: 401 });
+    } 
 
     try {
         const okraCustomers = await OkraCustomer.find({}).select(
