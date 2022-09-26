@@ -36,6 +36,7 @@ const wishListRoute = require('./api/routes/wishlist');
 const recentlyViewedRoute = require('./api/routes/recently-viewed');
 const indicinaDecideRoute = require('./api/routes/indicina');
 const okraRoute = require('./api/routes/okra');
+const summaryRoute = require('./api/routes/summary')
 
 // mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority`);
@@ -79,6 +80,7 @@ app.use('/api/v1/wishlist', wishListRoute);
 app.use('/api/v1/recently-viewed', recentlyViewedRoute);
 app.use('/api/v1/indicina-decide', indicinaDecideRoute);
 app.use('/api/v1/okra', okraRoute);
+// app.use('/api/v1/summary', summaryRoute)
 
 app.use('/check', (req, res, next) => {
 	res.json({

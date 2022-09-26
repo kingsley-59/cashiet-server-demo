@@ -153,7 +153,7 @@ const getSpecificOrder = (req, res, next) => {
 	const orderId = req.params.orderId;
 
 	Order.findOne({ _id: orderId, user: authenticatedUser._id })
-		.populate('user recurringPayment')
+		.populate('user recurringPayment paymentOption')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
 		.then(order => {
 			if (order) {

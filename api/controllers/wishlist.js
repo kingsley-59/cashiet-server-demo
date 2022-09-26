@@ -72,7 +72,7 @@ const addProductToWishList = (req, res, next) => {
 				.then(wishList => {
 					console.log(wishList);
 
-					if (wishList?.length === 0) {
+					if (!wishList || wishList?.length === 0) {
 						const newProduct = new wishlist({
 							_id: new mongoose.Types.ObjectId(),
 							products: [req.body.productId],
@@ -92,7 +92,7 @@ const addProductToWishList = (req, res, next) => {
 					} else {
 						// if product exist in wishlist, return error
 						const allProducts = wishList[0]?.products;
-						const productIndex = allProducts.findIndex(product => product.toString() === req.body.productId);
+						const productIndex = allProducts?.findIndex(product => product.toString() === req.body.productId);
 						if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
 
 						wishList[0].products?.push(req.body.productId);
