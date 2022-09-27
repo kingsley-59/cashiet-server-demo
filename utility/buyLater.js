@@ -19,7 +19,7 @@ class buyLater {
 			return res.status(200).json({ message: 'User is yet to complete profile registration' });
 		}
 
-		const findOrder = await order.findOne({ _id: req.body.order });
+		const findOrder = await order.findOne({ _id: req.body.order }).populate('recurringPayment').exec() ;
 
 		if (findOrder.status !== 'pending') {
 			return res.status(400).json({ message: 'Order must be pending' });
