@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Indicina = require('../models/indicina');
 const OkraCustomer = require('../models/okra');
 const axios = require('axios');
+const creditDecision = require('../../utility/creditDecision');
 require('dotenv').config();
 
 const testTransactions = [
@@ -53,8 +54,10 @@ const testTransactions = [
 const verifyUserAccount = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const indicinaToken = req?.indicina_token;
+	const cost = req.body?.amount ?? 0;
 
 	// get user okra details
+	// get user account balance
 	// use okra details to get transaction history
 	let customer, transactions;
 	try {
@@ -64,6 +67,18 @@ const verifyUserAccount = async (req, res, next) => {
 			res.status(400).json({ message: 'User is not an okra customer' });
 			return;
 		}
+
+		let balanceResponse = await axios.post(
+			'https://api.okra.ng/v2/balance/getById',
+			{
+				id: customer.okra_id
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.OKRA_SECRET_API_KEY}`
+				}
+			}
+		)
 
 		let response = await axios.post(
 			'https://api.okra.ng/v2/transactions/getById',
@@ -77,8 +92,8 @@ const verifyUserAccount = async (req, res, next) => {
 			}
 		);
 
-		if (response.status !== 200) {
-			res.status(500).json({ message: 'Failed to get okra customer transaction details' });
+		if (response.status !== 200 || balanceResponse.status !== 200) {
+			res.status(400).json({ message: 'Failed to get okra customer transaction details' });
 			return;
 		}
 
@@ -116,9 +131,15 @@ const verifyUserAccount = async (req, res, next) => {
 		);
 
 		if (response.status !== 200) {
-			res.status(500).json({ message: 'Failed to get indicina decide details on transaction history' });
+			res.status(400).json({ message: 'Failed to get indicina decide details on transaction history' });
 			return;
 		}
+
+		const result = creditDecision({
+			indicinaAnalysisData: response.data?.data,
+			lendingAmount: cost,
+			balance: balanceResponse?.data?.balance?.available_balance
+		})
 
 		const decisionData = new Indicina({
 			_id: new mongoose.Types.ObjectId(),
@@ -132,7 +153,7 @@ const verifyUserAccount = async (req, res, next) => {
 			user: authenticatedUser._id
 		});
 		const saveDecisionData = await decisionData.save();
-		res.status(200).json({ message: 'Request successful', data: saveDecisionData });
+		res.status(200).json({ message: 'Request successful', result, data: saveDecisionData });
 	} catch (error) {
 		const { response } = error ?? {};
 		// console.log(response?.data ?? error.message)
