@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const IDCard = require('../models/id-card')
 const Indicina = require('../models/indicina');
 const OkraCustomer = require('../models/okra');
 const axios = require('axios');
@@ -55,6 +56,18 @@ const verifyUserAccount = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const indicinaToken = req?.indicina_token;
 	const cost = req.body?.amount ?? 0;
+
+	try {
+		const idCard = await IDCard.findOne({ user: authenticatedUser._id }).exec()
+
+		if (!idCard || !idCard.verificationStatus) {
+			res.status(400).json({ message: 'User KYC is not verified' });
+			return;
+		}
+	} catch (error) {
+		res.status(500).json({ message: 'Could not look up customer KYC verification', data: response?.data });
+		return;
+	}
 
 	// get user okra details
 	// get user account balance
