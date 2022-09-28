@@ -26,7 +26,7 @@ class buyLater {
 		}
 
 		if (findOrder.recurringPayment) {
-			return res.status(400).json({ message: 'Mandate already set up' });
+			return res.status(400).json({ message: 'Mandate already set up', data: findOrder.recurringPayment });
 		}
 
 		const newDate = new Date();
