@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Product = require('../models/product')
 const Order = require('../models/order')
 const RecurringPayments = require('../models/recurring-payment')
+const Transactions = require('../models/transaction')
 
 
 const getProductStats = async (req, res) => {
@@ -13,6 +14,9 @@ const getProductStats = async (req, res) => {
     }
 
     try {
+        // transaction model stats
+        const totalTransactions = await Transactions.estimatedDocumentCount()
+        
         // product model stats
         const totalProducts = await Product.estimatedDocumentCount()
         const products = await Product.find({}).exec()
@@ -46,6 +50,7 @@ const getProductStats = async (req, res) => {
         )
         res.status(200).json({
             totalProducts,
+            totalTransactions,
             totalAmountInStock,
             totalAmountSold,
             totalOrders,
