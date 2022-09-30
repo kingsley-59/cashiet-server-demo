@@ -1,15 +1,33 @@
 const mongoose = require('mongoose')
 const Product = require('../models/product')
 const Order = require('../models/order')
+const RecurringPayments = require('../models/recurring-payment')
 
 
 const getProductStats = async (req, res) => {
-    // const authenticatedUser = req.decoded.user
+    const authenticatedUser = req.decoded.user
+
+    if (authenticatedUser.role !== 'admin' && authenticatedUser.role !== 'superadmin') {
+        console.log((authenticatedUser.role !== 'admin' || authenticatedUser.role !== 'superadmin'))
+		return res.status(403).json({ message: 'You are not authorized to perform this action' });
+    }
 
     try {
-        const total_products = await Product.estimatedDocumentCount()
-        const total_orders = await Order.estimatedDocumentCount()
-        const total_cancelled_orders = await Order.find({status: 'cancelled'}).count()
+        // product model stats
+        const totalProducts = await Product.estimatedDocumentCount()
+        const products = await Product.find({}).exec()
+        const totalAmountInStock = products.reduce(
+            (prev, curr) => (prev + curr.price) * curr.quantity ,
+            0
+        )
+        const totalAmountSold = products.reduce(
+            (prev, curr) => (prev + curr.price) * curr.quantitySold , 
+            0
+        )
+        
+        // order model stats
+        const totalOrders = await Order.estimatedDocumentCount()
+        const totalCancelledOrders = await Order.find({status: 'cancelled'}).count()
         const paidOrders = await Order.find({staus: 'paid'})
             .select('orderItems')
             .populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } }).exec()
@@ -22,16 +40,18 @@ const getProductStats = async (req, res) => {
             return totalOrders
         }
         const orderList = compileOrders()
-        const total_items_sold = orderList.reduce(
+        const totalItemsSold = orderList.reduce(
             (prev, curr) => prev + curr?.quantity,
             0
         )
         res.status(200).json({
-            total_products,
-            total_orders,
-            total_cancelled_orders,
-            total_items_sold,
-            data: orderList,
+            totalProducts,
+            totalAmountInStock,
+            totalAmountSold,
+            totalOrders,
+            totalCancelledOrders,
+            totalItemsSold,
+            // orders: orderList,
             message: 'Request sucessful!',
         })
     } catch (err) {

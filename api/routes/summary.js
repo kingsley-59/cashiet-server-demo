@@ -6,7 +6,7 @@ const {
 } = require('../controllers/summary')
 
 
-router.get('/', getProductStats)
+router.get('/', verifyAuth, getProductStats)
 
 
 module.exports = router

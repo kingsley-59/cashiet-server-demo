@@ -80,7 +80,7 @@ app.use('/api/v1/wishlist', wishListRoute);
 app.use('/api/v1/recently-viewed', recentlyViewedRoute);
 app.use('/api/v1/indicina-decide', indicinaDecideRoute);
 app.use('/api/v1/okra', okraRoute);
-// app.use('/api/v1/summary', summaryRoute)
+app.use('/api/v1/summary', summaryRoute)
 
 app.use('/check', (req, res, next) => {
 	res.json({
