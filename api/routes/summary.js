@@ -2,11 +2,14 @@ const express = require('express')
 const router = express.Router()
 const verifyAuth = require('../middleware/verify-auth');
 const {
-    getProductStats
+    adminDashboardSummary,
+    userDashboardSummary
 } = require('../controllers/summary')
 
 
-router.get('/', verifyAuth, getProductStats)
+router.get('/admin', verifyAuth, adminDashboardSummary)
+
+router.get('/', verifyAuth, userDashboardSummary)
 
 
 module.exports = router

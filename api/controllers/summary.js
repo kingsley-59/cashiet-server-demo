@@ -3,9 +3,10 @@ const Product = require('../models/product')
 const Order = require('../models/order')
 const RecurringPayments = require('../models/recurring-payment')
 const Transactions = require('../models/transaction')
+const Wishlist = require('../models/wishlist')
 
 
-const getProductStats = async (req, res) => {
+const adminDashboardSummary = async (req, res) => {
     const authenticatedUser = req.decoded.user
 
     if (authenticatedUser.role !== 'admin' && authenticatedUser.role !== 'superadmin') {
@@ -61,11 +62,39 @@ const getProductStats = async (req, res) => {
         })
     } catch (err) {
         console.log(err?.message)
-        return res.status(500).json({message: err?.message ?? 'Error geting Product count'})
+        return res.status(500).json({message: err?.message ?? 'Error geting summary'})
+    }
+}
+
+
+const userDashboardSummary = async (req, res) => {
+    const authenticatedUser = req.decoded.user
+
+    try {
+        const orders = await Order.find({user: authenticatedUser._id}).exec()
+        const pendingOrders = orders.filter(order => order.status === 'pending')
+        const wishlist = await Wishlist.find({user: authenticatedUser._id}).exec()
+
+        res.status(200).json({
+            orders: {
+                total: orders?.length ?? 0,
+                totalPendingOrders: pendingOrders.length,
+                pendingOrders,
+                all: orders
+            },
+            wishlist: {
+                total: wishlist?.length ?? 0,
+                all: wishlist
+            }
+        })
+    } catch (error) {
+        console.log(err?.message)
+        return res.status(500).json({message: err?.message ?? 'Error geting summary'})
     }
 }
 
 
 module.exports = {
-    getProductStats
+    adminDashboardSummary,
+    userDashboardSummary,
 }

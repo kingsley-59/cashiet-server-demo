@@ -57,51 +57,40 @@ const getUserWishList = (req, res, next) => {
 		});
 };
 
-const addProductToWishList = (req, res, next) => {
+const addProductToWishList = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+	const productId = req.body.productId
 
-	if (!req.body.productId) return res.status(400).json({ message: 'Please provide a product id', status: 400 });
+	if (!productId) return res.status(400).json({ message: 'Please provide a product id', status: 400 });
 
-	Product.findById(req.body.productId)
-		.then(product => {
-			if (!product) return res.status(200).json({ message: 'Product not found', status: 200 });
+	try {
+		const product = await Product.findOne({_id: productId}).exec()
+		if (!product) return res.status(400).json({ message: 'Product not found', status: 400 });
 
-			wishlist
-				.find({ user: authenticatedUser?._id })
-				.exec()
-				.then(wishList => {
-					console.log(wishList);
-
-					if (!wishList || wishList?.length === 0) {
-						const newProduct = new wishlist({
-							_id: new mongoose.Types.ObjectId(),
-							products: [req.body.productId],
-							user: authenticatedUser?._id
-						});
-
-						return newProduct
-							.save()
-							.then(() => {
-								console.log('hh');
-								return res.status(201).json({
-									message: 'Successfully added a product to wishList',
-									status: 201
-								});
-							})
-							.catch(error => res.status(500).json({ error, message: 'Unable to save add product to wish list', status: 500 }));
-					} else {
-						// if product exist in wishlist, return error
-						const allProducts = wishList[0]?.products;
-						const productIndex = allProducts?.findIndex(product => product.toString() === req.body.productId);
-						if (productIndex > -1) return res.status(409).json({ message: 'Product already exists in wishlist', status: 409 });
-
-						wishList[0].products?.push(req.body.productId);
-						wishList[0].save();
-						res.status(201).json({ message: 'Successfully added a product to wishList', status: 201 });
-					}
-				});
-		})
-		.catch(error => res.status(500).json({ error, message: 'Unable to find product', status: 500 }));
+		const userWishlist = await wishlist.findOne({user: authenticatedUser._id}).exec()
+		
+		if (!userWishlist) {
+			const newWishlist = new wishlist({
+				_id: new mongoose.Types.ObjectId(),
+				products: [productId],
+				user: authenticatedUser._id
+			})
+			let result = await newWishlist.save()
+			if (result) return res.status(201).json({message: 'Successfully added a product to wishList', data: result})
+		} else {
+			let duplicates = userWishlist.products.filter(product => product.toString() === productId)
+			
+			if (duplicates.length > 0) {
+				return res.status(400).json({message: 'Product already exists in wishlist'})
+			}
+			userWishlist.products = [...userWishlist.products, productId]
+			let result = await userWishlist.save()
+			if (result) return res.status(200).json({message: 'Product added to wishlist', data: result })
+		}
+		throw new Error('Something broke!')
+	} catch (error) {
+		res.status(500).json({ error, message: error?.message ?? 'Something broke.' })
+	}
 };
 
 const removeProductFromWishList = (req, res, next) => {
