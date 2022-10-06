@@ -248,6 +248,27 @@ const getOrderTransactions = (req, res) => {
 	const authenticatedUser = req.decoded.user;
 	const orderId = req.params.orderId;
 
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+		const user = req.body.userId
+
+		Transaction.find({ user: user })
+		.populate('invoice')
+		.exec()
+		.then(orderTransactions => {
+			if (orderTransactions.length > 0) {
+				const transactionOrders = orderTransactions?.filter(transaction => transaction?.invoice?.order?.toString() === orderId);
+
+				res.status(200).json({
+					message: 'Transactions attached to the order fetched successfully',
+					allTransactions: transactionOrders,
+					total: transactionOrders.length
+				});
+			} else res.status(200).json({ message: 'No transaction attached to the order found' });
+		})
+		.catch(error => res.status(500).json(error));
+		return ;
+	}
+
 	Transaction.find({ user: authenticatedUser._id })
 		.populate('invoice')
 		.exec()
