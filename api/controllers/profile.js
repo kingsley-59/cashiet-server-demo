@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Profile = require('../models/profile');
+const Address = require('../models/address');
 const { uploadFile } = require('../middleware/s3');
 // const sharp = require('sharp');
 
@@ -93,10 +94,22 @@ const getUserProfileDetails = (req, res, next) => {
 			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
 			.populate({ path: 'user', select: 'username email isRevoked' })
 			.exec()
-			.then(userProfile => {
+			.then(async userProfile => {
 				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: null });
+				const userId = userProfile.user._id
 
-				return res.status(200).json({ userProfile, status: 200 });
+				try {
+					const address = await Address.find({user: userId})
+						.select('line1 line2 city state zip country phoneNumber alternativePhoneNumber email alternativeEmail')
+						.exec()
+					if (!address || address?.length == 0) return res.status(400).json({message: 'No address found', userProfile})
+		
+					return res.status(200).json({message: 'Request successful', userProfile, address})
+				} catch (error) {
+					return res.status(500).json({ userProfile, message: 'Something went wrong while getting addresses', status: 500 });
+				}
+
+				// return res.status(200).json({ userProfile, status: 200 });
 			})
 			.catch(error => {
 				res.status(500).json({ error, status: 500 });
