@@ -56,6 +56,27 @@ const getAllAddresses = (req, res, next) => {
 	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
 };
 
+const getSpecificUserAddresses = async (req, res) => {
+	const authenticatedUser = req.decoded.user
+	const userId = req.params.userId
+
+	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
+
+		try {
+			const address = await Address.find({user: userId})
+				.select('line1 line2 city state zip country phoneNumber alternativePhoneNumber email alternativeEmail')
+				.exec()
+			if (!address || address?.length == 0) return res.status(400).json({message: 'No address found'})
+
+			res.status(200).json({message: 'Request successful', data: address})
+		} catch (error) {
+			res.status(500).json({ error, status: 500 });
+		}
+	} else {
+		return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+	}
+}
+
 const getUserAddresses = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 
@@ -139,6 +160,7 @@ module.exports = {
 	postAddress,
 	updateAddress,
 	getAllAddresses,
+	getSpecificUserAddresses,
 	getUserAddresses,
 	deleteAddress
 };
