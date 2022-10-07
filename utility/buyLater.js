@@ -21,11 +21,15 @@ class buyLater {
 
 		const findOrder = await order.findOne({ _id: req.body.order }).populate('recurringPayment').exec() ;
 
-		if (findOrder.status !== 'pending') {
+		if (!findOrder || findOrder?.length == 0) {
+			return res.status(400).json({ message: 'Order does not exist.' })
+		}
+
+		if (findOrder?.status !== 'pending') {
 			return res.status(400).json({ message: 'Order must be pending' });
 		}
 
-		if (findOrder.recurringPayment) {
+		if (findOrder?.recurringPayment) {
 			return res.status(400).json({ message: 'Mandate already set up', data: findOrder.recurringPayment });
 		}
 
