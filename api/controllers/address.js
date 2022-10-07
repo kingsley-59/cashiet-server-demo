@@ -73,7 +73,7 @@ const getSpecificUserAddresses = async (req, res) => {
 			res.status(500).json({ error, status: 500 });
 		}
 	} else {
-		return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+		return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 	}
 }
 

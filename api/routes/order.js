@@ -27,6 +27,8 @@ router.get('/pending', verifyAuth, getCurrentOrder);
 
 router.post('/', verifyAuth, createOrder);
 
+// create endpoint for admin to create order for a user order/:userID
+
 router.post('/:orderId', verifyAuth, cancelOrder);
 
 router.delete('/:orderId', verifyAuth, deleteUserOrder);
