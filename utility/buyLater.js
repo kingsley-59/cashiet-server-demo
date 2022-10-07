@@ -91,9 +91,14 @@ class buyLater {
 			return res.status(400).json({ message: 'Order id, request id and mandate id must be provided' });
 		}
 
-		const findOrder = await order.findOne({ _id: req.body.order, user: authenticatedUser._id });
+		const findOrder = await order.findOne({ _id: req.body.order, user: authenticatedUser._id }).exec();
+		console.log(findOrder)
 
-		if (findOrder.status !== 'pending') {
+		if (!findOrder) {
+			return res.status(400).json({ message: 'Order does not exist.' })
+		}
+
+		if (findOrder?.status !== 'pending') {
 			return res.status(400).json({ message: 'Order must be pending to request an otp' });
 		}
 
