@@ -6,9 +6,15 @@ const paymentOptions = require('../models/payment-options');
 
 const createOrder = (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
+	let userId;
+	if (authenticatedUser.role === 'admin' || authenticatedUser.role === 'superadmin') {
+		userId = req.body.userId
+	} else {
+		userId = authenticatedUser._id
+	}
 
-	if (authenticatedUser.role === 'user') {
-		Order.findOne({ user: authenticatedUser._id, status: 'pending' })
+	if (authenticatedUser.role === 'user' || true) {
+		Order.findOne({ user: userId, status: 'pending' })
 			.then(previousOrder => {
 				if (previousOrder) {
 					return res.status(400).json({ message: 'You have an uncompleted order', status: 400 });
@@ -50,7 +56,7 @@ const createOrder = (req, res, next) => {
 						totalAmount: totalAmount,
 						remainingAmount: totalAmount,
 						duration: req.body.duration || 0,
-						user: authenticatedUser._id
+						user: userId
 					});
 
 					return newOrder
