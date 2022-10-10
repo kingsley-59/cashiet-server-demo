@@ -3,6 +3,7 @@ const IDCard = require('../models/id-card');
 const axios = require('axios');
 const Profile = require('../models/profile');
 const IdCard = require('../models/id-card');
+require('dotenv').config()
 
 const token = process.env.APPRUVE_TEST_TOKEN;
 
@@ -151,7 +152,7 @@ const getAllCards = (req, res, next) => {
 			.catch(error => {
 				res.status(500).json({ error });
 			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
+	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
 const getSpecificCard = (req, res, next) => {
