@@ -85,7 +85,7 @@ const addProductToWishList = async (req, res, next) => {
 			}
 			userWishlist.products = [...userWishlist.products, productId]
 			let result = await userWishlist.save()
-			if (result) return res.status(200).json({message: 'Product added to wishlist', data: result })
+			if (result) return res.status(201).json({message: 'Product added to wishlist', data: result })
 		}
 		throw new Error('Something broke!')
 	} catch (error) {
