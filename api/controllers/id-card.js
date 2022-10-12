@@ -110,17 +110,20 @@ const addCard = (req, res, next) => {
 														return res.status(200).json({ message: 'Successfully verified card details' });
 													})
 													.catch(error => {
-														return res.status(500).json({ message: 'Unable to verify card details', error });
+														return res.status(500).json({ message: 'Unable to update card details', error });
 													});
 											} else return res.status(500).json({ message: 'Unable to verify card', response: result });
 										} catch (error) {
+											let errorData = error?.response?.data
+											console.log({error: errorData})
+											if (errorData) return res.status(400).json({ message: errorData?.message, error: errorData });
 											return res.status(500).json({ message: 'Card saved Unable to verify card details', error });
 										}
 									} else {
-										res.status(200).json({ message: 'Cannot verify ID Card. Please, update your profile' });
+										return res.status(400).json({ message: 'Cannot verify ID Card. Please, update your profile' });
 									}
 								})
-								.catch(error => res.status(500).json({ error }));
+								.catch(error => res.status(500).json({message: 'Something broke!', error }));
 						})
 						.catch(error => {
 							return res.status(500).json({ error });
