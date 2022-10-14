@@ -22,11 +22,11 @@ const adminDashboardSummary = async (req, res) => {
         const totalProducts = await Product.estimatedDocumentCount()
         const products = await Product.find({}).exec()
         const totalAmountInStock = products.reduce(
-            (prev, curr) => (prev + curr.price) * curr.quantity ,
+            (prev, curr) => prev + (curr.price * curr.quantity) ,
             0
         )
         const totalAmountSold = products.reduce(
-            (prev, curr) => (prev + curr.price) * curr.quantitySold , 
+            (prev, curr) => prev + (curr.price * curr.quantitySold) , 
             0
         )
         
