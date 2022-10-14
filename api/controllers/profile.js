@@ -92,7 +92,7 @@ const getUserProfileDetails = (req, res, next) => {
 
 		Profile.findOne({ $or: [{ _id: id }, { user: id }] })
 			.select('firstName middleName lastName gender profilePicture nationality phoneNumber dob')
-			.populate({ path: 'user', select: 'username email isRevoked' })
+			.populate({ path: 'user', select: 'username email role isRevoked' })
 			.exec()
 			.then(async userProfile => {
 				if (!userProfile) return res.status(200).json({ message: 'No valid entry found', status: 200, userProfile: null });
