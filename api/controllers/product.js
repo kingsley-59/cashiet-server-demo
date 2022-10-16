@@ -194,7 +194,8 @@ const addProduct = async (req, res, next) => {
 				if (product.length >= 1) {
 					return res.status(409).json({ message: 'Product already exist', status: 409 });
 				} else {
-					const { filename: image } = req.file;
+					const { filename: image } = req.file ?? {};
+					if (!image) return res.status(400).json({message: 'Product image is required!', status: 400})
 
 					await sharp(req.file.path)
 						.resize(+SMALL_IMAGE_WIDTH, +SMALL_IMAGE_HEIGHT)

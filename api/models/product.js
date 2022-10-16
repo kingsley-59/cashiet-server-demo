@@ -55,15 +55,12 @@ const ProductSchema = mongoose.Schema(
 		dimension: {
 			width: {
 				type: Number
-				// required: true
 			},
 			height: {
 				type: Number
-				// required: true
 			},
 			length: {
 				type: Number
-				// required: true
 			}
 		},
 
