@@ -23,9 +23,9 @@ const addProduct = Joi.object().keys({
 	subCategoryOne: Joi.string().optional(),
 	subCategoryTwo: Joi.string().optional(),
 	image: Joi.any().optional(),
-	productLength: Joi.number().optional(),
-	productWidth: Joi.number().optional(),
-	productHeight: Joi.number().optional(),
+	productLength: Joi.any().optional(),
+	productWidth: Joi.any().optional(),
+	productHeight: Joi.any().optional(),
 	quantity: Joi.number().optional(),
 	availablePaymentOptions: Joi.array().optional()
 });
