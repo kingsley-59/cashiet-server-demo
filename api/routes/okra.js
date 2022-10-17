@@ -3,13 +3,16 @@ const router = express.Router()
 
 const {
     createOkraCustomer,
-    listOkraCustomers
+    listOkraCustomers,
+    saveOkraCustomer
 } = require('../controllers/okra')
 const requireAuth = require('../middleware/verify-auth')
 
 
 
 router.post('/', requireAuth, createOkraCustomer)
+
+router.post('/save', requireAuth, saveOkraCustomer)
 
 router.post('/list', requireAuth, listOkraCustomers)
 
