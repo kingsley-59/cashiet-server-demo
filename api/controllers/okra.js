@@ -96,6 +96,11 @@ const saveOkraCustomer = async (req, res) => {
     if (!customerId) return res.status(400).json({message: 'customer id is required.'})
 
     try {
+        const result = await OkraCustomer.find({customer: customerId}).exec()
+        if (result && result?.length > 0) {
+            return res.status(403).json({message: 'customer already exists.'})
+        }
+
         const response = await axios.post(
             'https://api.okra.ng/v2/sandbox/customers/get',
             { customer: customerId },
