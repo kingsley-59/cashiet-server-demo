@@ -91,9 +91,7 @@ const createOkraCustomer = async (req, res, next) => {
 const saveOkraCustomer = async (req, res) => {
     const authenticatedUser = req.decoded.user
     
-    const {
-        customerId
-    } = req.body
+    const customerId = req.params.customer
 
     if (!customerId) return res.status(400).json({message: 'customer id is required.'})
 

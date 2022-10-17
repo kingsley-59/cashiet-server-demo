@@ -12,7 +12,7 @@ const requireAuth = require('../middleware/verify-auth')
 
 router.post('/', requireAuth, createOkraCustomer)
 
-router.post('/save', requireAuth, saveOkraCustomer)
+router.post('/save/:customer', requireAuth, saveOkraCustomer)
 
 router.post('/list', requireAuth, listOkraCustomers)
 
