@@ -43,12 +43,10 @@ const okraCustomerSchema = mongoose.Schema(
 
         email: {
             type: String,
-            required: true
         },
 
         username: {
             type: String,
-            required: true
         },
 
         password: String,
