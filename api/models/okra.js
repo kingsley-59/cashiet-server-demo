@@ -21,6 +21,17 @@ const okraCustomerSchema = mongoose.Schema(
             required: true
         },
 
+        accountId: {
+            type: String,
+            required: true
+        },
+
+        recordId: {
+            type: String
+        },
+
+        lastBalance: String,
+
         phone: {
             type: String
         },
@@ -33,12 +44,10 @@ const okraCustomerSchema = mongoose.Schema(
 
         firstname: {
             type: String,
-            required: true
         },
 
         lastname: {
             type: String,
-            required: true
         },
 
         email: {

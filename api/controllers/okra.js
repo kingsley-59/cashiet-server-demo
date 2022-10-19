@@ -120,9 +120,18 @@ const createOkraCustomer = async (req, res, next) => {
 const saveOkraCustomer = async (req, res) => {
     const authenticatedUser = req.decoded.user
     
-    const customerId = req.params.customer
+    // const customerId = req.params.customer
+    const { 
+        okra_id,
+        customerId,
+        accountId,
+        recordId,
+        balance,
+        transactions
+     } = req.body
 
     if (!customerId) return res.status(400).json({message: 'customer id is required.'})
+    if (!accountId) return res.status(400).json({message: 'account id is required.'})
 
     try {
         const result = await OkraCustomer.find({customer: customerId}).exec()
@@ -130,33 +139,20 @@ const saveOkraCustomer = async (req, res) => {
             return res.status(403).json({message: 'customer already exists.'})
         }
 
-        const {
-            status, data, message
-        } = await verifyOkraCustomer(customerId)
+        const newCustomer = new OkraCustomer({
+            _id: new mongoose.Types.ObjectId(),
+            user: authenticatedUser._id,
+            okra_id,
+            customer: customerId,
+            accountId,
+            recordId,
+            lastBalance: balance,
+        })
 
-        console.log({status, message})
-        if (status === 200) {
-
-            const customer = data?.data
-            const okracustomer = new OkraCustomer({
-                _id: new mongoose.Types.ObjectId(),
-                user: authenticatedUser._id,
-                okra_id: customer._id,
-                customer: customer.customer,
-                phone: customer.phone[0],
-                score: customer.score,
-                photo_url: customer.photo_id[0]?.url,
-                firstname: customer.firstname,
-                lastname: customer.lastname,
-                email: customer.email[0] ?? '',
-                username: '',
-                created_at: customer?.created_at ?? new Date(),
-            })
-            const saveNewCustomer = await okracustomer.save()
-            res.status(201).json({message: 'Customer created successfully', data: saveNewCustomer})
-        } else {
-            res.status(status).send({message: message ?? 'Request was unsuccessful!', data})
-        }
+        const saveNewCustomer = await newCustomer.save()
+        const data = await saveNewCustomer.populate('user')
+        res.status(201).json({message: 'Customer saved successfullly', data})
+        
     } catch (error) {
         console.log(error.message)
         let { response } = error
