@@ -136,7 +136,7 @@ const saveOkraCustomer = async (req, res) => {
     try {
         const result = await OkraCustomer.find({customer: customerId}).exec()
         if (result && result?.length > 0) {
-            return res.status(403).json({message: 'customer already exists.'})
+            return res.status(400).json({message: 'customer already exists.'})
         }
 
         const newCustomer = new OkraCustomer({
