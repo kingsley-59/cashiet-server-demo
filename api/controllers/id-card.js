@@ -6,8 +6,11 @@ const IdCard = require('../models/id-card');
 require('dotenv').config()
 
 const token = process.env.APPRUVE_TEST_TOKEN;
+const youverify_key = process.env.YOUVERIFY_API_KEY
+const youverifyIsLive = process.env.YOUVERIFY_ENVIRONMENT == 'sandbox' ? false : true
+const youverifyBaseUrl = youverifyIsLive ? process.env.YOUVERIFY_SANDBOX_URL : process.env.YOUVERIFY_PRODUCTION_URL
 
-const verifyCardDetails = async (res, userProfile, cardNumber, type, expiryDate) => {
+const _verifyCardDetails = async (res, userProfile, cardNumber, type, expiryDate) => {
 	let verifyApi;
 	if (type === 'driverLicense') {
 		verifyApi = await axios.post(
@@ -61,6 +64,52 @@ const verifyCardDetails = async (res, userProfile, cardNumber, type, expiryDate)
 			{
 				headers: {
 					Authorization: `Bearer ${token}`
+				}
+			}
+		);
+	} else return res.status(400).json({ message: 'Invalid ID' });
+
+	return verifyApi?.data;
+};
+
+const verifyCardDetails = async (res, userProfile, cardNumber, type, expiryDate) => {
+	let verifyApi;
+	if (type === 'driverLicense') {
+		verifyApi = await axios.post(
+			`${youverifyBaseUrl}/v2/api/identity/ng/drivers-license`,
+			{
+				id: cardNumber,
+				isSubjectConsent: true,
+			},
+			{
+				headers: {
+					token: `${youverify_key}`
+				}
+			}
+		);
+	} else if (type === 'nin') {
+		verifyApi = await axios.post(
+			`${youverifyBaseUrl}/v2/api/identity/ng/nin`,
+			{
+				id: cardNumber,
+				isSubjectConsent: true,
+			},
+			{
+				headers: {
+					token: `${youverify_key}`
+				}
+			}
+		);
+	} else if (type === 'bvn') {
+		verifyApi = await axios.post(
+			`${youverifyBaseUrl}/v2/api/identity/ng/bvn`,
+			{
+				id: cardNumber,
+				isSubjectConsent : true,
+			},
+			{
+				headers: {
+					token: `${youverify_key}`
 				}
 			}
 		);

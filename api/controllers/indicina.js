@@ -74,7 +74,7 @@ const verifyUserAccount = async (req, res, next) => {
 	// use okra details to get transaction history
 	let customer, transactions;
 	try {
-		customer = await OkraCustomer.findOne({ user: authenticatedUser._id }).select('okra_id firstname lastname email phone').exec();
+		customer = await OkraCustomer.findOne({ user: authenticatedUser._id }).select('okra_id lastBalance firstname lastname email phone').exec();
 
 		if (!customer) {
 			res.status(400).json({ message: 'User is not an okra customer' });
