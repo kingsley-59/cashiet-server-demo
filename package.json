@@ -7,9 +7,9 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "nodemon server.js"
 	},
-	"engines" : { 
-		"npm" : ">=8.0.0",
-		"node" : ">=16.0.0"
+	"engines": {
+		"npm": ">=8.0.0",
+		"node": ">=16.0.0"
 	},
 	"keywords": [],
 	"author": "",
@@ -29,6 +29,7 @@
 		"formidable": "^2.0.1",
 		"get-stream": "^6.0.1",
 		"google-auth-library": "^8.0.2",
+		"html-to-text": "^8.2.1",
 		"joi": "^17.6.0",
 		"joi-objectid": "^4.0.2",
 		"jsonwebtoken": "^8.5.1",
