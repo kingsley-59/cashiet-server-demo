@@ -165,7 +165,7 @@ const getSpecificOrder = (req, res, next) => {
 			if (order) {
 				return res.status(200).json({ message: 'Order fetched successfully', order });
 			} else {
-				return res.status(200).json({ message: 'Order not found', status: 200, order: null });
+				return res.status(200).json({ message: 'Order not found', status: 404, order: null });
 			}
 		})
 		.catch(error => {

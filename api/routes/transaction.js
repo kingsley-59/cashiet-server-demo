@@ -7,7 +7,7 @@ const {
 	deleteTransaction,
 	getOrderTransactions,
 	adminGetSpecificUserTransactions
-} = require('../controllers/transaction');
+} = require('../controllers/transactions');
 const router = express.Router();
 const verifyAuth = require('../middleware/verify-auth');
 

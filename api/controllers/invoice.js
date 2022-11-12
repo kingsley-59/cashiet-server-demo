@@ -61,7 +61,14 @@ const getSpecificInvoice = (req, res, next) => {
 	const invoiceId = req.params.invoiceId;
 
 	Invoice.findOne({ _id: invoiceId })
-		.populate('order')
+		.populate({
+			path: 'order', 
+			populate: { path: 'paymentOption' }, 
+		})
+		.populate({
+			path: 'order',
+			populate: { path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } }
+		})
 		.then(invoice => {
 			if (invoice) {
 				return res.status(200).json({ message: 'Invoice fetched successfully', invoice, status: 200 });

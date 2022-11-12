@@ -11,7 +11,7 @@ const OrderSchema = mongoose.Schema(
 
 		status: {
 			type: String,
-			enum: ['pending', 'paid', 'shipped', 'completed', 'cancelled'], // enum means string objects
+			enum: ['pending', 'in-progress', 'paid', 'shipped', 'completed', 'cancelled'], // enum means string objects
 			default: 'pending'
 		},
 
@@ -145,6 +145,11 @@ const OrderSchema = mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true
+		},
+
+		recurringCharges: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'RecurringCharges'
 		},
 
 		recurringPayment: {

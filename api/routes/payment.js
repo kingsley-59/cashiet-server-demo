@@ -1,14 +1,16 @@
-const express = require('express');
-const { getAllPaymentOptions, createPaymentOption, getOnePaymentOption, deletePaymentOption } = require('../controllers/payment');
-const router = express.Router();
-const verifyAuth = require('../middleware/verify-auth');
+const express = require('express')
+const { verifyTestTransaction, dumpPaymentDetailsTable, getUserPaymentDetails, processPayment } = require('../controllers/payment')
+const router = express.Router()
+const verifyAuth = require('../middleware/verify-auth')
 
-router.get('/', getAllPaymentOptions);
 
-router.post('/', verifyAuth, createPaymentOption);
+router.get('/dump', dumpPaymentDetailsTable);
 
-router.get('/:paymentId', verifyAuth, getOnePaymentOption);
+router.get('/verify/:reference', verifyAuth, verifyTestTransaction);
 
-router.delete('/:paymentId', verifyAuth, deletePaymentOption);
+router.get('/user', verifyAuth, getUserPaymentDetails);
 
-module.exports = router;
+router.post('/:orderId', verifyAuth, processPayment);
+
+
+module.exports = router

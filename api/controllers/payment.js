@@ -1,78 +1,114 @@
 const mongoose = require('mongoose');
-const { default: slugify } = require('slugify');
-const PaymentOptions = require('../models/payment-options');
+const Order = require('../models/order');
+const PaymentDetails = require('../models/payment-details');
+const RecurringCharges = require('../models/recurring-charges');
+const { getAuthorizationToken, chargeAuthorization } = require('../service/paystack');
 
-const createPaymentOption = (req, res, next) => {
-	const authenticatedUser = req.decoded.user;
+// ["save_and_buy_later", "pay_later", "buy_now"]
 
-	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		const newPaymentOption = new PaymentOptions({
-			_id: new mongoose.Types.ObjectId(),
-			type: slugify(req.body.type),
-			description: req.body.description
-		});
+const processPayLaterOrder = (initialAmount, order) => {}
 
-		try {
-			newPaymentOption
-				.save()
-				.then(() => res.status(201).json({ message: 'Payment Option saved successfully', status: 201 }))
-				.catch(error => res.status(500).json({ error, message: 'Unable to create payment option' }));
-		} catch (error) {
-			return res.status(500).json({ error, message: error?.message, status: 500 });
-		}
-	}
-};
+const processSaveAndBuyLaterOrder = () => {}
 
-const getAllPaymentOptions = (req, res, next) => {
-	PaymentOptions.find()
-		.select('type description')
-		.then(paymentOptions => {
-			return res
-				.status(200)
-				.json({ message: 'Successfully fetched all payment details', paymentOptions, total: paymentOptions.length, status: 200 });
-		})
-		.catch(error => {
-			return res.status(500).json({ error, message: error?.message, status: 500 });
-		});
-};
 
-const getOnePaymentOption = (req, res, next) => {
-	const paymentId = req.params.paymentId;
+const verifyTestTransaction = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
+    const reference = req.params.reference
 
-	PaymentOptions.findById({ _id: paymentId })
-		.select('type description')
-		.then(paymentOption => res.status(200).json({ paymentOption, message: 'Successfully fetched payment option', status: 200 }))
-		.catch(error => res.status(500).json({ error, message: error?.message, status: 500 }));
-};
+    try {
+        const { authorization, customer } = await getAuthorizationToken(reference)
+        if (authorization.reusable !== true) return res.status(400).json({message: 'Card is not reusable. Please try a different card.'})
 
-const deletePaymentOption = (req, res, next) => {
-	const paymentId = req.params.paymentId;
-	const authenticatedUser = req.decoded.user;
+        const details = new PaymentDetails({
+            user: authenticatedUser._id,
+            authorization, customer
+        })
+        await details.save()
 
-	if (authenticatedUser.role === 'superadmin' || authenticatedUser.role === 'admin') {
-		PaymentOptions.findById({ _id: paymentId })
-			.exec()
-			.then(paymentOption => {
-				if (paymentOption) {
-					paymentOption.deleteOne((error, success) => {
-						if (error) {
-							return res.status(500).json({ error });
-						}
-						res.status(200).json({ message: 'Payment Option successfully deleted' });
-					});
-				} else {
-					res.status(500).json({ message: 'Payment Option does not exist' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ error, message: 'An error occured: ' + error?.message, status: 500 });
-			});
-	} else return res.status(401).json({ error, message: 'Unauthorized access', status: 401 });
-};
+        res.status(200).json({ message: 'Verification successful.', authorization, customer })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const getUserPaymentDetails = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
+    const role = authenticatedUser.role;
+
+    if (role === 'superadmin' || role === 'admin') return res.status(401).json({message: 'Unauthorized! Only users can see their payment details.'})
+
+    try {
+        const detail = await PaymentDetails.findOne({user: authenticatedUser._id}).populate('user').exec();
+        if (!detail) return res.status(404).json({message: 'Payment details not found.'});
+
+        res.status(200).json({message: 'Request successful.', data: detail})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const processPayment = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
+    const role = authenticatedUser.role;
+    const { orderId, startDate, endDate, duration, splitAmount  } = req.params.orderId;
+
+    if (role === 'superadmin' || role === 'admin') return res.status(401).json({message: 'Only users can process payments on their orders.'})
+
+    try {
+        const order = await Order.findOne({ 
+            _id: orderId, 
+            user: authenticatedUser._id 
+        }).populate('user recurringCharges paymentOption').exec()
+        if (!order) return res.status(404).json({message: 'Order with current user not found.'})
+        const totalAmount = order.totalAmount;
+        const paymentOption = order.paymentOption.type;
+
+        if (paymentOption === 'pay_later') {
+            // process pay later order
+            const details = await PaymentDetails.findOne({ user: authenticatedUser._id }).exec()
+            if (!details) return res.status(404).json({message: 'Card not found! Please add card to proceed with payment.'})
+
+            const charge = new RecurringCharges({
+                startDate: new Date(),
+                endDate: new Date(),
+                duration, splitAmount,
+                isActive: true,
+                paymentDetails: details._id
+            })
+            await charge.save()
+
+            const { data } = await chargeAuthorization(details.customer.email, splitAmount, details.authorization.authorization_code)
+            if (data?.data?.status !== 'success') return res.status(400).json({message: 'Initial debit was not successful. Pls check the card and try again.'})
+
+            order.recurringCharges = charge._id
+            await order.save()
+
+        } else if (paymentOption === 'save_and_buy_later') {
+            // process save and buy later order
+
+        } else {
+            // process buy now
+
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const dumpPaymentDetailsTable = async (req, res, next) => {
+    try {
+        const details = await PaymentDetails.find({}).populate({path: 'user'}).exec()
+
+        res.status(200).json({ mmessage: 'Data retrieved successfully.', data: details })
+    } catch (error) {
+        res.status(500).json({ message: error?.message ?? 'Failed to retrieve all payment details' })
+    }
+}
+
 
 module.exports = {
-	createPaymentOption,
-	getAllPaymentOptions,
-	getOnePaymentOption,
-	deletePaymentOption
-};
+    verifyTestTransaction,
+    getUserPaymentDetails,
+    processPayment,
+    dumpPaymentDetailsTable
+}

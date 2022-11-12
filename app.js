@@ -22,7 +22,7 @@ const inventoryRoute = require('./api/routes/product-inventory');
 const productGalleryRoute = require('./api/routes/product-gallery');
 const orderItemsRoute = require('./api/routes/order-items');
 const orderRoute = require('./api/routes/order');
-const paymentOptionRoute = require('./api/routes/payment');
+const paymentOptionRoute = require('./api/routes/payment-options');
 const invoiceRoute = require('./api/routes/invoice');
 const transactionRoute = require('./api/routes/transaction');
 const supportRoute = require('./api/routes/support');
@@ -37,6 +37,7 @@ const recentlyViewedRoute = require('./api/routes/recently-viewed');
 const indicinaDecideRoute = require('./api/routes/indicina');
 const okraRoute = require('./api/routes/okra');
 const summaryRoute = require('./api/routes/summary')
+const paymentRoute = require('./api/routes/payment');
 
 // mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.gesp0.mongodb.net/cashietDatabase?retryWrites=true&w=majority`);
 mongoose.connect(`mongodb+srv://cashiet:${process.env.MONGODB_PASSWORD}@cluster0.m3xsd3p.mongodb.net/?retryWrites=true&w=majority`);
@@ -80,7 +81,8 @@ app.use('/api/v1/wishlist', wishListRoute);
 app.use('/api/v1/recently-viewed', recentlyViewedRoute);
 app.use('/api/v1/indicina-decide', indicinaDecideRoute);
 app.use('/api/v1/okra', okraRoute);
-app.use('/api/v1/summary', summaryRoute)
+app.use('/api/v1/summary', summaryRoute);
+app.use('/api/v1/payments', paymentRoute)
 
 app.use('/check', (req, res, next) => {
 	res.json({
