@@ -10,7 +10,7 @@ router.get('/verify/:reference', verifyAuth, verifyTestTransaction);
 
 router.get('/user', verifyAuth, getUserPaymentDetails);
 
-router.post('/:orderId', verifyAuth, processPayment);
+router.post('/', verifyAuth, processPayment);
 
 
 module.exports = router
