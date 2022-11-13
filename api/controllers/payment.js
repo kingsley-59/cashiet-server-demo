@@ -9,6 +9,8 @@ const { getAuthorizationToken, chargeAuthorization } = require('../service/payst
 
 class Payments {
     constructor(req, res, authenticatedUser, orderId) {
+        this.req = req
+        this.res = res
         this.authenticatedUser = authenticatedUser;
         this.orderId = orderId
         this.order = {}
@@ -20,7 +22,7 @@ class Payments {
             _id: this.orderId,
             user: this.authenticatedUser._id
         }).populate('user recurringCharges paymentOption').exec()
-        if (!order) return res.status(404).json({ message: 'Order with current user not found.' })
+        if (!order) return this.res.status(404).json({ message: 'Order with current user not found.' })
         this.paymentOption = order.paymentOption.type;
         this.order = order
 
@@ -31,7 +33,7 @@ class Payments {
         console.log('getting payment details...')
         // get payment details
         const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
-        if (!details) return res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
+        if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
 
         console.log('creating recurring charge...')
         // create new recurring charge
@@ -48,7 +50,7 @@ class Payments {
         console.log('charging card...')
         // charge the authorization code from payment details
         const { data } = await chargeAuthorization(details.customer.email, splitAmount, details.authorization.authorization_code)
-        if (data?.data?.status !== 'success') return res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
+        if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
 
         console.log('Updating order')
         // update order with the created recurring charge
@@ -56,7 +58,7 @@ class Payments {
         await this.order.save()
 
         console.log('Done.')
-        res.status(200).json({ message: 'A recurring payment started successfully, to be renewed monthly.' })
+        this.res.status(200).json({ message: 'A recurring payment started successfully, to be renewed monthly.' })
     }
 
     async processSaveAndBuyLaterOrder(duration, splitAmount) {
