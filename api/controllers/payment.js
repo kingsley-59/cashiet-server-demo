@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { addMonths } = require('../../utility/addMonths');
+const Invoice = require('../models/invoice');
 const Order = require('../models/order');
 const PaymentDetails = require('../models/payment-details');
 const RecurringCharges = require('../models/recurring-charges');
@@ -30,32 +31,22 @@ class Payments {
     }
 
     async processPayLaterOrder(duration, splitAmount) {
-        console.log('getting payment details...')
-        // get payment details
+        console.log('getting payment & invoice details...')
+        // get payment and invoice details
         const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
         if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
-
-        console.log('creating recurring charge...')
-        // create new recurring charge
-        const charge = new RecurringCharges({
-            _id: mongoose.Types.ObjectId(),
-            startDate: new Date(),
-            endDate: addMonths(new Date(), duration),
-            duration, splitAmount,
-            isActive: true,
-            paymentDetails: details._id
-        })
-        await charge.save()
+        const invoice = await Invoice.findOne({order: this.orderId}).populate('recurringCharges').exec()
+        const recurringCharge = invoice.recurringCharges
 
         console.log('charging card...')
         // charge the authorization code from payment details
-        const { data } = await chargeAuthorization(details.customer.email, splitAmount, details.authorization.authorization_code)
+        const { data } = await chargeAuthorization(details.customer.email, recurringCharge.splitAmount, details.authorization.authorization_code)
         if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
 
         console.log('Updating order')
         // update order with the created recurring charge
-        let remainingAmount = Number(this.order.totalAmount) - Number(splitAmount)
-        this.order.recurringCharges = charge._id
+        let remainingAmount = Number(this.order.totalAmount) - Number(recurringCharge.splitAmount)
+        this.order.recurringCharges = recurringCharge._id
         this.order.remainingAmount = remainingAmount
         this.order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
         this.order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
@@ -67,32 +58,22 @@ class Payments {
     }
 
     async processSaveAndBuyLaterOrder(duration, splitAmount) {
-        console.log('getting payment details...')
-        // get payment details
+        console.log('getting payment & invoice details...')
+        // get payment and invoice details
         const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
         if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
-
-        console.log('creating recurring charge...')
-        // create new recurring charge
-        const charge = new RecurringCharges({
-            _id: mongoose.Types.ObjectId(),
-            startDate: new Date(),
-            endDate: addMonths(new Date(), duration),
-            duration, splitAmount,
-            isActive: true,
-            paymentDetails: details._id
-        })
-        await charge.save()
+        const invoice = await Invoice.findOne({order: this.orderId}).populate('recurringCharges').exec()
+        const recurringCharge = invoice.recurringCharges
 
         console.log('charging card...')
         // charge the authorization code from payment details
-        const { data } = await chargeAuthorization(details.customer.email, splitAmount, details.authorization.authorization_code)
+        const { data } = await chargeAuthorization(details.customer.email, recurringCharge.splitAmount, details.authorization.authorization_code)
         if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
 
         console.log('Updating order')
         // update order with the created recurring charge
-        let remainingAmount = Number(this.order.totalAmount) - Number(splitAmount)
-        this.order.recurringCharges = charge._id
+        let remainingAmount = Number(this.order.totalAmount) - Number(recurringCharge.splitAmount)
+        this.order.recurringCharges = recurringCharge._id
         this.order.remainingAmount = remainingAmount
         this.order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
         this.order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
@@ -138,7 +119,6 @@ class Payments {
         const charges = await RecurringCharges.findOne({_id: recurringChargesId}).exec()
         charges.isActive = (remainingAmount > 1) ? true : false
         await charges.save()
-
 
         console.log('Done.')
         return;

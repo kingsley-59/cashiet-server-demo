@@ -30,6 +30,16 @@ const InvoiceSchema = mongoose.Schema(
 			required: true
 		},
 
+		isRecurring: {
+			type: Boolean,
+			default: false
+		},
+
+		recurringCharges: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'RecurringCharges'
+		}
+
 		// orderPayment: {
 		// 	type: mongoose.Schema.Types.ObjectId,
 		// 	ref: 'OrderPayment'

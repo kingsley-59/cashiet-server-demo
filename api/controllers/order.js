@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Invoice = require('../models/invoice');
+const RecurringCharges = require('../models/recurring-charges')
 const paymentOptions = require('../models/payment-options');
+const { addMonths } = require('../../utility/addMonths');
 // const cron = require('node-cron');
 
 const createOrder = (req, res, next) => {
@@ -67,34 +69,56 @@ const createOrder = (req, res, next) => {
 							paymentOptions
 								.findOne({ _id: req.body.paymentOption })
 								.then(response => {
-									if (response?.type === 'save_and_buy_later') {
-										return res.status(201).json({
-											message: 'Order created successfully. Proceed to setup payment',
-											order: createdOrder,
-											status: 201
-										});
-									} else {
+									if (response?.type === 'buy_now') {
+										// create only invoice if payment option is buy_now
 										const newInvoice = new Invoice({
 											_id: new mongoose.Types.ObjectId(),
 											amount: totalAmount,
-											dateIssued: new Date(),
+											dateIssued: now,
 											expiryDate: now.getDate() + 5,
 											order: newOrder._id
-										});
-
-										return newInvoice
-											.save()
-											.then(invoice => {
-												return res.status(201).json({
-													message: 'Order and invoice created successfully',
-													invoice: invoice,
-													order: createdOrder,
-													status: 201
-												});
-											})
-											.catch(error => {
-												return res.status(500).json({ error, message: 'Unable to create invoice', status: 500 });
+										})
+										newInvoice.save().then(invoice => {
+											return res.status(201).json({
+												message: 'Order and invoice created successfully',
+												invoice: invoice,
+												order: createdOrder,
+												status: 201
 											});
+										}).catch(error => {
+											return res.status(500).json({message: 'Failed to create invoice.', error})
+										})
+									} else {
+										// create recurring charges and invoice for other options
+										if (!req.body?.duration || !req.body?.splitAmount) return res.status(400).json({ message: 'Duration and split amount is required for recurring payments.' })
+										const charge = new RecurringCharges({
+											_id: mongoose.Types.ObjectId(),
+											startDate: now,
+											endDate: addMonths(now, req.body?.duration),
+											duration: req.body?.duration,
+											splitAmount: req.body?.splitAmount,
+											isActive: true,
+										})
+										charge.save().then(charge => {
+											const newInvoice = new Invoice({
+												_id: new mongoose.Types.ObjectId(),
+												amount: totalAmount,
+												dateIssued: now,
+												expiryDate: now.getDate() + 5,
+												order: newOrder._id,
+												isRecurring: true,
+												recurringCharges: charge._id
+											});
+											newInvoice.save().then(invoice => {
+												res.status(201).json({
+													message: 'Order and invoice created successfully',
+													invoice,
+													order: createdOrder
+												})
+											})
+										}).catch(error => {
+											return res.status(500).json({message: 'Failed to create invoice.', error})
+										})
 									}
 								})
 								.catch(error => res.status(500).json({ error, status: 500 }));
@@ -160,12 +184,12 @@ const getSpecificOrder = async (req, res, next) => {
 
 	try {
 		const order = await Order.findOne({ _id: orderId, user: authenticatedUser._id })
-		.populate('user recurringCharges paymentOption')
-		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
-		.exec()
+			.populate('user recurringCharges paymentOption')
+			.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
+			.exec()
 		if (!order) return res.status(404).json({ message: 'Order not found', status: 404, order: null });
 
-		const invoice = await Invoice.findOne({order: order._id}).exec();
+		const invoice = await Invoice.findOne({ order: order._id }).exec();
 		return res.status(200).json({ message: 'Order fetched successfully', order, invoice });
 	} catch (error) {
 		return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });

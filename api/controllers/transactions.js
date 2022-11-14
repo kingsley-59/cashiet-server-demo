@@ -27,7 +27,7 @@ const saveTransaction = async (req, res, next) => {
         // update invoice and order
         console.log('update invoice and order status')
 		order.status = 'paid'
-		await order.save()		
+		await order.save()
         const invoice = await Invoice.findOneAndUpdate({_id: invoiceId}, {status: 'paid'}, {new: true}).exec()
 
         // save incoming transaction
