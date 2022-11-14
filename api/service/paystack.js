@@ -1,7 +1,7 @@
 const axios = require('axios')
 
 const BASE_URL = 'https://api.paystack.co'
-const SECRET_KEY = process.env.PAYSTACK_TEST_SECRET
+const SECRET_KEY = process.env.NODE_ENV === 'development' ? process.env.PAYSTACK_TEST_SECRET : process.env.PAYSTACK_LIVE_SECRET
 
 
 async function verifyTransactionGetToken(reference) {
