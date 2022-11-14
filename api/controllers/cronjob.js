@@ -3,6 +3,7 @@ const htmlToText = require('html-to-text')
 const order = require('../models/order');
 const { sendEmail } = require('../mail/mailjet');
 const remitaHelperFunction = require('../../utility/recurring-payment');
+const { Payments } = require('./payment');
 
 const runCronJob = async () => {
 	// let job = cron.schedule(`${minutes} ${hour} ${date} * *`, async () => {
@@ -12,21 +13,20 @@ const runCronJob = async () => {
 		const allOrders = await order.find().populate('recurringCharges');
 
 		const activeOrders = allOrders.filter(
-			order => order.status === 'in-progress' && order.remainingAmount > 0 && order.recurringCharges && order.recurringCharges?.isActive
+			order => order.status === 'in-progress' && order.remainingAmount > 1 && order.recurringCharges && order.recurringCharges?.isActive
 		);
 
-		activeOrders?.forEach(async order => {
-			console.log(order);
+		for (let order of activeOrders) {
+			console.log(order)
 			if (order.lastPaymentDate?.getMonth() !== now.getMonth()) {
-				await remitaHelperFunction.debitUser(
-					order._id,
-					order.recurringPayment.splitAmount,
-					order.recurringPayment.mandateId,
-					order.recurringPayment.payerAccountNumber,
-					order.recurringPayment.payerBankCode
-				);
+				try {
+					await Payments.debitUser(order)
+				} catch (error) {
+					order.failedTransactions = order.failedTransactions + 1
+					await order.save()
+				}
 			}
-		});
+		}
 	});
 
 	job.start();

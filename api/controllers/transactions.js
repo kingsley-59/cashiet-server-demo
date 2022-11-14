@@ -15,15 +15,20 @@ const saveTransaction = async (req, res, next) => {
         const { data } = await verifyTransactionGetToken(reference)
         if (data.status !== 'success') return res.status(400).json({message: 'Could not verify transaction'})
 
-        // check if transaction exists
-        console.log('checking if transaction exists...')
+        // check if order has been paid
+        console.log('checking if order is paid...')
+		const order = await Order.findOne({_id: orderId}).exec()
+		if (order.status === 'paid') return res.status(400).json({message: 'Oops! You have paid for this order before.'})
+
+		// check if transaction exists
         const transactionExists = await Transactions.findOne({reference: reference}).exec()
         if (transactionExists) return res.status(400).json({message: `Transaction with reference - ${reference} already exists.`})
 
         // update invoice and order
         console.log('update invoice and order status')
+		order.status = 'paid'
+		await order.save()		
         const invoice = await Invoice.findOneAndUpdate({_id: invoiceId}, {status: 'paid'}, {new: true}).exec()
-        const order = await Order.findOneAndUpdate({_id: orderId}, {status: 'paid'}, {new: true}).exec()
 
         // save incoming transaction
         console.log('saving new transaction...')

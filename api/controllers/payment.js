@@ -54,7 +54,12 @@ class Payments {
 
         console.log('Updating order')
         // update order with the created recurring charge
+        let remainingAmount = Number(this.order.totalAmount) - Number(splitAmount)
         this.order.recurringCharges = charge._id
+        this.order.remainingAmount = remainingAmount
+        this.order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
+        this.order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
+        this.order.lastPaymentDate = new Date()
         await this.order.save()
 
         console.log('Done.')
@@ -62,7 +67,81 @@ class Payments {
     }
 
     async processSaveAndBuyLaterOrder(duration, splitAmount) {
+        console.log('getting payment details...')
+        // get payment details
+        const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
+        if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
 
+        console.log('creating recurring charge...')
+        // create new recurring charge
+        const charge = new RecurringCharges({
+            _id: mongoose.Types.ObjectId(),
+            startDate: new Date(),
+            endDate: addMonths(new Date(), duration),
+            duration, splitAmount,
+            isActive: true,
+            paymentDetails: details._id
+        })
+        await charge.save()
+
+        console.log('charging card...')
+        // charge the authorization code from payment details
+        const { data } = await chargeAuthorization(details.customer.email, splitAmount, details.authorization.authorization_code)
+        if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
+
+        console.log('Updating order')
+        // update order with the created recurring charge
+        let remainingAmount = Number(this.order.totalAmount) - Number(splitAmount)
+        this.order.recurringCharges = charge._id
+        this.order.remainingAmount = remainingAmount
+        this.order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
+        this.order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
+        this.order.lastPaymentDate = new Date()
+        await this.order.save()
+
+        console.log('Done.')
+        this.res.status(200).json({ message: 'A recurring payment started successfully, to be renewed monthly.' })
+    }
+
+    static async debitUser(order) {
+        console.log('getting payment details...')
+        // get payment details
+        const userId = order.user
+        const recurringChargesId = order.recurringCharges._id
+        const details = await PaymentDetails.findOne({ user: userId }).exec()
+        if (!details) {
+            order.failedTransactions = order.failedTransactions + 1
+            await order.save()
+            return ;
+        }
+
+        console.log('charging card...')
+        // charge the authorization code from payment details
+        const { data } = await chargeAuthorization(details.customer.email, order.recurringCharges.splitAmount, details.authorization.authorization_code)
+        if (data?.data?.status !== 'success') {
+            order.failedTransactions = order.failedTransactions + 1
+            await order.save()
+            return ;
+        }
+
+        console.log('Updating order...')
+        // update order with the created recurring charge
+        let remainingAmount = Number(order.totalAmount) - Number(splitAmount)
+        order.remainingAmount = remainingAmount
+        order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
+        order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
+        order.lastPaymentDate = new Date()
+        await order.save()
+
+        console.log('updating recurring charges...')
+        //update recurring charges
+        const charges = await RecurringCharges.findOne({_id: recurringChargesId}).exec()
+        charges.isActive = (remainingAmount > 1) ? true : false
+        await charges.save()
+
+
+        console.log('Done.')
+        return;
     }
 }
 
@@ -157,6 +236,7 @@ const dumpPaymentDetailsTable = async (req, res, next) => {
 
 
 module.exports = {
+    Payments,
     verifyTestTransaction,
     getUserPaymentDetails,
     processPayment,

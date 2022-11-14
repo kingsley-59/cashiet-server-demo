@@ -154,23 +154,22 @@ const getAllOrders = (req, res, next) => {
 	} else return res.status(401).json({ message: 'Unauthorized access', status: 401 });
 };
 
-const getSpecificOrder = (req, res, next) => {
+const getSpecificOrder = async (req, res, next) => {
 	const authenticatedUser = req.decoded.user;
 	const orderId = req.params.orderId;
 
-	Order.findOne({ _id: orderId, user: authenticatedUser._id })
-		.populate('user recurringPayment paymentOption')
+	try {
+		const order = await Order.findOne({ _id: orderId, user: authenticatedUser._id })
+		.populate('user recurringCharges paymentOption')
 		.populate({ path: 'orderItems', populate: { path: 'product', model: 'Product', select: 'name' } })
-		.then(order => {
-			if (order) {
-				return res.status(200).json({ message: 'Order fetched successfully', order });
-			} else {
-				return res.status(200).json({ message: 'Order not found', status: 404, order: null });
-			}
-		})
-		.catch(error => {
-			return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
-		});
+		.exec()
+		if (!order) return res.status(404).json({ message: 'Order not found', status: 404, order: null });
+
+		const invoice = await Invoice.findOne({order: order._id}).exec();
+		return res.status(200).json({ message: 'Order fetched successfully', order, invoice });
+	} catch (error) {
+		return res.status(500).json({ error, message: 'Unable to fetch order', status: 500 });
+	}
 };
 
 const adminGetSpecificUserOrders = (req, res, next) => {
