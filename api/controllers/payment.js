@@ -227,8 +227,17 @@ const processPayment = async (req, res, next) => {
     }
 }
 
-const addUserCard = async (req, res, next) => {
+const removeCard = async (req, res, next) => {
     const authenticatedUser = req.decoded.user;
+    const cardId = req.params.cardId
+
+    try {
+        const deletedCard = await PaymentDetails.findOneAndDelete({_id: cardId}).exec()
+        return res.status(200).json({message: 'Card deleted succesfully!', data: deletedCard})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error.message })
+    }
 }
 
 const dumpPaymentDetailsTable = async (req, res, next) => {
@@ -247,5 +256,6 @@ module.exports = {
     verifyTestTransaction,
     getUserPaymentDetails,
     processPayment,
+    removeCard,
     dumpPaymentDetailsTable
 }
