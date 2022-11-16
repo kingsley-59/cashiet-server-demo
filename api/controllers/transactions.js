@@ -142,15 +142,12 @@ const getOrderTransactions = (req, res) => {
 		.populate('invoice')
 		.exec()
 		.then(orderTransactions => {
-			if (orderTransactions.length > 0) {
-				const transactionOrders = orderTransactions?.filter(transaction => transaction?.invoice?.order?.toString() === orderId);
-
-				res.status(200).json({
-					message: 'Transactions attached to the order fetched successfully',
-					allTransactions: transactionOrders,
-					total: transactionOrders.length
-				});
-			} else res.status(200).json({ message: 'No transaction attached to the order found' });
+			const transactionOrders = orderTransactions?.filter(transaction => transaction?.order?.toString() === orderId);
+			res.status(200).json({
+				message: transactionOrders.length === 0 ? 'No transactions yet for this order.' : 'Transactions attached to the order fetched successfully',
+				allTransactions: transactionOrders,
+				total: transactionOrders.length
+			});
 		})
 		.catch(error => res.status(500).json(error));
 };

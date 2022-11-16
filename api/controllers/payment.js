@@ -4,18 +4,22 @@ const Invoice = require('../models/invoice');
 const Order = require('../models/order');
 const PaymentDetails = require('../models/payment-details');
 const RecurringCharges = require('../models/recurring-charges');
+const Transactions = require('../models/transactions');
 const { getAuthorizationToken, chargeAuthorization } = require('../service/paystack');
 
 // ["save_and_buy_later", "pay_later", "buy_now"]
 
 class Payments {
-    constructor(req, res, authenticatedUser, orderId) {
+    constructor(req, res, authenticatedUser, orderId, cardId) {
         this.req = req
         this.res = res
         this.authenticatedUser = authenticatedUser;
+        this.cardId = cardId
+        this.card = {}
         this.orderId = orderId
         this.order = {}
         this.paymentOption = ''
+        this.invoice = {}
     }
 
     async getOrderDetails() {
@@ -30,18 +34,36 @@ class Payments {
         return { order, paymentOption: order.paymentOption.type }
     }
 
-    async processPayLaterOrder(duration, splitAmount) {
+    async getCardDetails() {
+        const card = await PaymentDetails.findOne({_id: this.cardId}).exec()
+        if (!card) return this.res.status(404).json({message: 'Card not found! Please add card again.'})
+        this.card = card
+    }
+
+    async processRecurringPayment() {
         console.log('getting payment & invoice details...')
-        // get payment and invoice details
-        const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
-        if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
+        // get invoice details
         const invoice = await Invoice.findOne({order: this.orderId}).populate('recurringCharges').exec()
         const recurringCharge = invoice.recurringCharges
+        this.invoice = invoice
 
-        console.log('charging card...')
-        // charge the authorization code from payment details
-        const { data } = await chargeAuthorization(details.customer.email, recurringCharge.splitAmount, details.authorization.authorization_code)
-        if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
+        try {
+            console.log('charging card...')
+            // charge the authorization code from payment details
+            const { data } = await chargeAuthorization(this.card.customer.email, recurringCharge.splitAmount, this.card.authorization.authorization_code)
+            if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
+
+            await this.saveTransaction({
+                order: this.orderId,
+                invoice: this.invoice._id,
+                user: this.authenticatedUser._id,
+                response: data?.data,
+                reference: data?.reference,
+            })
+        } catch (error) {
+            return this.handlePaymentsError(error)
+        }
+       
 
         console.log('Updating order')
         // update order with the created recurring charge
@@ -57,31 +79,36 @@ class Payments {
         this.res.status(200).json({ message: 'A recurring payment started successfully, to be renewed monthly.' })
     }
 
+    handlePaymentsError(error) {
+        if (error?.response?.status?.startsWith('4')) {
+            this.saveTransaction({
+                order: this.orderId,
+                invoice: this.invoice._id,
+                user: this.authenticatedUser._id,
+                success: false
+            }).then(() => {
+                return this.res.status(400).json({message: 'Failed to complete transaction.', error: error.response.data ?? {}})
+            }).catch((error) => {
+                return this.res.status(500).json({message: 'Something went wrong!', error})
+            })
+        }
+
+        return this.res.status(500).json({message: error.message ?? 'Something went wrong!', error})
+    }
+
+    async saveTransaction({order, invoice, user, reference = '', response = {}, isRecurring = true, success = true}) {
+        const newTransaction = new Transactions({
+            invoice, order, user, success, isRecurring, response, reference
+        })
+        await newTransaction.save()
+    }
+
+    async processPayLaterOrder(duration, splitAmount) {
+        this.processRecurringPayment()
+    }
+
     async processSaveAndBuyLaterOrder(duration, splitAmount) {
-        console.log('getting payment & invoice details...')
-        // get payment and invoice details
-        const details = await PaymentDetails.findOne({ user: this.authenticatedUser._id }).exec()
-        if (!details) return this.res.status(404).json({ message: 'Card not found! Please add card to proceed with payment.' })
-        const invoice = await Invoice.findOne({order: this.orderId}).populate('recurringCharges').exec()
-        const recurringCharge = invoice.recurringCharges
-
-        console.log('charging card...')
-        // charge the authorization code from payment details
-        const { data } = await chargeAuthorization(details.customer.email, recurringCharge.splitAmount, details.authorization.authorization_code)
-        if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
-
-        console.log('Updating order')
-        // update order with the created recurring charge
-        let remainingAmount = Number(this.order.totalAmount) - Number(recurringCharge.splitAmount)
-        this.order.recurringCharges = recurringCharge._id
-        this.order.remainingAmount = remainingAmount
-        this.order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
-        this.order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
-        this.order.lastPaymentDate = new Date()
-        await this.order.save()
-
-        console.log('Done.')
-        this.res.status(200).json({ message: 'A recurring payment started successfully, to be renewed monthly.' })
+        this.processRecurringPayment()
     }
 
     static async debitUser(order) {
@@ -135,25 +162,20 @@ const verifyTestTransaction = async (req, res, next) => {
         const { authorization, customer } = await getAuthorizationToken(reference)
         if (authorization.reusable !== true) return res.status(400).json({ message: 'Card is not reusable. Please try a different card.' })
 
-        // check if card already exists. 
-        const prevCardDetails = await PaymentDetails.findOne({ user: authenticatedUser._id }).exec()
-        if (!prevCardDetails) {
-            const details = new PaymentDetails({
-                user: authenticatedUser._id,
-                authorization, customer
-            })
-            await details.save()
+        // add new card details. 
+        const details = new PaymentDetails({
+            user: authenticatedUser._id,
+            authorization,
+            customer
+        })
+        await details.save()
 
-            return res.status(200).json({ message: 'Verification successful.', authorization, customer })
-        }
-
-        // update existing card
-        prevCardDetails.authorization = authorization
-        prevCardDetails.customer = customer
-        await prevCardDetails.save()
-        res.status(200).json({ message: 'Verification successful.', authorization, customer })
+        // get all card details and return
+        const cards = await PaymentDetails.find({user: authenticatedUser._id})
+        res.status(200).json({ message: 'Verification successful.', data: cards })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        console.log(error)
+        res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error })
     }
 }
 
@@ -164,8 +186,8 @@ const getUserPaymentDetails = async (req, res, next) => {
     if (role === 'superadmin' || role === 'admin') return res.status(401).json({ message: 'Unauthorized! Only users can see their payment details.' })
 
     try {
-        const detail = await PaymentDetails.findOne({ user: authenticatedUser._id }).populate('user').exec();
-        if (!detail) return res.status(404).json({ message: 'Payment details not found.' });
+        const detail = await PaymentDetails.find({ user: authenticatedUser._id }).exec();
+        if (detail.length === 0) return res.status(404).json({ message: 'Payment details not found.' });
 
         res.status(200).json({ message: 'Request successful.', data: detail })
     } catch (error) {
@@ -176,21 +198,22 @@ const getUserPaymentDetails = async (req, res, next) => {
 const processPayment = async (req, res, next) => {
     const authenticatedUser = req.decoded.user;
     const role = authenticatedUser.role;
-    const { orderId, duration, splitAmount } = req.body;
+    const { orderId, cardId } = req.body;
 
     if (role === 'superadmin' || role === 'admin') return res.status(401).json({ message: 'Only users can process payments on their orders.' })
 
     try {
         console.log('processing payment...')
-        const payment = new Payments(req, res, authenticatedUser, orderId)
+        const payment = new Payments(req, res, authenticatedUser, orderId, cardId)
         const { paymentOption } = await payment.getOrderDetails()
+        await payment.getCardDetails()
 
         switch (paymentOption) {
             case 'pay_later':
-                await payment.processPayLaterOrder(duration, splitAmount)
+                await payment.processPayLaterOrder()
                 break;
             case 'save_and_buy_later':
-                await payment.processSaveAndBuyLaterOrder(duration, splitAmount)
+                await payment.processSaveAndBuyLaterOrder()
                 break;
 
             default:
@@ -202,6 +225,10 @@ const processPayment = async (req, res, next) => {
         console.log(error)
         res.status(500).json({ message: error.message })
     }
+}
+
+const addUserCard = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
 }
 
 const dumpPaymentDetailsTable = async (req, res, next) => {

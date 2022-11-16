@@ -16,10 +16,13 @@ const Transactions = mongoose.Schema({
 		ref: 'User'
     },
 
+    success: {
+        type: Boolean,
+        default: true
+    },
+
     reference: {
         type: String,
-        unique: true,
-        required: [true, 'Transaction reference must be provided.']
     },
 
     response: Object,

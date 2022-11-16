@@ -12,5 +12,7 @@ router.get('/user', verifyAuth, getUserPaymentDetails);
 
 router.post('/', verifyAuth, processPayment);
 
+router.post('/add-card', verifyAuth)
+
 
 module.exports = router
