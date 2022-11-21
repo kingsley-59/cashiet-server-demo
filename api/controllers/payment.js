@@ -5,7 +5,7 @@ const Order = require('../models/order');
 const PaymentDetails = require('../models/payment-details');
 const RecurringCharges = require('../models/recurring-charges');
 const Transactions = require('../models/transactions');
-const { getAuthorizationToken, chargeAuthorization } = require('../service/paystack');
+const { getAuthorizationToken, chargeAuthorization, refundPayment } = require('../service/paystack');
 
 // ["save_and_buy_later", "pay_later", "buy_now"]
 
@@ -159,7 +159,7 @@ const verifyTestTransaction = async (req, res, next) => {
     const reference = req.params.reference
 
     try {
-        const { authorization, customer } = await getAuthorizationToken(reference)
+        const { authorization, customer, data } = await getAuthorizationToken(reference)
         if (authorization.reusable !== true) return res.status(400).json({ message: 'Card is not reusable. Please try a different card.' })
 
         // add new card details. 
@@ -172,7 +172,9 @@ const verifyTestTransaction = async (req, res, next) => {
 
         // get all card details and return
         const cards = await PaymentDetails.find({user: authenticatedUser._id})
-        res.status(200).json({ message: 'Verification successful.', data: cards })
+        const { data: refundData } = await refundPayment(reference, data?.amount)
+        if (!refundData.status) return res.status(200).json({message: 'Verification successful. Please contact admin for refund.', data: cards, refundData })
+        res.status(200).json({ message: 'Verification successful. Refund is processing.', data: cards, refundData })
     } catch (error) {
         console.log(error)
         res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error })

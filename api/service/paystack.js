@@ -36,6 +36,21 @@ async function chargeAuthorization(email, amount, authorization_code) {
     return { data: res.data }
 }
 
+async function refundPayment(reference, amount) {
+    const path='/refund'
+
+    let res = await axios.post(`${BASE_URL + path}`, { transaction: reference, amount }, {
+        headers: {
+            Authorization: `Bearer ${SECRET_KEY}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if (res.status !== 200) throw new Error(res.error?.message ?? "Refund was not successful.")
+
+    return { data: res.data }
+}
+
 /**
  * 
  * @param {String} name 
@@ -90,6 +105,7 @@ async function addPlanToTransactions(email, amount, plan) {
 module.exports = {
     getAuthorizationToken: verifyTransactionGetToken,
     verifyTransactionGetToken,
+    refundPayment,
     chargeAuthorization,
     createPlan,
     createSubscription,
