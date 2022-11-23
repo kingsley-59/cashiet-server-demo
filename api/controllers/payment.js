@@ -160,6 +160,7 @@ const verifyTestTransaction = async (req, res, next) => {
 
     try {
         const { authorization, customer, data } = await getAuthorizationToken(reference)
+        console.log({verifyRes: data})
         if (authorization.reusable !== true) return res.status(400).json({ message: 'Card is not reusable. Please try a different card.' })
 
         // add new card details. 
@@ -177,7 +178,7 @@ const verifyTestTransaction = async (req, res, next) => {
         res.status(200).json({ message: 'Verification successful. Refund is processing.', data: cards, refundData })
     } catch (error) {
         console.log(error)
-        res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error })
+        res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error: error })
     }
 }
 
