@@ -52,7 +52,7 @@ class Payments {
             // charge the authorization code from payment details
             const { data } = await chargeAuthorization(this.card.customer.email, recurringCharge.splitAmount, this.card.authorization.authorization_code)
             console.log({chargeResponse: data})
-            if (data?.data?.status !== 'success') return this.res.status(400).json({ message: 'Initial debit was not successful. Pls check the card and try again.' })
+            if (data?.data?.status !== 'success') return this.res.status(400).json({ message: `${data?.data?.gateway_response}. Initial debit was not successful. Pls check the card and try again!` })
 
             await this.saveTransaction({
                 order: this.orderId,
@@ -62,6 +62,7 @@ class Payments {
                 reference: data?.reference,
             })
         } catch (error) {
+            console.log({chargeError: error})
             return this.handlePaymentsError(error)
         }
        
@@ -88,7 +89,7 @@ class Payments {
                 user: this.authenticatedUser._id,
                 success: false
             }).then(() => {
-                return this.res.status(400).json({message: 'Failed to complete transaction.', error: error.response.data ?? {}})
+                return this.res.status(400).json({message: 'Failed to complete transaction.', error: error?.response?.data ?? {}})
             }).catch((error) => {
                 return this.res.status(500).json({message: 'Something went wrong!', error})
             })
