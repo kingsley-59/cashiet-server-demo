@@ -173,9 +173,13 @@ const verifyTestTransaction = async (req, res, next) => {
 
         // get all card details and return
         const cards = await PaymentDetails.find({user: authenticatedUser._id})
-        const { data: refundData } = await refundPayment(reference, data?.amount)
-        if (!refundData.status) return res.status(200).json({message: 'Verification successful. Please contact admin for refund.', data: cards, refundData })
-        res.status(200).json({ message: 'Verification successful. Refund is processing.', data: cards, refundData })
+        refundPayment(reference, data?.amount).then(refundData => {
+            console.log({refundData})
+            res.status(200).json({ message: 'Verification successful. Refund is processing.', data: cards, refundData })
+        }).catch(error => {
+            console.log({refundError: error})
+            res.status(200).json({message: 'Verification successful. Please contact admin for refund.', data: cards, error: error?.response?.data?.message ?? error.message })
+        })
     } catch (error) {
         console.log(error)
         res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error: error })
