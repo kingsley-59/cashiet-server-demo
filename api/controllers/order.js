@@ -55,8 +55,8 @@ const createOrder = (req, res, next) => {
 						shippingFee: req.body.shippingFee,
 						deliveryDate: req.body.deliveryDate,
 						paymentOption: req.body.paymentOption,
-						totalAmount: totalAmount,
-						remainingAmount: totalAmount,
+						totalAmount: req.body.totalAmount ?? totalAmount + 300,
+						remainingAmount: req.body.totalAmount ?? totalAmount + 300,
 						duration: req.body.duration || 0,
 						user: userId
 					});
