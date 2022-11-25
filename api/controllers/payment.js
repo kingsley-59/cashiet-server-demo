@@ -50,7 +50,8 @@ class Payments {
         try {
             console.log('charging card...')
             // charge the authorization code from payment details
-            const { data } = await chargeAuthorization(this.card.customer.email, recurringCharge.splitAmount, this.card.authorization.authorization_code)
+            let amount = recurringCharge.splitAmount * 100
+            const { data } = await chargeAuthorization(this.card.customer.email, amount, this.card.authorization.authorization_code)
             console.log({chargeResponse: data})
             if (data?.data?.status !== 'success') return this.res.status(400).json({ message: `${data?.data?.gateway_response}. Initial debit was not successful. Pls check the card and try again!` })
 
