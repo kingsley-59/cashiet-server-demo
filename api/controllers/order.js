@@ -263,8 +263,8 @@ const cancelOrder = (req, res, next) => {
 	const orderId = req.params.orderId;
 
 	try {
-		Order.findOne({ user: authenticatedUser._id, paymentStatus: 'unpaid', _id: orderId }, (error, order) => {
-			if (!order) return res.status(400).json({ message: 'We were unable to find an order with this id.', status: 400 });
+		Order.findOne({ user: authenticatedUser._id, paymentStatus: {$ne: 'paid'}, _id: orderId }, (error, order) => {
+			if (!order) return res.status(400).json({ message: 'Not found! This order has either been paid for or does not exist.', status: 400 });
 			if (order.status === 'cancelled') return res.status(400).json({ message: 'Order already cancelled', status: 400 });
 
 			// Cancel order
