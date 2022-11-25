@@ -19,7 +19,7 @@ const createOrder = (req, res, next) => {
 		Order.findOne({ user: userId, status: 'pending' })
 			.then(previousOrder => {
 				if (previousOrder) {
-					return res.status(400).json({ message: 'You have an uncompleted order', status: 400 });
+					return res.status(400).json({ message: 'You have an uncompleted order', pendingOrder: previousOrder, status: 400 });
 				}
 
 				if (!req.body.orderItems) {
