@@ -36,7 +36,7 @@ async function chargeAuthorization(email, amount, authorization_code) {
     return { data: res.data }
 }
 
-async function refundPayment(reference, amount) {
+async function refundPayment(reference, amount = '') {
     const path='/refund'
 
     let res = await axios.post(`${BASE_URL + path}`, { transaction: reference, amount }, {

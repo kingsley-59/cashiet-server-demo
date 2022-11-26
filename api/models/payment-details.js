@@ -15,6 +15,15 @@ const PaymentDetailsSchema = mongoose.Schema({
 
     customer: {
         type: Object
+    },
+
+    reference: {
+        type: String
+    },
+
+    isRefunded: {
+        type: Boolean,
+        default: false
     }
 
 }, {timestamps: true})

@@ -35,15 +35,15 @@ class Payments {
     }
 
     async getCardDetails() {
-        const card = await PaymentDetails.findOne({_id: this.cardId}).exec()
-        if (!card) return this.res.status(404).json({message: 'Card not found! Please add card again.'})
+        const card = await PaymentDetails.findOne({ _id: this.cardId }).exec()
+        if (!card) return this.res.status(404).json({ message: 'Card not found! Please add card again.' })
         this.card = card
     }
 
     async processRecurringPayment() {
         console.log('getting payment & invoice details...')
         // get invoice details
-        const invoice = await Invoice.findOne({order: this.orderId}).populate('recurringCharges').exec()
+        const invoice = await Invoice.findOne({ order: this.orderId }).populate('recurringCharges').exec()
         const recurringCharge = invoice.recurringCharges
         this.invoice = invoice
 
@@ -52,7 +52,7 @@ class Payments {
             // charge the authorization code from payment details
             let amount = recurringCharge.splitAmount * 100
             const { data } = await chargeAuthorization(this.card.customer.email, amount, this.card.authorization.authorization_code)
-            console.log({chargeResponse: data})
+            console.log({ chargeResponse: data })
             if (data?.data?.status !== 'success') return this.res.status(400).json({ message: `${data?.data?.gateway_response}. Initial debit was not successful. Pls check the card and try again!` })
 
             await this.saveTransaction({
@@ -63,10 +63,10 @@ class Payments {
                 reference: data?.reference,
             })
         } catch (error) {
-            console.log({chargeError: error})
+            console.log({ chargeError: error })
             return this.handlePaymentsError(error)
         }
-       
+
 
         console.log('Updating order')
         // update order with the created recurring charge
@@ -90,16 +90,16 @@ class Payments {
                 user: this.authenticatedUser._id,
                 success: false
             }).then(() => {
-                return this.res.status(400).json({message: 'Failed to complete transaction.', error: error?.response?.data ?? {}})
+                return this.res.status(400).json({ message: 'Failed to complete transaction.', error: error?.response?.data ?? {} })
             }).catch((error) => {
-                return this.res.status(500).json({message: 'Something went wrong!', error})
+                return this.res.status(500).json({ message: 'Something went wrong!', error })
             })
         }
 
-        return this.res.status(500).json({message: error.message ?? 'Something went wrong!', error})
+        return this.res.status(500).json({ message: error.message ?? 'Something went wrong!', error })
     }
 
-    async saveTransaction({order, invoice, user, reference = '', response = {}, isRecurring = true, success = true}) {
+    async saveTransaction({ order, invoice, user, reference = '', response = {}, isRecurring = true, success = true }) {
         const newTransaction = new Transactions({
             invoice, order, user, success, isRecurring, response, reference
         })
@@ -123,7 +123,7 @@ class Payments {
         if (!details) {
             order.failedTransactions = order.failedTransactions + 1
             await order.save()
-            return ;
+            return;
         }
 
         console.log('charging card...')
@@ -132,7 +132,7 @@ class Payments {
         if (data?.data?.status !== 'success') {
             order.failedTransactions = order.failedTransactions + 1
             await order.save()
-            return ;
+            return;
         }
 
         console.log('Updating order...')
@@ -146,7 +146,7 @@ class Payments {
 
         console.log('updating recurring charges...')
         //update recurring charges
-        const charges = await RecurringCharges.findOne({_id: recurringChargesId}).exec()
+        const charges = await RecurringCharges.findOne({ _id: recurringChargesId }).exec()
         charges.isActive = (remainingAmount > 1) ? true : false
         await charges.save()
 
@@ -163,26 +163,51 @@ const verifyTestTransaction = async (req, res, next) => {
 
     try {
         const { authorization, customer, data } = await getAuthorizationToken(reference)
-        console.log({verifyRes: data})
+        console.log({ verifyRes: data })
         if (authorization.reusable !== true) return res.status(400).json({ message: 'Card is not reusable. Please try a different card.' })
 
         // add new card details. 
         const details = new PaymentDetails({
             user: authenticatedUser._id,
             authorization,
-            customer
+            customer,
+            reference
         })
         await details.save()
 
         // get all card details and return
-        const cards = await PaymentDetails.find({user: authenticatedUser._id})
+        const cards = await PaymentDetails.find({ user: authenticatedUser._id })
         refundPayment(reference, data?.amount).then(refundData => {
-            console.log({refundData})
+            console.log({ refundData })
             res.status(200).json({ message: 'Verification successful. Refund is processing.', data: cards, refundData })
+            details.isRefunded = true
+            details.save().then(() => { })
         }).catch(error => {
-            console.log({refundError: error})
-            res.status(200).json({message: 'Verification successful. Please contact admin for refund.', data: cards, error: error?.response?.data?.message ?? error.message })
+            console.log({ refundError: error })
+            res.status(200).json({ message: 'Verification successful. Please contact admin for refund.', data: cards, error: error?.response?.data?.message ?? error.message })
         })
+    } catch (error) {
+        console.log(error)
+        res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error: error })
+    }
+}
+
+const refundAddCardCharges = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
+    const role = authenticatedUser.role;
+    const reference = req.params.reference
+
+    if (role !== 'superadmin' && role !== 'admin') return res.status(400).json({message: 'Only admins can intiate a manual refund'})
+    if (!reference) return res.status(400).json({message: 'Reference is required.'})
+
+    try {
+        const details = await PaymentDetails.findOne({ reference: reference }).exec()
+        if (!details) return res.status(404).json({ message: 'Card with reference not found.' })
+
+        const refundData = await refundPayment(reference)
+        details.isRefunded = true
+        await details.save()
+        res.status(200).json({message: 'Refund initiated successfully.', data: refundData})
     } catch (error) {
         console.log(error)
         res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error: error })
@@ -202,6 +227,21 @@ const getUserPaymentDetails = async (req, res, next) => {
         res.status(200).json({ message: 'Request successful.', data: detail })
     } catch (error) {
         res.status(500).json({ message: error.message })
+    }
+}
+
+const getAllPaymentDetails = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user;
+    const role = authenticatedUser.role;
+
+    if (role !== 'superadmin' && role !== 'admin') return res.status(403).json({ message: 'Unauthorized!' })
+
+    try {
+        const details = await PaymentDetails.find({}).populate({ path: 'user' }).exec()
+
+        res.status(200).json({ mmessage: 'Data retrieved successfully.', total: details.length, data: res.paginatedResults })
+    } catch (error) {
+        res.status(500).json({ message: error?.message ?? 'Failed to retrieve all payment details' })
     }
 }
 
@@ -242,8 +282,8 @@ const removeCard = async (req, res, next) => {
     const cardId = req.params.cardId
 
     try {
-        const deletedCard = await PaymentDetails.findOneAndDelete({_id: cardId}).exec()
-        return res.status(200).json({message: 'Card deleted succesfully!', data: deletedCard})
+        const deletedCard = await PaymentDetails.findOneAndDelete({ _id: cardId }).exec()
+        return res.status(200).json({ message: 'Card deleted succesfully!', data: deletedCard })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: error.message })
@@ -265,7 +305,9 @@ module.exports = {
     Payments,
     verifyTestTransaction,
     getUserPaymentDetails,
+    getAllPaymentDetails,
     processPayment,
     removeCard,
+    refundAddCardCharges,
     dumpPaymentDetailsTable
 }

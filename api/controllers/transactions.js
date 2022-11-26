@@ -79,7 +79,7 @@ const getAllTransactions = (req, res, next) => {
 		Transactions.find()
 			.populate('invoice user')
 			.then(allTransactions =>
-				res.status(200).json({ message: 'Successfully fetched all transactions', allTransactions, total: allTransactions.length })
+				res.status(200).json({ message: 'Successfully fetched all transactions', transactions: res.paginatedResults, allTransactions, total: allTransactions.length })
 			)
 			.catch(error => res.status(500).json(error));
 	} else res.status(401).json({ message: 'Unauthorized users' });
