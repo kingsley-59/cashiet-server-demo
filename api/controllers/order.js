@@ -109,6 +109,8 @@ const createOrder = (req, res, next) => {
 												isRecurring: true,
 												recurringCharges: charge._id
 											});
+											createdOrder.recurringCharges = charge._id
+											createdOrder.save().then(() => {})
 											newInvoice.save().then(invoice => {
 												res.status(201).json({
 													message: 'Order and invoice created successfully',

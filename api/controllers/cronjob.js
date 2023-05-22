@@ -10,7 +10,7 @@ const runCronJob = async () => {
 
 	let job = cron.schedule(`0 12 28 * *`, async () => {
 		const now = new Date();
-		const allOrders = await order.find().populate('recurringCharges');
+		const allOrders = await order.find().populate('user recurringCharges');
 
 		const activeOrders = allOrders.filter(
 			order => order.status === 'in-progress' && order.remainingAmount > 1 && order.recurringCharges && order.recurringCharges?.isActive

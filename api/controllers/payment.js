@@ -5,6 +5,7 @@ const Order = require('../models/order');
 const PaymentDetails = require('../models/payment-details');
 const RecurringCharges = require('../models/recurring-charges');
 const Transactions = require('../models/transactions');
+const User = require('../models/user');
 const { getAuthorizationToken, chargeAuthorization, refundPayment } = require('../service/paystack');
 
 // ["save_and_buy_later", "pay_later", "buy_now"]
@@ -38,6 +39,8 @@ class Payments {
         const card = await PaymentDetails.findOne({ _id: this.cardId }).exec()
         if (!card) return this.res.status(404).json({ message: 'Card not found! Please add card again.' })
         this.card = card
+
+        return this.card
     }
 
     async processRecurringPayment() {
@@ -106,19 +109,20 @@ class Payments {
         await newTransaction.save()
     }
 
-    async processPayLaterOrder(duration, splitAmount) {
+    async processPayLaterOrder() {
         this.processRecurringPayment()
     }
 
-    async processSaveAndBuyLaterOrder(duration, splitAmount) {
+    async processSaveAndBuyLaterOrder() {
         this.processRecurringPayment()
     }
 
-    static async debitUser(order) {
+    static async debitUser(order, amount = '', authorization = '') {
         console.log('getting payment details...')
+
         // get payment details
-        const userId = order.user
-        const recurringChargesId = order.recurringCharges._id
+        const userId = order.user._id
+        const recurringChargesId = order?.recurringCharges ? order?.recurringCharges?._id : ''
         const details = await PaymentDetails.findOne({ user: userId }).exec()
         if (!details) {
             order.failedTransactions = order.failedTransactions + 1
@@ -128,7 +132,9 @@ class Payments {
 
         console.log('charging card...')
         // charge the authorization code from payment details
-        const { data } = await chargeAuthorization(details.customer.email, order.recurringCharges.splitAmount, details.authorization.authorization_code)
+        const debitAmount = amount ?? (order.remainingAmount > order.recurringCharges?.splitAmount ? order.recurringCharges?.splitAmount : order.remainingAmount)
+        const authorization_code = authorization ?? details.authorization.authorization_code
+        const { data } = await chargeAuthorization(details.customer.email, debitAmount, authorization_code)
         if (data?.data?.status !== 'success') {
             order.failedTransactions = order.failedTransactions + 1
             await order.save()
@@ -137,7 +143,7 @@ class Payments {
 
         console.log('Updating order...')
         // update order with the created recurring charge
-        let remainingAmount = Number(order.totalAmount) - Number(splitAmount)
+        let remainingAmount = Number(order.remainingAmount) - Number(debitAmount)
         order.remainingAmount = remainingAmount
         order.status = (remainingAmount > 1) ? 'in-progress' : 'paid'
         order.paymentStatus = (remainingAmount > 1) ? 'part_payment' : 'paid'
@@ -146,9 +152,11 @@ class Payments {
 
         console.log('updating recurring charges...')
         //update recurring charges
-        const charges = await RecurringCharges.findOne({ _id: recurringChargesId }).exec()
-        charges.isActive = (remainingAmount > 1) ? true : false
-        await charges.save()
+        if (recurringChargesId) {
+            const charges = await RecurringCharges.findOne({ _id: recurringChargesId }).exec()
+            charges.isActive = (remainingAmount > 1) ? true : false
+            await charges.save()
+        }
 
         console.log('Done.')
         return;
@@ -197,8 +205,8 @@ const refundAddCardCharges = async (req, res, next) => {
     const role = authenticatedUser.role;
     const reference = req.params.reference
 
-    if (role !== 'superadmin' && role !== 'admin') return res.status(400).json({message: 'Only admins can intiate a manual refund'})
-    if (!reference) return res.status(400).json({message: 'Reference is required.'})
+    if (role !== 'superadmin' && role !== 'admin') return res.status(400).json({ message: 'Only admins can intiate a manual refund' })
+    if (!reference) return res.status(400).json({ message: 'Reference is required.' })
 
     try {
         const details = await PaymentDetails.findOne({ reference: reference }).exec()
@@ -207,7 +215,7 @@ const refundAddCardCharges = async (req, res, next) => {
         const refundData = await refundPayment(reference)
         details.isRefunded = true
         await details.save()
-        res.status(200).json({message: 'Refund initiated successfully.', data: refundData})
+        res.status(200).json({ message: 'Refund initiated successfully.', data: refundData })
     } catch (error) {
         console.log(error)
         res.status(error?.status ?? 500).json({ message: error?.response?.data?.message ?? error.message, error: error })
@@ -222,6 +230,23 @@ const getUserPaymentDetails = async (req, res, next) => {
 
     try {
         const detail = await PaymentDetails.find({ user: authenticatedUser._id }).exec();
+        if (detail.length === 0) return res.status(404).json({ message: 'Payment details not found.' });
+
+        res.status(200).json({ message: 'Request successful.', data: detail })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const adminGetUserPaymentDetails = async (req, res, next) => {
+    const authenticatedUser = req.decoded.user
+    const role = authenticatedUser.role
+    const { userId } = req.params
+
+    if (role !== 'superadmin' && role !== 'admin') return res.status(400).json({ message: 'Only admins have access to this resource' })
+
+    try {
+        const detail = await PaymentDetails.find({ user: userId }).exec();
         if (detail.length === 0) return res.status(404).json({ message: 'Payment details not found.' });
 
         res.status(200).json({ message: 'Request successful.', data: detail })
@@ -277,6 +302,30 @@ const processPayment = async (req, res, next) => {
     }
 }
 
+const manualDebit = async (req, res) => {
+    const authenticatedUser = req.decoded.user;
+    const role = authenticatedUser.role;
+    const { userId } = req.params
+    const { cardId, orderId, amount } = req.body
+
+    if (role !== 'superadmin' && role !== 'admin') return res.status(400).json({ message: 'Only admins have access to this action' })
+
+    try {
+        const user = await User.findOne({ _id: userId }).exec()
+        if (!user) return res.status(404).json({ message: 'User not found!' })
+
+        console.log('processing manual debit...')
+        const payment = new Payments(req, res, user, orderId, cardId)
+        const { paymentOption, order } = await payment.getOrderDetails()
+        const card = await payment.getCardDetails()
+
+        await Payments.debitUser(order, amount, card.authorization.authorization_code)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error?.response?.data?.message ?? error.message, stack: error?.stack })
+    }
+}
+
 const removeCard = async (req, res, next) => {
     const authenticatedUser = req.decoded.user;
     const cardId = req.params.cardId
@@ -305,8 +354,10 @@ module.exports = {
     Payments,
     verifyTestTransaction,
     getUserPaymentDetails,
+    adminGetUserPaymentDetails,
     getAllPaymentDetails,
     processPayment,
+    manualDebit,
     removeCard,
     refundAddCardCharges,
     dumpPaymentDetailsTable
